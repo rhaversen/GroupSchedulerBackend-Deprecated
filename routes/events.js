@@ -18,17 +18,17 @@ const validator = require('validator');
 const asyncErrorHandler = require('../middleware/asyncErrorHandler');
 
 /**
- * @route PUT api/v1/events/new-code/:eventCode
+ * @route POST api/v1/events/:eventId/new-code
  * @desc Update event with a random event code
  * @access AUTHENTICATED
 */
-router.put('/new-code/:eventCode', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
+router.post('/:eventId/new-code', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
     const userId = req.user.id;
-    const eventCode = req.params.eventCode;
+    const eventId = req.params.eventId;
 
     try {
         // Find the event by its id
-        const event = await Event.findOne({eventCode: eventCode});
+        const event = await Event.findById(eventId);
 
         // Check if event exists
         if (!event) {
