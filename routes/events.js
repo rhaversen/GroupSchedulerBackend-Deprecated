@@ -81,7 +81,7 @@ router.post('/:eventId/new-code',
 
 /**
  * @route GET api/v1/events/:eventId
- * @desc Get the event from the eventId
+ * @desc Get event from eventId
  * @access AUTHENTICATED
  */
 router.get('/:eventId',
@@ -180,7 +180,6 @@ router.patch('/:eventId',
 router.put('/:eventIdOrCode/users',
     passport.authenticate('jwt'),
     asyncErrorHandler(getEvent),
-    checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
         const event = req.event;
         const user = req.user;
@@ -198,7 +197,7 @@ router.put('/:eventIdOrCode/users',
 
 /**
  * @route DELETE api/v1/events/:eventId/users
- * @desc Leave event. Remove user from event, remove event from user. Empty events are deleted automatically
+ * @desc Leave event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
  * @access AUTHENTICATED
  */
 router.delete('/:eventId/users',
