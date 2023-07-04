@@ -80,23 +80,32 @@ router.get('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (r
 
 /**
  * @route POST api/v1/events
- * @desc Create a new event, add user to event, add event to user
+ * @desc Create a new event, add user to event, add event to user, add user to admins if only owner can edit event
  * @access AUTHENTICATED
  */
 router.post('/', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
     try {
-        const userId = req.user.id;
-        const participants = await User.findById(userId);
-
         const { 
             eventName, 
             eventDescription, 
             startDate, 
             endDate,
+            isLocked,
         } = req.body;
 
-        if (!eventName || !startDate || !endDate) {
+        // Checks if eventName, startDate, and endDate are not falsy (e.g., undefined, null, empty string)
+        // and if isLocked is not undefined
+        if (!eventName || !startDate || !endDate || isLocked === undefined) {
             return next(new MissingFieldsError('Missing required fields'));
+        }
+
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        const participants = user;
+
+        let admins;
+        if (isLocked == true){
+            admins = user;
         }
 
         const newEvent = new Event({
@@ -105,6 +114,7 @@ router.post('/', passport.authenticate('jwt'), asyncErrorHandler(async (req, res
             startDate, 
             endDate,
             participants,
+            admins,
         });
 
         await newEvent.save();

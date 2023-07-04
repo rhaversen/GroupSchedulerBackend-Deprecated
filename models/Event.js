@@ -16,6 +16,7 @@ const eventSchema = new Schema({
   startDate: { type: Date, required: true, validate: { validator: function(value) { return value < this.endDate; }, message: 'Start date must be before end date' } },
   endDate: { type: Date, required: true, validate: { validator: function(value) { return value > this.startDate; }, message: 'End date must be after start date' } },
   participants: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  admins: [{ type: Schema.Types.ObjectId, ref: 'User' }], //If admins is empty, the event is concidered to be editable by all participants
   eventCode: {type: String, unique: true, required: true}
 });
 
