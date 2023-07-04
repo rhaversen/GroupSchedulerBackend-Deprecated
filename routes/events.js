@@ -26,79 +26,72 @@ function isNanoid(str) {
     return /^[1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]{10}$/.test(str);
 }
 
+// Find the event by its id
+async function getEvent(req, res, next) {
+    const event = await Event.findById(req.params.eventId);
+    
+    // Check if event exists
+    if (!event) return next(new EventCodeError('Event not found, it might have been deleted'));
+
+    req.event = event;
+    next();
+}
+
+// Check if the user is a participant of the event
+function checkUserInEvent(req, res, next) {
+    if (!req.event.participants.includes(req.user.id)) {
+        return next(new UserNotInEventError('User not authorized to view this event'));
+    }
+    next();
+}
+
+// Check if the event is locked and user is admin
+function checkUserIsAdmin(req, res, next) {
+    if (req.event.isLocked && !req.event.isAdmin(req.user.id)) {
+        return next(new UserNotAdminError('User not authorized to edit this event'));
+    }
+    next();
+}
+
 /**
  * @route POST api/v1/events/:eventId/new-code
  * @desc Update event with a random event code
  * @access AUTHENTICATED
 */
-router.post('/:eventId/new-code', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
-    const userId = req.user.id;
-    const eventId = req.params.eventId;
-
-    try {
-        // Find the event by its id
-        const event = await Event.findById(eventId);
-
-        // Check if event exists
-        if (!event) {
-            return next(new EventCodeError('Event not found, it might have been deleted'));
-        }
-
-        // Check if the user is a participant of the event
-        if (!event.participants.includes(userId)) {
-            return next(new UserNotInEventError('User not in this event'));
-        }
-
-        // Check if the event is locked and user is admin
-        if (event.isLocked && !event.isAdmin(userId)) {
-            return next(new UserNotAdminError('User not authorized to update this event'));
-        }
-
+router.post('/:eventId/new-code',
+    passport.authenticate('jwt'),
+    asyncErrorHandler(getEvent),
+    checkUserInEvent,
+    checkUserIsAdmin,
+    asyncErrorHandler(async (req, res, next) => {
         // Generate a new eventCode
-        event.generateNewEventCode();
-
-        return res.status(200).json(event);
-    } catch (error) {
-        return next(error);
-    }
-}));
+        req.event.generateNewEventCode();
+        return res.status(200).json(req.event);
+    })
+);
 
 /**
  * @route GET api/v1/events/:eventId
  * @desc Get the event from the eventId
  * @access AUTHENTICATED
  */
-router.get('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
-    const userId = req.user.id;
-    const eventId = req.params.eventId;
-
-    try {
-        // Find the event by its id
-        const event = await Event.findById(eventId);
-
-        // Check if event exists
-        if (!event) {
-            return next(new EventCodeError('Event not found, it might have been deleted'));
-        }
-
-        // Check if the user is a participant of the event
-        if (!event.participants.includes(userId)) {
-            return next(new UserNotInEventError('User not authorized to view this event'));
-        }
-
-        return res.status(200).json(event);
-    } catch (error) {
-        return next(error);
-    }
-}));
+router.get('/:eventId',
+    passport.authenticate('jwt'),
+    asyncErrorHandler(getEvent),
+    checkUserInEvent,
+    asyncErrorHandler(async (req, res, next) => {
+        return res.status(200).json(req.event);
+    })
+);
 
 /**
  * @route POST api/v1/events
  * @desc Create a new event, add user to event, add event to user, add user to admins if only owner can edit event
  * @access AUTHENTICATED
  */
-router.post('/', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
-    try {
+router.post('/',
+    passport.authenticate('jwt'),
+    asyncErrorHandler(async (req, res, next) => {
         const { 
             eventName, 
             eventDescription, 
@@ -134,21 +127,20 @@ router.post('/', passport.authenticate('jwt'), asyncErrorHandler(async (req, res
         await newEvent.save();
 
         return res.status(201).json(newEvent);
-    } catch (error) {
-        return next(error);
-    }
-}));
+    })
+);
 
 /**
  * @route PATCH api/v1/events/:eventId
  * @desc Update event with provided info
  * @access AUTHENTICATED
  */
-router.patch('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
-    try {
-        const userId = req.user.id;
-        const eventId = req.params.eventId;
-
+router.patch('/:eventId',
+    passport.authenticate('jwt'),
+    asyncErrorHandler(getEvent),
+    checkUserInEvent,
+    checkUserIsAdmin,
+    asyncErrorHandler(async (req, res, next) => {
         const user = await User.findById(userId);
         const event = await Event.findById(eventId);
 
@@ -165,16 +157,6 @@ router.patch('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async 
             return next(new EventExistsError('Event not found, the Event Code might be incorrect'));
         }
 
-        // Check if the user is a participant of the event
-        if (!event.participants.includes(req.user.id)) {
-            return next(new UserNotInEventError('User is not in this this event'));
-        }
-
-        // Check if the event is locked and user is admin
-        if (event.isLocked && !event.isAdmin(userId)) {
-            return next(new UserNotAdminError('User not authorized to update this event'));
-        }
-
         // Update the event
         if(eventName) event.eventName = eventName;
         if(eventDescription) event.eventDescription = eventDescription;
@@ -184,18 +166,17 @@ router.patch('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async 
         await event.save();
 
         return res.status(200).json(event);
-    } catch (error) {
-        return next(error);
-    }
-}));
+    })
+);
 
 /**
  * @route PUT /api/v1/events/:eventId/users
  * @desc Join event. Add userId to event, add eventId to user
  * @access AUTHENTICATED
  */
-router.put('/:eventIdOrCode/users', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
-    try {
+router.put('/:eventIdOrCode/users',
+    passport.authenticate('jwt'),
+    asyncErrorHandler(async (req, res, next) => {
         const userId = req.user.id;
         const eventIdOrCode = req.params.eventIdOrCode;
 
@@ -225,18 +206,17 @@ router.put('/:eventIdOrCode/users', passport.authenticate('jwt'), asyncErrorHand
         await event.save();
 
         return res.status(200).json(event);
-    } catch (error) {
-        return next(error);
-    }
-}));
+    })
+);
 
 /**
  * @route DELETE api/v1/events/:eventId/users/:userId
  * @desc Remove user from event, remove event from user. Empty events are deleted automatically
  * @access AUTHENTICATED
  */
-router.delete('/:eventId/users/:userId', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
-    try {
+router.delete('/:eventId/users/:userId',
+    passport.authenticate('jwt'),
+    asyncErrorHandler(async (req, res, next) => {
         const eventId = req.params.eventId;
         const userId = req.params.userId;
 
@@ -262,9 +242,6 @@ router.delete('/:eventId/users/:userId', passport.authenticate('jwt'), asyncErro
         await event.save();
 
         return res.status(204);
-    } catch (error) {
-        return next(error);
-    }
 }));
 
 /**
@@ -272,36 +249,14 @@ router.delete('/:eventId/users/:userId', passport.authenticate('jwt'), asyncErro
  * @desc Remove event for all users
  * @access AUTHENTICATED
  */
-router.delete('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
-    try {
-        const userId = req.user.id;
-        const eventId = req.params.eventId;
-
-        const user = await User.findById(userId);
-        const event = await Event.findById(eventId);
-
-        if (!user) {
-            return next(new UserExistsError('User not found, it might have been deleted'));
-        } else if (!event) {
-            return next(new UserExistsError('Event not found, the Event Code might be incorrect'));
-        }
-
-        // Check if the user is a participant of the event
-        if (!event.participants.includes(req.user._id)) {
-            return next(new UserNotInEventError('User not authorized to delete this event'));
-        }
-
-        // Check if the event is locked and user is admin
-        if (event.isLocked && !event.isAdmin(userId)) {
-            return next(new UserNotAdminError('User not authorized to update this event'));
-        }
-
-        event.delete();
-
+router.delete('/:eventId',
+    passport.authenticate('jwt'),
+    asyncErrorHandler(getEvent),
+    checkUserInEvent,
+    checkUserIsAdmin,
+    asyncErrorHandler(async (req, res, next) => {
+        req.event.delete();
         return res.status(204);
-    } catch (error) {
-        return next(error);
-    }
 }));
 
 module.exports = router;
