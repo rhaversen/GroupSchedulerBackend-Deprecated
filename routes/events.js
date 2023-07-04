@@ -195,7 +195,7 @@ router.put('/:eventIdOrCode/users',
         if (!user) {
             return next(new UserNotFoundError('User not found, it might have been deleted'));
         } else if (!event) {
-            return next(new UserNotFoundError('Event not found, the Event Code might be incorrect'));
+            return next(new EventNotFoundError('Event not found, the Event Code might be incorrect'));
         }
 
         // Add event to user's events and user to event's participants
@@ -226,7 +226,7 @@ router.delete('/:eventId/users/:userId',
         if (!user) {
             return next(new UserNotFoundError('The user couldnt be found, it might have been deleted'));
         } else if (!event) {
-            return next(new UserNotFoundError('The event couldnt be found, the Event Code might be incorrect'));
+            return next(new EventNotFoundError('The event couldnt be found, the Event Code might be incorrect'));
         }
 
         // Check if the user is a participant of the event
