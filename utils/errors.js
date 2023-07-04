@@ -42,7 +42,7 @@ class UserNotAdminError extends ValidationError {
   }
 }
 
-class invalidEventIdOrCode extends ValidationError {
+class InvalidEventIdOrCode extends ValidationError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;

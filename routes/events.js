@@ -1,11 +1,9 @@
 const { 
-    EventCodeError,
     UserNotInEventError,
     MissingFieldsError,
-    UserNotFoundError,
     EventNotFoundError,
     UserNotAdminError,
-    invalidEventIdOrCode,
+    InvalidEventIdOrCode,
 } = require('../utils/errors');
 
 const express = require('express');
@@ -26,12 +24,22 @@ function isNanoid(str) {
     return /^[1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]{10}$/.test(str);
 }
 
-// Find the event by its id
+// Find the event by its eventId or eventCode
 async function getEvent(req, res, next) {
-    const event = await Event.findById(req.params.eventId);
+    const eventIdOrCode = req.eventIdOrCode;
+    let query;
+    if (isMongoId(eventIdOrCode)) { // It's a MongoDB ObjectId
+        query = { _id: eventIdOrCode };
+    } else if (isNanoid(eventIdOrCode)) { // It's a nanoid
+        query = { eventCode: eventIdOrCode };
+    } else {
+        return next(new InvalidEventIdOrCode('The provided ID or code is not valid'));
+    }
+
+    const event = await Event.findOne(query);
     
     // Check if event exists
-    if (!event) return next(new EventCodeError('Event not found, it might have been deleted'));
+    if (!event) return next(new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong'));
 
     req.event = event;
     next();
@@ -45,7 +53,7 @@ function checkUserInEvent(req, res, next) {
     next();
 }
 
-// Check if the event is locked and user is admin
+// Throw error if the event is locked and user is NOT admin
 function checkUserIsAdmin(req, res, next) {
     if (req.event.isLocked && !req.event.isAdmin(req.user.id)) {
         return next(new UserNotAdminError('User not authorized to edit this event'));
@@ -64,9 +72,10 @@ router.post('/:eventId/new-code',
     checkUserInEvent,
     checkUserIsAdmin,
     asyncErrorHandler(async (req, res, next) => {
+        const event = req.event;
         // Generate a new eventCode
-        req.event.generateNewEventCode();
-        return res.status(200).json(req.event);
+        event.generateNewEventCode();
+        return res.status(200).json(event);
     })
 );
 
@@ -80,7 +89,8 @@ router.get('/:eventId',
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
-        return res.status(200).json(req.event);
+        const event = req.event;
+        return res.status(200).json(event);
     })
 );
 
@@ -141,9 +151,6 @@ router.patch('/:eventId',
     checkUserInEvent,
     checkUserIsAdmin,
     asyncErrorHandler(async (req, res, next) => {
-        const user = await User.findById(userId);
-        const event = await Event.findById(eventId);
-
         const {
             eventName, 
             eventDescription, 
@@ -151,11 +158,7 @@ router.patch('/:eventId',
             endDate,
         } = req.body;
 
-        if (!user) {
-            return next(new UserNotFoundError('User not found, it might have been deleted'));
-        } else if (!event) {
-            return next(new EventNotFoundError('Event not found, the Event Code might be incorrect'));
-        }
+        const event = req.event;
 
         // Update the event
         if(eventName) event.eventName = eventName;
@@ -176,31 +179,15 @@ router.patch('/:eventId',
  */
 router.put('/:eventIdOrCode/users',
     passport.authenticate('jwt'),
+    asyncErrorHandler(getEvent),
+    checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
-        const userId = req.user.id;
-        const eventIdOrCode = req.params.eventIdOrCode;
-
-        let query;
-        if (isMongoId(eventIdOrCode)) { // It's a MongoDB ObjectId
-            query = { _id: eventIdOrCode };
-        } else if (isNanoid(eventIdOrCode)) { // It's a nanoid
-            query = { eventCode: eventIdOrCode };
-        } else {
-            return next(new invalidEventIdOrCode('The provided ID or code is not valid'));
-        }
-
-        const event = await Event.findOne(query);
-        const user = await User.findById(userId);
-
-        if (!user) {
-            return next(new UserNotFoundError('User not found, it might have been deleted'));
-        } else if (!event) {
-            return next(new EventNotFoundError('Event not found, the Event Code might be incorrect'));
-        }
+        const event = req.event;
+        const user = req.user;
 
         // Add event to user's events and user to event's participants
         user.events.push(event._id);
-        event.participants.push(userId);
+        event.participants.push(user.id);
 
         await user.save();
         await event.save();
@@ -210,36 +197,24 @@ router.put('/:eventIdOrCode/users',
 );
 
 /**
- * @route DELETE api/v1/events/:eventId/users/:userId
- * @desc Remove user from event, remove event from user. Empty events are deleted automatically
+ * @route DELETE api/v1/events/:eventId/users
+ * @desc Leave event. Remove user from event, remove event from user. Empty events are deleted automatically
  * @access AUTHENTICATED
  */
-router.delete('/:eventId/users/:userId',
+router.delete('/:eventId/users',
     passport.authenticate('jwt'),
+    asyncErrorHandler(getEvent),
+    checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
-        const eventId = req.params.eventId;
-        const userId = req.params.userId;
+        const user = req.user;
+        const event = req.event;
 
-        const event = await Event.findById(eventId);
-        const user = await User.findById(userId);
+        // Remove event from user's events, and user from event's participants
+        user.events.pull(req.eventId);
+        event.participants.pull(req.userId);
 
-        if (!user) {
-            return next(new UserNotFoundError('The user couldnt be found, it might have been deleted'));
-        } else if (!event) {
-            return next(new EventNotFoundError('The event couldnt be found, the Event Code might be incorrect'));
-        }
-
-        // Check if the user is a participant of the event
-        if (!event.participants.includes(req.user._id)) {
-            return next(new UserNotInEventError('User is not in this this event'));
-        }
-
-        // Remove event from user's events and user from event's participants
-        user.events.pull(eventId);
-        event.participants.pull(userId);
-
-        await user.save();
-        await event.save();
+        await req.user.save();
+        await req.event.save();
 
         return res.status(204);
 }));
