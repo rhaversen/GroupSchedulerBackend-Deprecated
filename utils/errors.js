@@ -42,6 +42,13 @@ class UserNotAdminError extends ValidationError {
   }
 }
 
+class invalidEventIdOrCode extends ValidationError {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
 //Event errors
 class EventError extends Error {
   constructor(message) {
