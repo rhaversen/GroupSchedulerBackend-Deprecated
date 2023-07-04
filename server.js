@@ -14,7 +14,7 @@ const globalErrorHandler = require('./middleware/globalErrorHandler.js');
 const passport = require('passport');
 
 // Passport-JWT Strategy setup
-require('./utils/passport.js')(passport); // pass passport for configuration
+require('./middleware/passportJwt.js')(passport); // pass passport for configuration
 
 // Connect to MongoDB
 mongoose
