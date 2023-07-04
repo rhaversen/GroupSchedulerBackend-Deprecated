@@ -4,7 +4,7 @@ const {
     MissingFieldsError,
     UserExistsError,
     EventExistsError,
-    UserInEventError,
+    UserNotAdminError,
 } = require('../utils/errors');
 
 const express = require('express');
@@ -37,6 +37,11 @@ router.post('/:eventId/new-code', passport.authenticate('jwt'), asyncErrorHandle
 
         // Check if the user is a participant of the event
         if (!event.participants.includes(userId)) {
+            return next(new UserNotInEventError('User not in this event'));
+        }
+
+        // Check if the event is locked and user is admin
+        if (event.isLocked && !event.isAdmin(userId)) {
             return next(new UserNotInEventError('User not authorized to update this event'));
         }
 
@@ -154,6 +159,11 @@ router.patch('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async 
         // Check if the user is a participant of the event
         if (!event.participants.includes(req.user.id)) {
             return next(new UserNotInEventError('User is not in this this event'));
+        }
+
+        // Check if the event is locked and user is admin
+        if (event.isLocked && !event.isAdmin(userId)) {
+            return next(new UserNotInEventError('User not authorized to update this event'));
         }
 
         // Update the event
@@ -293,6 +303,11 @@ router.delete('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async
         // Check if the user is a participant of the event
         if (!event.participants.includes(req.user._id)) {
             return next(new UserNotInEventError('User not authorized to delete this event'));
+        }
+        
+        // Check if the event is locked and user is admin
+        if (event.isLocked && !event.isAdmin(userId)) {
+            return next(new UserNotInEventError('User not authorized to update this event'));
         }
 
         event.delete();

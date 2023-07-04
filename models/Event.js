@@ -91,5 +91,12 @@ eventSchema.methods.generateNewEventCode = async function() {
   await this.save();
 };
 
+eventSchema.methods.isAdmin = function(userId) {
+  return this.admins.some(admin => admin.equals(userId));
+};
+
+eventSchema.methods.isLocked = function() {
+  return !(this.admins.length === 0);
+};
 
 module.exports = mongoose.model('Event', eventSchema);

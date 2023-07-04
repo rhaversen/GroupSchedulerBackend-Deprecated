@@ -35,6 +35,13 @@ class UserNotInEventError extends ValidationError {
   }
 }
 
+class UserNotAdminError extends ValidationError {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
 //Event errors
 class EventError extends Error {
   constructor(message) {
@@ -59,13 +66,6 @@ class MissingFieldsError extends EventError {
 }
 
 class EventExistsError extends EventError {
-  constructor(message) {
-    super(message);
-    this.name = this.constructor.name;
-  }
-}
-
-class UserInEventError extends EventError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
