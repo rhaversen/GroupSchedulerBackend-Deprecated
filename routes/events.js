@@ -22,13 +22,13 @@ const asyncErrorHandler = require('../middleware/asyncErrorHandler');
  * @desc Update event with a random event code
  * @access AUTHENTICATED
 */
-router.put('/new-code', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
+router.put('/new-code/:eventCode', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
     const userId = req.user.id;
     const eventCode = req.params.eventCode;
 
     try {
         // Find the event by its id
-        const event = await Event.findOne({ eventCode });
+        const event = await Event.findOne(eventCode);
 
         // Check if event exists
         if (!event) {
@@ -54,15 +54,14 @@ router.put('/new-code', passport.authenticate('jwt'), asyncErrorHandler(async (r
  * @desc Get the event from the eventId
  * @access AUTHENTICATED
  */
-
 router.get('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
     //TODO: all of it
     const userId = req.user.id;
-    const eventCode = req.params.eventCode;
+    const eventId = req.params.eventId;
 
     try {
         // Find the event by its id
-        const event = await Event.findOne({ eventCode });
+        const event = await Event.findById(eventId);
 
         // Check if event exists
         if (!event) {
@@ -73,9 +72,6 @@ router.get('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (r
         if (!event.participants.includes(userId)) {
             return next(new UserNotInEventError('User not authorized to update this event'));
         }
-
-        // Generate a new eventCode
-        event.generateNewEventCode();
 
         return res.status(200);
     } catch (error) {
@@ -129,9 +125,10 @@ router.post('/', passport.authenticate('jwt'), asyncErrorHandler(async (req, res
 router.put('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const eventId = req.params.eventId;
 
         const user = await User.findById(userId);
-        const event = await Event.findById(req.params.eventId);
+        const event = await Event.findById(eventId);
 
         const {
             eventName, 
@@ -168,14 +165,14 @@ router.put('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (r
 }));
 
 /**
- * @route PUT api/v1/events/join
+ * @route PUT api/v1/events/:eventCode/user
  * @desc Join event with eventCode, add userId to event, add eventId to user
  * @access AUTHENTICATED
  */
-router.put('/join', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
+router.put('/:eventCode/user', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const eventCode = req.user.id;
+        const eventCode = req.params.eventCode;
 
         const user = await User.findById(userId);
         const event = await Event.findOne(eventCode);
@@ -200,17 +197,17 @@ router.put('/join', passport.authenticate('jwt'), asyncErrorHandler(async (req, 
 }));
 
 /**
- * @route POST /api/v1/events/:eventId/participants
+ * @route POST /api/v1/events/:eventId/participant
  * @desc Add userId to event, add eventId to user
  * @access AUTHENTICATED
  */
-router.post('/:eventId/participants', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
+router.post('/:eventId/participant', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const eventId = req.body;
+        const eventId = req.params.eventId;
 
         const user = await User.findById(userId);
-        const event = await Event.findById({ eventId });
+        const event = await Event.findById(eventId);
 
         if (!user) {
             return next(new UserExistsError('User not found, it might have been deleted'));
@@ -276,10 +273,10 @@ router.delete('/:eventId/users/:userId', passport.authenticate('jwt'), asyncErro
 router.delete('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const eventId = req.body;
+        const eventId = req.params.eventId;
 
         const user = await User.findById(userId);
-        const event = await Event.findById({ eventId });
+        const event = await Event.findById(eventId);
 
         if (!user) {
             return next(new UserExistsError('User not found, it might have been deleted'));
