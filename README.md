@@ -1,2 +1,2 @@
 # GroupScheduler
-Backend for a roup scheduler app in development
+Backend for a group scheduler app in development
