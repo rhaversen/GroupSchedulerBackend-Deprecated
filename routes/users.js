@@ -1,6 +1,5 @@
 const { 
   InvalidEmailError, 
-  UserExistsError, 
   UserNotFoundError, 
   PasswordIncorrectError, 
 } = require('../utils/errors');
@@ -47,7 +46,7 @@ router.post('/register', asyncErrorHandler(async (req, res, next) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return next(new UserExistsError( 'Email already exists' ));
+      return next(new UserNotFoundError( 'Email already exists' ));
     }
 
     const newUser = new User({ name, email, password });

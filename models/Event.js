@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const User = require('./User.js');
 const logger = require('./utils/logger.js');
 
+const { 
+  UserNotFoundError,
+} = require('../utils/errors');
+
 const { Schema } = mongoose;
 
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -60,7 +64,7 @@ eventSchema.pre('remove', async function(next) {
         const user = await User.findById(participantId);
 
         if (!user) {
-            throw new Error('User not found');
+            throw new UserNotFoundError('User not found');
         }
 
         // Remove the event from the user's events array

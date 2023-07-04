@@ -6,8 +6,8 @@ class ValidationError extends Error {
     this.statusCode = 400;
   }
 }
-  
-class UserExistsError extends ValidationError {
+
+class UserNotFoundError extends ValidationError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
@@ -72,23 +72,7 @@ class MissingFieldsError extends EventError {
   }
 }
 
-class EventExistsError extends EventError {
-  constructor(message) {
-    super(message);
-    this.name = this.constructor.name;
-  }
-}
-
-//Database errors
-class DatabaseError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = this.constructor.name;
-    this.statusCode = 500;
-  }
-}
-
-class UserNotFoundError extends DatabaseError {
+class EventNotFoundError extends EventError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;

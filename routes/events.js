@@ -2,8 +2,8 @@ const {
     EventCodeError,
     UserNotInEventError,
     MissingFieldsError,
-    UserExistsError,
-    EventExistsError,
+    UserNotFoundError,
+    EventNotFoundError,
     UserNotAdminError,
     invalidEventIdOrCode,
 } = require('../utils/errors');
@@ -152,9 +152,9 @@ router.patch('/:eventId',
         } = req.body;
 
         if (!user) {
-            return next(new UserExistsError('User not found, it might have been deleted'));
+            return next(new UserNotFoundError('User not found, it might have been deleted'));
         } else if (!event) {
-            return next(new EventExistsError('Event not found, the Event Code might be incorrect'));
+            return next(new EventNotFoundError('Event not found, the Event Code might be incorrect'));
         }
 
         // Update the event
@@ -193,9 +193,9 @@ router.put('/:eventIdOrCode/users',
         const user = await User.findById(userId);
 
         if (!user) {
-            return next(new UserExistsError('User not found, it might have been deleted'));
+            return next(new UserNotFoundError('User not found, it might have been deleted'));
         } else if (!event) {
-            return next(new UserExistsError('Event not found, the Event Code might be incorrect'));
+            return next(new UserNotFoundError('Event not found, the Event Code might be incorrect'));
         }
 
         // Add event to user's events and user to event's participants
@@ -224,9 +224,9 @@ router.delete('/:eventId/users/:userId',
         const user = await User.findById(userId);
 
         if (!user) {
-            return next(new UserExistsError('The user couldnt be found, it might have been deleted'));
+            return next(new UserNotFoundError('The user couldnt be found, it might have been deleted'));
         } else if (!event) {
-            return next(new UserExistsError('The event couldnt be found, the Event Code might be incorrect'));
+            return next(new UserNotFoundError('The event couldnt be found, the Event Code might be incorrect'));
         }
 
         // Check if the user is a participant of the event
