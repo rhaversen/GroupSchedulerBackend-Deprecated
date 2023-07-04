@@ -28,7 +28,7 @@ router.put('/new-code/:eventCode', passport.authenticate('jwt'), asyncErrorHandl
 
     try {
         // Find the event by its id
-        const event = await Event.findOne(eventCode);
+        const event = await Event.findOne({eventCode: eventCode});
 
         // Check if event exists
         if (!event) {
@@ -43,7 +43,7 @@ router.put('/new-code/:eventCode', passport.authenticate('jwt'), asyncErrorHandl
         // Generate a new eventCode
         event.generateNewEventCode();
 
-        return res.status(200);
+        return res.status(200).json(event);
     } catch (error) {
         return next(error);
     }
@@ -55,7 +55,6 @@ router.put('/new-code/:eventCode', passport.authenticate('jwt'), asyncErrorHandl
  * @access AUTHENTICATED
  */
 router.get('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
-    //TODO: all of it
     const userId = req.user.id;
     const eventId = req.params.eventId;
 
@@ -70,10 +69,10 @@ router.get('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (r
 
         // Check if the user is a participant of the event
         if (!event.participants.includes(userId)) {
-            return next(new UserNotInEventError('User not authorized to update this event'));
+            return next(new UserNotInEventError('User not authorized to view this event'));
         }
 
-        return res.status(200);
+        return res.status(200).json(event);
     } catch (error) {
         return next(error);
     }
@@ -92,8 +91,9 @@ router.post('/', passport.authenticate('jwt'), asyncErrorHandler(async (req, res
         const { 
             eventName, 
             eventDescription, 
+            eventImage, 
             startDate, 
-            endDate, 
+            endDate,
         } = req.body;
 
         if (!eventName || !startDate || !endDate) {
@@ -111,7 +111,7 @@ router.post('/', passport.authenticate('jwt'), asyncErrorHandler(async (req, res
 
         await newEvent.save();
 
-        return res.status(200);
+        return res.status(201).json(newEvent);
     } catch (error) {
         return next(error);
     }
@@ -158,7 +158,7 @@ router.put('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (r
 
         await event.save();
 
-        return res.status(200);
+        return res.status(200).json(event);
     } catch (error) {
         return next(error);
     }
@@ -175,7 +175,7 @@ router.put('/:eventCode/user', passport.authenticate('jwt'), asyncErrorHandler(a
         const eventCode = req.params.eventCode;
 
         const user = await User.findById(userId);
-        const event = await Event.findOne(eventCode);
+        const event = await Event.findOne({eventCode: eventCode});
 
         if (!user) {
             return next(new UserExistsError('User not found, it might have been deleted'));
@@ -190,18 +190,18 @@ router.put('/:eventCode/user', passport.authenticate('jwt'), asyncErrorHandler(a
         await user.save();
         await event.save();
 
-        return res.status(200);
+        return res.status(200).json(event);
     } catch (error) {
         return next(error);
     }
 }));
 
 /**
- * @route POST /api/v1/events/:eventId/participant
+ * @route PUT /api/v1/events/:eventId/user
  * @desc Add userId to event, add eventId to user
  * @access AUTHENTICATED
  */
-router.post('/:eventId/participant', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
+router.put('/:eventId/user', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
     try {
         const userId = req.user.id;
         const eventId = req.params.eventId;
@@ -222,7 +222,7 @@ router.post('/:eventId/participant', passport.authenticate('jwt'), asyncErrorHan
         await user.save();
         await event.save();
 
-        return res.status(200);
+        return res.status(200).json(event);
     } catch (error) {
         return next(error);
     }
@@ -259,7 +259,7 @@ router.delete('/:eventId/users/:userId', passport.authenticate('jwt'), asyncErro
         await user.save();
         await event.save();
 
-        return res.status(200);
+        return res.status(204);
     } catch (error) {
         return next(error);
     }
@@ -291,7 +291,7 @@ router.delete('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async
 
         event.delete();
 
-        return res.status(200);
+        return res.status(204);
     } catch (error) {
         return next(error);
     }
