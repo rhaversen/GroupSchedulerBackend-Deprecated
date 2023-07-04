@@ -91,7 +91,6 @@ router.post('/', passport.authenticate('jwt'), asyncErrorHandler(async (req, res
         const { 
             eventName, 
             eventDescription, 
-            eventImage, 
             startDate, 
             endDate,
         } = req.body;
@@ -103,7 +102,6 @@ router.post('/', passport.authenticate('jwt'), asyncErrorHandler(async (req, res
         const newEvent = new Event({
             eventName, 
             eventDescription, 
-            eventImage, 
             startDate, 
             endDate,
             participants,
@@ -118,11 +116,11 @@ router.post('/', passport.authenticate('jwt'), asyncErrorHandler(async (req, res
 }));
 
 /**
- * @route PUT api/v1/events/:eventId
+ * @route PATCH api/v1/events/:eventId
  * @desc Update event with provided info
  * @access AUTHENTICATED
  */
-router.put('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
+router.patch('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (req, res, next) => {
     try {
         const userId = req.user.id;
         const eventId = req.params.eventId;
@@ -133,7 +131,6 @@ router.put('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (r
         const {
             eventName, 
             eventDescription, 
-            eventImage, 
             startDate, 
             endDate,
         } = req.body;
@@ -152,7 +149,6 @@ router.put('/:eventId', passport.authenticate('jwt'), asyncErrorHandler(async (r
         // Update the event
         if(eventName) event.eventName = eventName;
         if(eventDescription) event.eventDescription = eventDescription;
-        if(eventImage) event.eventImage = eventImage;
         if(startDate) event.startDate = startDate;
         if(endDate) event.endDate = endDate;
 
