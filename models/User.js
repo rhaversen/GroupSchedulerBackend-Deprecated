@@ -16,6 +16,7 @@ const userSchema = new Schema({
     password: { type: String, required: true }, 
     events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
     availabilities: [{ type: Schema.Types.ObjectId, ref: 'Availability' }],
+    following: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 });
 
 // Password hashing middleware
