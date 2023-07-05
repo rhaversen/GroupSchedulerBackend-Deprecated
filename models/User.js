@@ -22,8 +22,14 @@ const userSchema = new Schema({
     events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
     availabilities: [{ type: Schema.Types.ObjectId, ref: 'Availability' }],
     following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     userCode: {type: String, unique: true, required: true}
 });
+
+// Method for comparing passwords
+userSchema.methods.comparePassword = function(candidatePassword) {
+    return bcrypt.compare(candidatePassword, this.password);
+};
 
 // Password hashing middleware
 userSchema.pre('save', async function(next) {
@@ -52,9 +58,31 @@ userSchema.pre('save', async function(next) {
     logger.info('User saved')
 });
 
-// Method for comparing passwords
-userSchema.methods.comparePassword = function(candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
-};
+//Remove event from users
+eventSchema.pre('remove', async function(next) {
+    try {
+      // Go through all followers
+      for (const followerId of this.followers) {
+          // Get the user
+          const user = await this.constructor.findById(followerId);
+  
+          if (!user) {
+              throw new UserNotFoundError('User not found');
+          }
+  
+          // Remove this user from the followers's following array
+          user.following = user.following.filter(followerId => followerId.toString() !== this._id.toString());
+  
+          // Save the user
+          await user.save();
+          logger.info('Event removed')
+      }
+  
+      next();
+  
+    } catch (error) {
+      next(error);
+    }
+  });
 
 module.exports = mongoose.model('User', userSchema);

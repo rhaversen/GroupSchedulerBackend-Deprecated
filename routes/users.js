@@ -107,16 +107,55 @@ router.get('/events',
 
 /**
 * @route PUT api/v1/users/following/:userId
-* @desc Add userId to users following array
+* @desc Follow user. Add userId to users following array, add user to userId's followers array
 * @access AUTHENTICATED
 */
 router.put('/following/:userId',
   passport.authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
+    const followedUserId = req.params.userId;
+    const followedUser = await User.findById(followedUserId);
+
+    if (!followedUser) {
+      return next(new UserNotFoundError('The user to be followed could not be found' ));
+    }
+
     const user = req.user;
-    user.following.push(req.params.userId);
+    user.following.push(followedUserId);
+    followedUser.followers.push(user.id);
+
+
     await user.save();
-    return res.status(200).json(user);
+    await followedUser.save();
+
+    return res.status(200).json(followedUser);
+  })
+);
+
+/**
+* @route DELETE api/v1/users/following/:userId
+* @desc Unfollow user. Remove userId from users following array, remove user from userId's followers array
+* @access AUTHENTICATED
+*/
+router.delete('/following/:userId',
+  passport.authenticate('jwt'),
+  asyncErrorHandler(async (req, res, next) => {
+    const followedUserId = req.params.userId;
+    const followedUser = await User.findById(followedUserId);
+
+    if (!followedUser) {
+      return next(new UserNotFoundError('The user to be unfollowed could not be found'));
+    }
+
+    const user = req.user;
+    user.following.pull(followedUserId);
+    followedUser.followers.pull(user.id);
+
+
+    await user.save();
+    await followedUser.save();
+
+    return res.status(200).json(followedUser);
   })
 );
 
