@@ -19,9 +19,7 @@ const User = require('../models/User');
 
 const asyncErrorHandler = require('../middleware/asyncErrorHandler');
 
-/**
- * Generate token
- */ 
+// Generate token
 const generateToken = (id, expiresIn) => {
   const payload = { id: id };
   return jwt.sign(payload, jwtSecret, { expiresIn: expiresIn });
