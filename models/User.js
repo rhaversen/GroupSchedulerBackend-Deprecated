@@ -31,6 +31,19 @@ userSchema.methods.comparePassword = function(candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
+eventSchema.methods.generateNewUserCode = async function() {
+    let userCode;
+    let existingUser;
+    
+    do {
+        userCode = nanoid();
+        existingUser = await this.constructor.findOne({ userCode });
+    } while (existingUser);
+  
+    this.userCode = userCode;
+    await this.save();
+  };
+
 // Password hashing middleware
 userSchema.pre('save', async function(next) {
     if (this.isNew) {

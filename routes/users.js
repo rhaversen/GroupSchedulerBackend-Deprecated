@@ -106,6 +106,21 @@ router.get('/events',
 );
 
 /**
+ * @route POST api/v1/users/new-code
+ * @desc Update user with a random user code
+ * @access AUTHENTICATED
+*/
+router.post('/new-code',
+    passport.authenticate('jwt'),
+    asyncErrorHandler(async (req, res, next) => {
+        const user = req.user;
+        // Generate a new userCode
+        user.generateNewUserCode();
+        return res.status(200).json(user.userCode);
+    })
+);
+
+/**
 * @route PUT api/v1/users/following/:userId
 * @desc Follow user. Add userId to users following array, add user to userId's followers array
 * @access AUTHENTICATED
