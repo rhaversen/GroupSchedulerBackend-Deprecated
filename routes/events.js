@@ -26,7 +26,7 @@ function isNanoid(str) {
 
 // Get event by eventId or eventCode
 async function getEvent(req, res, next) {
-    const eventIdOrCode = req.eventIdOrCode;
+    const eventIdOrCode = req.params.eventIdOrCode;
     let query;
     if (isMongoId(eventIdOrCode)) { // It's a MongoDB ObjectId
         query = { _id: eventIdOrCode };
@@ -62,11 +62,11 @@ function checkUserIsAdmin(req, res, next) {
 }
 
 /**
- * @route POST api/v1/events/:eventId/new-code
+ * @route POST api/v1/events/:eventIdOrCode/new-code
  * @desc Update event with a random event code
  * @access AUTHENTICATED
 */
-router.post('/:eventId/new-code',
+router.post('/:eventIdOrCode/new-code',
     passport.authenticate('jwt'),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
@@ -75,7 +75,7 @@ router.post('/:eventId/new-code',
         const event = req.event;
         // Generate a new eventCode
         event.generateNewEventCode();
-        return res.status(200).json(event);
+        return res.status(200).json(event.eventCode);
     })
 );
 
@@ -84,7 +84,7 @@ router.post('/:eventId/new-code',
  * @desc Get event from eventId
  * @access AUTHENTICATED
  */
-router.get('/:eventId',
+router.get('/:eventIdOrCode',
     passport.authenticate('jwt'),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
@@ -141,11 +141,11 @@ router.post('/',
 );
 
 /**
- * @route PATCH api/v1/events/:eventId
+ * @route PATCH api/v1/events/:eventIdOrCode
  * @desc Update event with provided info
  * @access AUTHENTICATED
  */
-router.patch('/:eventId',
+router.patch('/:eventIdOrCode',
     passport.authenticate('jwt'),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
@@ -173,7 +173,7 @@ router.patch('/:eventId',
 );
 
 /**
- * @route PUT /api/v1/events/:eventId/users
+ * @route PUT /api/v1/events/:eventIdOrCode/users
  * @desc Join event. Add userId to event, add eventId to user
  * @access AUTHENTICATED
  */
@@ -219,11 +219,11 @@ router.delete('/:eventIdOrCode/users',
 }));
 
 /**
- * @route DELETE api/v1/events/:eventId
+ * @route DELETE api/v1/events/:eventIdOrCode
  * @desc Remove event for all users
  * @access AUTHENTICATED
  */
-router.delete('/:eventId',
+router.delete('/:eventIdOrCode',
     passport.authenticate('jwt'),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
