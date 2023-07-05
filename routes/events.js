@@ -24,7 +24,7 @@ function isNanoid(str) {
     return /^[1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]{10}$/.test(str);
 }
 
-// Find the event by its eventId or eventCode
+// Get event by eventId or eventCode
 async function getEvent(req, res, next) {
     const eventIdOrCode = req.eventIdOrCode;
     let query;
@@ -196,11 +196,11 @@ router.put('/:eventIdOrCode/users',
 );
 
 /**
- * @route DELETE api/v1/events/:eventId/users
+ * @route DELETE api/v1/events/:eventIdOrCode/users
  * @desc Leave event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
  * @access AUTHENTICATED
  */
-router.delete('/:eventId/users',
+router.delete('/:eventIdOrCode/users',
     passport.authenticate('jwt'),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
@@ -209,11 +209,11 @@ router.delete('/:eventId/users',
         const event = req.event;
 
         // Remove event from user's events, and user from event's participants
-        user.events.pull(req.eventId);
-        event.participants.pull(req.userId);
+        user.events.pull(event.id);
+        event.participants.pull(user.id);
 
-        await req.user.save();
-        await req.event.save();
+        await user.save();
+        await event.save();
 
         return res.status(204);
 }));
