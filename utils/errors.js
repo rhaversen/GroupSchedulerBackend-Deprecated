@@ -56,6 +56,13 @@ class InvalidEventIdOrCode extends ValidationError {
   }
 }
 
+class MissingFieldsError extends ValidationError {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
 //Event errors
 class EventError extends Error {
   constructor(message) {
@@ -66,13 +73,6 @@ class EventError extends Error {
 }
 
 class EventCodeError extends EventError {
-  constructor(message) {
-    super(message);
-    this.name = this.constructor.name;
-  }
-}
-
-class MissingFieldsError extends EventError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;

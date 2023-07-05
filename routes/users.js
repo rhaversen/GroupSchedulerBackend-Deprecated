@@ -2,6 +2,7 @@ const {
   InvalidEmailError, 
   UserNotFoundError,
   EmailAlreadyExistsError,
+  MissingFieldsError
 } = require('../utils/errors');
 
 const express = require('express');
@@ -37,6 +38,10 @@ router.post('/',
   sanitizeInput,
   asyncErrorHandler(async (req, res, next) => {
     let { name, email, password } = req.body;
+
+    if (!email || !password) {
+      return next(new MissingFieldsError( 'Missing Email and/or Password field' ))
+    }
   
     if (!validator.isEmail(email)) {
       return next(new InvalidEmailError('Invalid email format'));
