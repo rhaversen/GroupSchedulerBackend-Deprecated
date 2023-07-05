@@ -14,6 +14,7 @@ const validator = require('validator');
 const jwt = require('jsonwebtoken');
 
 const jwtExpiry = process.env.JWT_EXPIRY
+const jwtSecret = process.env.JWT_SECRET
 
 const User = require('../models/User');
 
