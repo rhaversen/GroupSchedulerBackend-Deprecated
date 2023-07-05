@@ -4,7 +4,7 @@ const {
     ServerError
   } = require('../utils/errors');
 
-const logger = require('../utils/logger');
+const logger = require('../utils/logger.js');
 
 module.exports = (function(err, req, res, next) {
     if (err instanceof ValidationError) {

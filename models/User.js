@@ -2,7 +2,7 @@ const {
     HashingError
   } = require('../utils/errors');
 
-const logger = require('./utils/logger');
+const logger = require('../utils/logger.js');
 
 const jwt = require('jsonwebtoken');
 const jwtSecret = process.env.JWT_SECRET
