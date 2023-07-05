@@ -1,10 +1,10 @@
 const { 
     HashingError
-  } = require('../utils/errors.js');
+  } = require('../utils/errors');
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const logger = require('./utils/logger.js');
+const logger = require('./utils/logger');
 
 const saltRounds = process.env.BCRYPT_SALT_ROUNDS
 

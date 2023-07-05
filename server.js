@@ -4,17 +4,17 @@ const port = process.env.SERVER_PORT;
 const mongoose = require('mongoose');
 
 const path = require('path');
-const logger = require('./utils/logger.js');
+const logger = require('./utils/logger');
 
 const express = require('express');
 const app = express();
 
 const mongoSanitize = require('express-mongo-sanitize');
-const globalErrorHandler = require('./middleware/globalErrorHandler.js');
+const globalErrorHandler = require('./middleware/globalErrorHandler');
 const passport = require('passport');
 
 // Passport-JWT Strategy setup
-require('./middleware/passportJwt.js')(passport); // pass passport for configuration
+require('./middleware/passportJwt')(passport); // pass passport for configuration
 
 // Connect to MongoDB
 mongoose

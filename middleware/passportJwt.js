@@ -7,7 +7,7 @@ const {
 
 const User = require('../models/User');
 
-const logger = require('../utils/logger.js');
+const logger = require('../utils/logger');
 
 const opts = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

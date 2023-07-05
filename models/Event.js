@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const User = require('./User.js');
-const logger = require('./utils/logger.js');
+const User = require('./User');
+const logger = require('./utils/logger');
 
 const { 
   UserNotFoundError,

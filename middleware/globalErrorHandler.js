@@ -2,9 +2,9 @@ const {
     ValidationError,
     DatabaseError,
     ServerError
-  } = require('../utils/errors.js');
+  } = require('../utils/errors');
 
-const logger = require('../utils/logger.js');
+const logger = require('../utils/logger');
 
 module.exports = (function(err, req, res, next) {
     if (err instanceof ValidationError) {
