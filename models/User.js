@@ -8,6 +8,11 @@ const logger = require('./utils/logger');
 
 const saltRounds = process.env.BCRYPT_SALT_ROUNDS
 
+const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const nanoidLength = 10;
+
+const nanoid = () => import('nanoid').then(({ customAlphabet }) => customAlphabet(nanoidAlphabet, nanoidLength));
+
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
@@ -16,11 +21,24 @@ const userSchema = new Schema({
     password: { type: String, required: true }, 
     events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
     availabilities: [{ type: Schema.Types.ObjectId, ref: 'Availability' }],
-    following: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+    following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    userCode: {type: String, unique: true, required: true}
 });
 
 // Password hashing middleware
 userSchema.pre('save', async function(next) {
+    if (this.isNew) {
+        let eventCode;
+        let existingEvent;
+        
+        do {
+          eventCode = nanoid();
+          existingEvent = await this.constructor.findOne({ eventCode });
+        } while (existingEvent);
+    
+        this.eventCode = eventCode;
+    }
+
     if (this.isModified('password')) {
         try {
             const salt = await bcrypt.genSalt(saltRounds); //gensalt and hash is already async
