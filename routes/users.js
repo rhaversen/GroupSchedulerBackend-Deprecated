@@ -26,11 +26,11 @@ const generateToken = (id, expiresIn) => {
 };
 
 /**
- * @route POST api/v1/users/register
+ * @route POST api/v1/users
  * @desc Register user
  * @access Public
  */
-router.post('/register',
+router.post('/',
   asyncErrorHandler(async (req, res, next) => {
     let { name, email, password } = req.body;
 
@@ -102,6 +102,66 @@ router.get('/events',
     const populatedUser = user.populate('events');
     await user.execPopulate();
     return res.status(200).json(populatedUser);
+  })
+);
+
+/**
+* @route PUT api/v1/users/following/:userId
+* @desc Add userId to users following array
+* @access AUTHENTICATED
+*/
+router.put('/following/:userId',
+  passport.authenticate('jwt'),
+  asyncErrorHandler(async (req, res, next) => {
+    const user = req.user;
+    user.following.push(req.params.userId);
+    await user.save();
+    return res.status(200).json(user);
+  })
+);
+
+/**
+* @route GET api/v1/users
+* @desc Get signed in user
+* @access AUTHENTICATED
+*/
+router.get('/',
+  passport.authenticate('jwt'),
+  asyncErrorHandler(async (req, res, next) => {
+    return res.status(200).json(req.user);
+  })
+);
+
+/**
+* @route PATCH api/v1/users/:old-password/:new-password
+* @desc Update users password
+* @access AUTHENTICATED
+*/
+router.patch('/update-password/:old-password/:new-password',
+  passport.authenticate('jwt'),
+  asyncErrorHandler(async (req, res, next) => {
+    const user = req.user;
+    if (!req.user.comparePassword(req.params.old-password)){
+      return next(new PasswordIncorrectError('Password incorrect' ));
+    }
+    user.password = req.params.new-password;
+    await user.save();
+    return res.status(200).json(user);
+  })
+);
+
+/**
+* @route PATCH api/v1/users/:new-name
+* @desc Update users name
+* @access AUTHENTICATED
+*/
+router.patch('/:new-name',
+  passport.authenticate('jwt'),
+  asyncErrorHandler(async (req, res, next) => {
+    const user = req.user;
+    user.name = req.params.new-name;
+    await user.save();
+    return res.status(200).json(user);
   })
 );
 
