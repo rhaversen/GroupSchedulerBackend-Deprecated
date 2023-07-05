@@ -25,35 +25,32 @@ const eventSchema = new Schema({
 });
 
 eventSchema.pre('save', async function(next) {
-  if (!this.isNew) {
-    next();
-    return;
+  if (this.isNew) {
+    let eventCode;
+    let existingEvent;
+    
+    do {
+      eventCode = nanoid();
+      existingEvent = await this.constructor.findOne({ eventCode });
+    } while (existingEvent);
+
+    this.eventCode = eventCode;
   }
 
   //Delete event if empty
-  try {
-    if (this.participants.length === 0) {
+  if(this.$isEmpty('participants')){
+    try {
       await this.remove();
+    } catch (err) {
+      next(err);
       return;
     }
-  } catch (err) {
-    next(err);
-    return;
   }
-
-  let eventCode;
-  let existingEvent;
-  
-  do {
-    eventCode = nanoid();
-    existingEvent = await this.constructor.findOne({ eventCode });
-  } while (existingEvent);
-
-  this.eventCode = eventCode;
 
   logger.info('Event saved')
   next();
-});
+  }
+);
 
 //Remove event from users
 eventSchema.pre('remove', async function(next) {
