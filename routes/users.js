@@ -188,33 +188,33 @@ router.get('/',
 );
 
 /**
-* @route PATCH api/v1/users/:old-password/:new-password
+* @route PATCH api/v1/users/update-password
 * @desc Update users password
 * @access AUTHENTICATED
 */
-router.patch('/update-password/:old-password/:new-password',
+router.patch('/update-password',
   passport.authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
-    if (!req.user.comparePassword(req.params.old-password)){
-      return next(new PasswordIncorrectError('Password incorrect' ));
+    if (!req.user.comparePassword(req.body.oldPassword)){
+      return next(new PasswordIncorrectError('Password incorrect'));
     }
-    user.password = req.params.new-password;
+    user.password = req.body.newPassword;
     await user.save();
     return res.status(200).json(user);
   })
 );
 
 /**
-* @route PATCH api/v1/users/:new-name
+* @route PATCH api/v1/users/update-name
 * @desc Update users name
 * @access AUTHENTICATED
 */
-router.patch('/:new-name',
+router.patch('/update-name',
   passport.authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
-    user.name = req.params.new-name;
+    user.name = req.body.newName;
     await user.save();
     return res.status(200).json(user);
   })
