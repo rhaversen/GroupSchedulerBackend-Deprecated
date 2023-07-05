@@ -24,6 +24,27 @@ const eventSchema = new Schema({
   eventCode: {type: String, unique: true, required: true}
 });
 
+eventSchema.methods.generateNewEventCode = async function() {
+  let eventCode;
+  let existingEvent;
+  
+  do {
+    eventCode = nanoid();
+    existingEvent = await this.constructor.findOne({ eventCode });
+  } while (existingEvent);
+
+  this.eventCode = eventCode;
+  await this.save();
+};
+
+eventSchema.methods.isAdmin = function(userId) {
+  return this.admins.some(admin => admin.equals(userId));
+};
+
+eventSchema.methods.isLocked = function() {
+  return !(this.admins.length === 0);
+};
+
 eventSchema.pre('save', async function(next) {
   if (this.isNew) {
     let eventCode;
@@ -78,26 +99,5 @@ eventSchema.pre('remove', async function(next) {
     next(error);
   }
 });
-
-eventSchema.methods.generateNewEventCode = async function() {
-  let eventCode;
-  let existingEvent;
-  
-  do {
-    eventCode = nanoid();
-    existingEvent = await this.constructor.findOne({ eventCode });
-  } while (existingEvent);
-
-  this.eventCode = eventCode;
-  await this.save();
-};
-
-eventSchema.methods.isAdmin = function(userId) {
-  return this.admins.some(admin => admin.equals(userId));
-};
-
-eventSchema.methods.isLocked = function() {
-  return !(this.admins.length === 0);
-};
 
 module.exports = mongoose.model('Event', eventSchema);
