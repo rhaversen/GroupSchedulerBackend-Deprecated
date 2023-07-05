@@ -1,7 +1,6 @@
 const { 
   InvalidEmailError, 
   UserNotFoundError, 
-  PasswordIncorrectError, 
 } = require('../utils/errors');
 
 const express = require('express');
@@ -187,7 +186,7 @@ router.patch('/update-password',
   passport.authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
-    req.user.comparePassword(req.body.oldPassword); // Throws error if password doesn't match
+    user.comparePassword(req.body.oldPassword); // Throws error if password doesn't match
     user.password = req.body.newPassword;
     await user.save();
     return res.status(200).json(user);
