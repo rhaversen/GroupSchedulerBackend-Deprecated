@@ -31,7 +31,7 @@ userSchema.methods.comparePassword = function(candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
-eventSchema.methods.generateNewUserCode = async function() {
+userSchema.methods.generateNewUserCode = async function() {
     let userCode;
     let existingUser;
     
@@ -47,15 +47,15 @@ eventSchema.methods.generateNewUserCode = async function() {
 // Password hashing middleware
 userSchema.pre('save', async function(next) {
     if (this.isNew) {
-        let eventCode;
-        let existingEvent;
+        let userCode;
+        let existingUser;
         
         do {
-          eventCode = nanoid();
-          existingEvent = await this.constructor.findOne({ eventCode });
-        } while (existingEvent);
+            userCode = nanoid();
+            existingUser = await this.constructor.findOne({ userCode });
+        } while (existingUser);
     
-        this.eventCode = eventCode;
+        this.userCode = userCode;
     }
 
     if (this.isModified('password')) {
@@ -71,27 +71,43 @@ userSchema.pre('save', async function(next) {
     logger.info('User saved')
 });
 
-//Remove event from users
-eventSchema.pre('remove', async function(next) {
+userSchema.pre('remove', async function(next) {
     try {
-      // Go through all followers
-      for (const followerId of this.followers) {
-          // Get the user
-          const user = await this.constructor.findById(followerId);
+        // Remove user from followers following array
+        for (const followerId of this.followers) {
+            // Get the user
+            const user = await this.constructor.findById(followerId);
+    
+            if (!user) {
+                throw new UserNotFoundError('User not found');
+            }
+    
+            // Remove this user from the followers's following array
+            user.following = user.following.filter(followerId => followerId.toString() !== this._id.toString());
+    
+            // Save the user
+            await user.save();
+            logger.info('User removed')
+        }
+
+        // Remove user from events
+        for (const eventId of this.events) {
+            // Get the user
+            const event = await Event.findById(eventId);
+
+            if (!event) {
+                throw new EventNotFoundError('Event not found');
+            }
+
+            // Remove this user from the events participants array
+            event.participants = event.participants.filter(userId => userId.toString() !== this._id.toString());
+
+            // Save the event
+            await event.save();
+            logger.info('User removed')
+        }
   
-          if (!user) {
-              throw new UserNotFoundError('User not found');
-          }
-  
-          // Remove this user from the followers's following array
-          user.following = user.following.filter(followerId => followerId.toString() !== this._id.toString());
-  
-          // Save the user
-          await user.save();
-          logger.info('Event removed')
-      }
-  
-      next();
+        next();
   
     } catch (error) {
       next(error);
