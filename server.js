@@ -48,3 +48,5 @@ app.get('/', function(req, res) {
 app.listen(port, () => {
     logger.info(`App listening at http://localhost:${port}`);
 });
+
+module.exports = app;
