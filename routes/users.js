@@ -93,47 +93,17 @@ router.post('/login',
 );
 
 /**
-* @route GET api/v1/users/verify-token
-* @desc Validate token and return the user id
+* @route GET api/v1/users/events
+* @desc Get the users events
 * @access AUTHENTICATED
 */
-router.get('/verify-token',
-  passport.authenticate('jwt'),
-    asyncErrorHandler(async(req, res) => {
-    // If we get here, the JWT is valid, so we just return the id
-    res.json({ id: req.user.id });
-  })
-);
-
-/**
-* @route GET api/v1/users/:eventId
-* @desc Get the uses eventId's
-* @access AUTHENTICATED
-*/
-router.get('/:userId',
+router.get('/events',
   passport.authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
-    //TODO: all of it
-    const userId = req.user.id;
-    const eventCode = req.params.eventCode;
-
-    // Find the event by its id
-    const event = await Event.findOne({ eventCode });
-
-    // Check if event exists
-    if (!event) {
-        return next(new EventCodeError('Event not found, it might have been deleted'));
-    }
-
-    // Check if the user is a participant of the event
-    if (!event.participants.includes(userId)) {
-        return next(new UserNotInEventError('User not authorized to update this event'));
-    }
-
-    // Generate a new eventCode
-    event.generateNewEventCode();
-
-    return res.status(200);
+    const user = req.user;
+    const populatedUser = user.populate('events');
+    await user.execPopulate();
+    return res.status(200).json(populatedUser);
   })
 );
 
