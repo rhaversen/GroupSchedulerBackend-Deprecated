@@ -21,7 +21,7 @@ module.exports = (passport) => {
             if (user) {
                 return done(null, user);
             }
-            return done(new UserNotFoundError('User not found, it might have been deleted'), false);
+            return done(new UserNotFoundError('User not found, it might have been deleted (JWT failed to authenticate)'), false);
         })
     );
 };
