@@ -51,7 +51,7 @@ eventSchema.pre('save', async function(next) {
 
   this.eventCode = eventCode;
 
-  logger.info('Event created')
+  logger.info('Event saved')
   next();
 });
 
