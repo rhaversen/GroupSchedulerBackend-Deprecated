@@ -56,7 +56,7 @@ router.post('/',
     const savedUser = await newUser.save();
 
     const token = savedUser.generateToken(jwtExpiry);
-    res.status(200).json({ auth: true, token: token });
+    res.status(201).json({ auth: true, token: token });
   })
 );
 

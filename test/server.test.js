@@ -17,10 +17,11 @@ describe('GET /', () => {
         done();
       });
   });
+});
 
-  describe('POST /api/v1/users', () => {
+describe('POST /api/v1/users', () => {
     it('should create a new user and return it', (done) => {
-      const newUser = { username: 'testuser', password: 'testpassword' };
+      const newUser = {name: 'Test User', email: 'testuser@gmail.com', password: 'testpassword' };
   
       chai
         .request(server)
@@ -30,10 +31,9 @@ describe('GET /', () => {
           expect(err).to.be.null;
           expect(res).to.have.status(201);
           expect(res.body).to.be.a('object');
-          expect(res.body).to.have.property('username');
-          expect(res.body.username).to.equal(newUser.username);
+          expect(res.body).to.have.property('email');
+          expect(res.body.email).to.equal(newUser.email);
           done();
         });
     });
   });
-});
