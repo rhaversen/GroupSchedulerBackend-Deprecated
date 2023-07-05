@@ -21,6 +21,13 @@ class InvalidEmailError extends ValidationError {
   }
 }
 
+class EmailAlreadyExistsError extends ValidationError {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
 class PasswordIncorrectError extends ValidationError {
   constructor(message) {
     super(message);

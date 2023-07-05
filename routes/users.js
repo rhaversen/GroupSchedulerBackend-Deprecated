@@ -1,6 +1,7 @@
 const { 
   InvalidEmailError, 
-  UserNotFoundError, 
+  UserNotFoundError,
+  EmailAlreadyExistsError,
 } = require('../utils/errors');
 
 const express = require('express');
@@ -43,7 +44,7 @@ router.post('/',
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return next(new UserNotFoundError( 'Email already exists' ));
+      return next(new EmailAlreadyExistsError( 'Email already exists' ));
     }
 
     const newUser = new User({ name, email, password });
