@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const logger = require('./utils/logger');
 
-const saltRounds = process.env.BCRYPT_SALT_ROUNDS
+const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const nanoidLength = 10;
