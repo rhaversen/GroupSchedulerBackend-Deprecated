@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { 
     HashingError
   } = require('../utils/errors');
