@@ -11,19 +11,21 @@ const passport = require('passport');
 
 const validator = require('validator');
 
-const jwt = require('jsonwebtoken');
-
 const jwtExpiry = process.env.JWT_EXPIRY
-const jwtSecret = process.env.JWT_SECRET
 
 const User = require('../models/User');
 
 const asyncErrorHandler = require('../middleware/asyncErrorHandler');
 
-// Generate token
-const generateToken = (id, expiresIn) => {
-  const payload = { id: id };
-  return jwt.sign(payload, jwtSecret, { expiresIn: expiresIn });
+// Sanitize middleware
+const sanitizeInput = (req, res, next) => {
+  const keys = ['name', 'email', 'password'];
+  keys.forEach(key => {
+    if(req.body[key]) {
+      req.body[key] = validator.escape(req.body[key]);
+    }
+  });
+  next();
 };
 
 /**
@@ -32,13 +34,9 @@ const generateToken = (id, expiresIn) => {
  * @access Public
  */
 router.post('/',
+  sanitizeInput,
   asyncErrorHandler(async (req, res, next) => {
     let { name, email, password } = req.body;
-
-    //Sanitize
-    name = validator.escape(name);
-    email = validator.escape(email);
-    password = validator.escape(password);
   
     if (!validator.isEmail(email)) {
       return next(new InvalidEmailError('Invalid email format'));
@@ -52,7 +50,7 @@ router.post('/',
     const newUser = new User({ name, email, password });
     const savedUser = await newUser.save();
 
-    const token = generateToken(savedUser._id, jwtExpiry);
+    const token = savedUser.generateToken(jwtExpiry);
     res.status(200).json({ auth: true, token: token });
   })
 );
@@ -63,12 +61,9 @@ router.post('/',
 * @access Public
 */
 router.post('/login',
+  sanitizeInput,
   asyncErrorHandler(async (req, res, next) => {
     let { email, password } = req.body;
-
-    //Sanitize
-    email = validator.escape(email);
-    password = validator.escape(password);
 
     // Find user by email
     const user = await User.findOne({ email });
@@ -79,14 +74,10 @@ router.post('/login',
     }
 
     // Check password
-    const isMatch = await user.comparePassword(password);
-        
-    if (!isMatch) {
-      return next(new PasswordIncorrectError('Password incorrect' ));
-    }
+    await user.comparePassword(password); // Throws error if password doesn't match
     
     // User matched, return token
-    const token = generateToken(user.id, jwtExpiry);
+    const token = user.generateToken(jwtExpiry);
     res.status(200).json({ auth: true, token: token });
   })
 );
@@ -196,9 +187,7 @@ router.patch('/update-password',
   passport.authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
-    if (!req.user.comparePassword(req.body.oldPassword)){
-      return next(new PasswordIncorrectError('Password incorrect'));
-    }
+    req.user.comparePassword(req.body.oldPassword); // Throws error if password doesn't match
     user.password = req.body.newPassword;
     await user.save();
     return res.status(200).json(user);

@@ -2,10 +2,12 @@ const {
     HashingError
   } = require('../utils/errors');
 
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const logger = require('./utils/logger');
 
+const jwt = require('jsonwebtoken');
+const jwtSecret = process.env.JWT_SECRET
+
+const bcrypt = require('bcryptjs');
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -13,6 +15,7 @@ const nanoidLength = 10;
 
 const nanoid = () => import('nanoid').then(({ customAlphabet }) => customAlphabet(nanoidAlphabet, nanoidLength));
 
+const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
@@ -27,8 +30,12 @@ const userSchema = new Schema({
 });
 
 // Method for comparing passwords
-userSchema.methods.comparePassword = function(candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
+userSchema.methods.comparePassword = async function(candidatePassword) {
+    const isMatch = await bcrypt.compare(candidatePassword, this.password);
+    if (!isMatch) {
+        throw new PasswordIncorrectError('Password incorrect');
+    }
+    return isMatch;
 };
 
 userSchema.methods.generateNewUserCode = async function() {
@@ -42,7 +49,12 @@ userSchema.methods.generateNewUserCode = async function() {
   
     this.userCode = userCode;
     await this.save();
-  };
+};
+
+userSchema.methods.generateToken = function(expiresIn) {
+    const payload = { id: this._id };
+    return jwt.sign(payload, jwtSecret, { expiresIn: expiresIn });
+};
 
 // Password hashing middleware
 userSchema.pre('save', async function(next) {
