@@ -1,24 +1,28 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-const { 
+import errors from '../utils/errors.mjs';
+const {
   InvalidEmailError, 
   UserNotFoundError,
   EmailAlreadyExistsError,
   MissingFieldsError
-} = require('../utils/errors.mjs').default;
+} = errors;
 
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
-const passport = require('passport');
+import passportPkg from 'passport';
+const { authenticate } = passportPkg;
 
-const validator = require('validator');
+import User from '../models/User.mjs';
+
+import validator from 'validator';
+
+import asyncErrorHandler from '../middleware/asyncErrorHandler.mjs';
 
 const jwtExpiry = process.env.JWT_EXPIRY
 
-const User = require('../models/User.mjs').default;
-
-const asyncErrorHandler = require('../middleware/asyncErrorHandler');
 
 // Sanitize middleware
 const sanitizeInput = (req, res, next) => {
@@ -95,7 +99,7 @@ router.post('/login',
 * @access AUTHENTICATED
 */
 router.get('/events',
-  passport.authenticate('jwt'),
+  authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
     const populatedUser = user.populate('events');
@@ -110,7 +114,7 @@ router.get('/events',
  * @access AUTHENTICATED
 */
 router.post('/new-code',
-    passport.authenticate('jwt'),
+    authenticate('jwt'),
     asyncErrorHandler(async (req, res, next) => {
         const user = req.user;
         // Generate a new userCode
@@ -125,7 +129,7 @@ router.post('/new-code',
 * @access AUTHENTICATED
 */
 router.put('/following/:userId',
-  passport.authenticate('jwt'),
+  authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
     const followedUserId = req.params.userId;
     const followedUser = await User.findById(followedUserId);
@@ -152,7 +156,7 @@ router.put('/following/:userId',
 * @access AUTHENTICATED
 */
 router.delete('/following/:userId',
-  passport.authenticate('jwt'),
+  authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
     const followedUserId = req.params.userId;
     const followedUser = await User.findById(followedUserId);
@@ -179,7 +183,7 @@ router.delete('/following/:userId',
 * @access AUTHENTICATED
 */
 router.get('/',
-  passport.authenticate('jwt'),
+  authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
     return res.status(200).json(req.user);
   })
@@ -191,7 +195,7 @@ router.get('/',
 * @access AUTHENTICATED
 */
 router.patch('/update-password',
-  passport.authenticate('jwt'),
+  authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
     user.comparePassword(req.body.oldPassword); // Throws error if password doesn't match
@@ -207,7 +211,7 @@ router.patch('/update-password',
 * @access AUTHENTICATED
 */
 router.patch('/update-name',
-  passport.authenticate('jwt'),
+  authenticate('jwt'),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
     user.name = req.body.newName;
@@ -216,4 +220,4 @@ router.patch('/update-name',
   })
 );
 
-module.exports = router;
+export default router;

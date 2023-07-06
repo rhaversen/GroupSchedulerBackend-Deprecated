@@ -1,23 +1,23 @@
-require('dotenv').config();
+import 'dotenv/config';
 const port = process.env.SERVER_PORT;
 
-const mongoose = require('mongoose');
+import path from 'path';
+import logger from './utils/logger.mjs';
+import globalErrorHandler from './middleware/globalErrorHandler.mjs';
 
-const path = require('path');
-const logger = require('./utils/logger.js');
+import mongoose from 'mongoose';
+import mongoSanitize from 'express-mongo-sanitize';
 
-const express = require('express');
+import express from 'express';
 const app = express();
 
-const mongoSanitize = require('express-mongo-sanitize');
-const globalErrorHandler = require('./middleware/globalErrorHandler').default;
-const passport = require('passport');
+import passport from 'passport';
+import configurePassport from './utils/passportJwt.mjs';
 
-// Passport-JWT Strategy setup
-require('./middleware/passportJwt')(passport); // pass passport for configuration
+configurePassport(passport);
 
 // Connect to MongoDB
-mongoose
+await mongoose
     .connect(
         `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}`, {
             useNewUrlParser: true, 
@@ -34,9 +34,9 @@ app.use(passport.initialize());
 app.use(globalErrorHandler);
 
 // Import and use routes
-const userRoutes = require('./routes/users');
+import userRoutes from './routes/users.mjs';
 app.use('/api/v1/users', userRoutes);
-const eventRoutes = require('./routes/events');
+import eventRoutes from './routes/events.mjs';
 app.use('/api/v1/events', eventRoutes);
 
 //Test index page
@@ -49,4 +49,4 @@ app.listen(port, () => {
     logger.info(`App listening at http://localhost:${port}`);
 });
 
-module.exports = app;
+export default app;

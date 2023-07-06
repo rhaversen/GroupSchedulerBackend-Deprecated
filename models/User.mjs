@@ -1,13 +1,20 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-import { HashingError } from '../utils/errors.mjs';
+import errors from '../utils/errors.mjs';
+const {
+    HashingError
+} = errors;
+import logger from '../utils/logger.mjs';
 
-import { info } from '../utils/logger.js';
+import jsonwebtokenPkg from 'jsonwebtoken';
+const { sign } = jsonwebtokenPkg;
 
-import { sign } from 'jsonwebtoken';
 const jwtSecret = process.env.JWT_SECRET
 
-import { compare, genSalt, hash } from 'bcryptjs';
+import bcryptjsPkg from 'bcryptjs';
+const { compare, genSalt, hash } = bcryptjsPkg;
+
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -77,11 +84,11 @@ userSchema.pre('save', async function(next) {
             this.password = await hash(this.password, salt);
             return next();
         } catch (err) {
-            return next(new HashingError('Error generating a password hash', err));
+            return next(new HashingError('Error generating a password hash'));
         }
     }
 
-    info('User saved')
+    logger.info('User saved')
 });
 
 userSchema.pre('remove', async function(next) {
@@ -100,7 +107,7 @@ userSchema.pre('remove', async function(next) {
     
             // Save the user
             await user.save();
-            info('User removed')
+            logger.info('User removed')
         }
 
         // Remove user from events
@@ -117,7 +124,7 @@ userSchema.pre('remove', async function(next) {
 
             // Save the event
             await event.save();
-            info('User removed')
+            logger.info('User removed')
         }
   
         next();

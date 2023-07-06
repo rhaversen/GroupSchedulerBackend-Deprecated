@@ -1,8 +1,11 @@
 import mongoose, { model } from 'mongoose';
 import User from './User.mjs';
-import { info } from '../utils/logger.js';
+import logger from '../utils/logger.mjs';
 
-import { UserNotFoundError } from '../utils/errors.mjs';
+import errors from '../utils/errors.mjs';
+const {
+  UserNotFoundError
+} = errors;
 
 const { Schema } = mongoose;
 
@@ -67,7 +70,7 @@ eventSchema.pre('save', async function(next) {
     }
   }
 
-  info('Event saved')
+  logger.info('Event saved')
   next();
   }
 );
@@ -89,7 +92,7 @@ eventSchema.pre('remove', async function(next) {
 
         // Save the user
         await user.save();
-        info('Event removed')
+        logger.info('Event removed')
     }
 
     next();

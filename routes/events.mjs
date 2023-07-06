@@ -1,20 +1,24 @@
-const { 
+import errors from '../utils/errors.mjs';
+const {
     UserNotInEventError,
     MissingFieldsError,
     EventNotFoundError,
     UserNotAdminError,
     InvalidEventIdOrCode,
-} = require('../utils/errors.mjs').default;
+} = errors;
 
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
-const passport = require('passport');
+import passportPkg from 'passport';
+const { authenticate } = passportPkg;
 
-const Event = require('../models/Event.mjs').default;
-const User = require('../models/User.mjs').default;
-const validator = require('validator');
-const asyncErrorHandler = require('../middleware/asyncErrorHandler');
+import logger from '../utils/logger.mjs';
+
+import Event from '../models/Event.mjs';
+import User from '../models/User.mjs';
+import validator from 'validator';
+import asyncErrorHandler from '../middleware/asyncErrorHandler.mjs';
 
 function isMongoId(str) {
     return /^[0-9a-fA-F]{24}$/.test(str);
@@ -67,7 +71,7 @@ function checkUserIsAdmin(req, res, next) {
  * @access AUTHENTICATED
 */
 router.post('/:eventIdOrCode/new-code',
-    passport.authenticate('jwt'),
+    authenticate('jwt'),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     checkUserIsAdmin,
@@ -85,7 +89,7 @@ router.post('/:eventIdOrCode/new-code',
  * @access AUTHENTICATED
  */
 router.get('/:eventIdOrCode',
-    passport.authenticate('jwt'),
+    authenticate('jwt'),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
@@ -101,7 +105,7 @@ router.get('/:eventIdOrCode',
  * @access AUTHENTICATED
  */
 router.post('/',
-    passport.authenticate('jwt'),
+    authenticate('jwt'),
     asyncErrorHandler(async (req, res, next) => {
         const { 
             eventName, 
@@ -147,7 +151,7 @@ router.post('/',
  * @access AUTHENTICATED
  */
 router.patch('/:eventIdOrCode',
-    passport.authenticate('jwt'),
+    authenticate('jwt'),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     checkUserIsAdmin,
@@ -179,7 +183,7 @@ router.patch('/:eventIdOrCode',
  * @access AUTHENTICATED
  */
 router.put('/:eventIdOrCode/users',
-    passport.authenticate('jwt'),
+    authenticate('jwt'),
     asyncErrorHandler(getEvent),
     asyncErrorHandler(async (req, res, next) => {
         const event = req.event;
@@ -202,7 +206,7 @@ router.put('/:eventIdOrCode/users',
  * @access AUTHENTICATED
  */
 router.delete('/:eventIdOrCode/users',
-    passport.authenticate('jwt'),
+    authenticate('jwt'),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
@@ -225,7 +229,7 @@ router.delete('/:eventIdOrCode/users',
  * @access AUTHENTICATED
  */
 router.delete('/:eventIdOrCode',
-    passport.authenticate('jwt'),
+    authenticate('jwt'),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     checkUserIsAdmin,
@@ -234,4 +238,4 @@ router.delete('/:eventIdOrCode',
         return res.status(204);
 }));
 
-module.exports = router;
+export default router;

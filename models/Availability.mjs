@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose, { model } from 'mongoose';
 const { Schema } = mongoose;
 
 const availabilitySchema = new Schema({
@@ -8,4 +8,4 @@ const availabilitySchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 
-module.exports = mongoose.model('Availability', availabilitySchema);
+export default model('Availability', availabilitySchema);

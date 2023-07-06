@@ -96,10 +96,9 @@ class ServerError extends Error {
 }
 
 class HashingError extends ServerError {
-  constructor(message, underlyingError) {
+  constructor(message) {
     super(message);
     this.name = this.constructor.name;
-    this.underlyingError = underlyingError;
   }
 }
 
