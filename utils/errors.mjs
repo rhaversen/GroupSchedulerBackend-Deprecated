@@ -103,7 +103,7 @@ class HashingError extends ServerError {
   }
 }
 
-module.exports = {
+export default {
   ValidationError,
   UserNotFoundError,
   InvalidEmailError,

@@ -1,23 +1,22 @@
 require('dotenv').config();
 
-const { 
-    HashingError
-  } = require('../utils/errors');
+import { HashingError } from '../utils/errors.mjs';
 
-const logger = require('../utils/logger.js');
+import { info } from '../utils/logger.js';
 
-const jwt = require('jsonwebtoken');
+import { sign } from 'jsonwebtoken';
 const jwtSecret = process.env.JWT_SECRET
 
-const bcrypt = require('bcryptjs');
+import { compare, genSalt, hash } from 'bcryptjs';
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const nanoidLength = 10;
 
-const nanoid = () => import('nanoid').then(({ customAlphabet }) => customAlphabet(nanoidAlphabet, nanoidLength));
+import { customAlphabet } from 'nanoid';
+const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
 
-const mongoose = require('mongoose');
+import mongoose, { model } from 'mongoose';
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
@@ -28,12 +27,12 @@ const userSchema = new Schema({
     availabilities: [{ type: Schema.Types.ObjectId, ref: 'Availability' }],
     following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    userCode: {type: String, unique: true, required: true}
+    userCode: {type: String, unique: true}
 });
 
 // Method for comparing passwords
 userSchema.methods.comparePassword = async function(candidatePassword) {
-    const isMatch = await bcrypt.compare(candidatePassword, this.password);
+    const isMatch = await compare(candidatePassword, this.password);
     if (!isMatch) {
         throw new PasswordIncorrectError('Password incorrect');
     }
@@ -55,7 +54,7 @@ userSchema.methods.generateNewUserCode = async function() {
 
 userSchema.methods.generateToken = function(expiresIn) {
     const payload = { id: this._id };
-    return jwt.sign(payload, jwtSecret, { expiresIn: expiresIn });
+    return sign(payload, jwtSecret, { expiresIn: expiresIn });
 };
 
 // Password hashing middleware
@@ -74,15 +73,15 @@ userSchema.pre('save', async function(next) {
 
     if (this.isModified('password')) {
         try {
-            const salt = await bcrypt.genSalt(saltRounds); //gensalt and hash is already async
-            this.password = await bcrypt.hash(this.password, salt);
+            const salt = await genSalt(saltRounds); //gensalt and hash is already async
+            this.password = await hash(this.password, salt);
             return next();
         } catch (err) {
             return next(new HashingError('Error generating a password hash', err));
         }
     }
 
-    logger.info('User saved')
+    info('User saved')
 });
 
 userSchema.pre('remove', async function(next) {
@@ -101,7 +100,7 @@ userSchema.pre('remove', async function(next) {
     
             // Save the user
             await user.save();
-            logger.info('User removed')
+            info('User removed')
         }
 
         // Remove user from events
@@ -118,7 +117,7 @@ userSchema.pre('remove', async function(next) {
 
             // Save the event
             await event.save();
-            logger.info('User removed')
+            info('User removed')
         }
   
         next();
@@ -128,4 +127,4 @@ userSchema.pre('remove', async function(next) {
     }
   });
 
-module.exports = mongoose.model('User', userSchema);
+export default model('User', userSchema);

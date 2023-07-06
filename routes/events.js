@@ -4,15 +4,15 @@ const {
     EventNotFoundError,
     UserNotAdminError,
     InvalidEventIdOrCode,
-} = require('../utils/errors');
+} = require('../utils/errors.mjs').default;
 
 const express = require('express');
 const router = express.Router();
 
 const passport = require('passport');
 
-const Event = require('../models/Event');
-const User = require('../models/User');
+const Event = require('../models/Event.mjs').default;
+const User = require('../models/User.mjs').default;
 const validator = require('validator');
 const asyncErrorHandler = require('../middleware/asyncErrorHandler');
 
@@ -89,6 +89,7 @@ router.get('/:eventIdOrCode',
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
+        logger.info('return event')
         const event = req.event;
         return res.status(200).json(event);
     })

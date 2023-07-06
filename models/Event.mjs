@@ -1,17 +1,16 @@
-const mongoose = require('mongoose');
-const User = require('./User');
-const logger = require('../utils/logger.js');
+import mongoose, { model } from 'mongoose';
+import User from './User.mjs';
+import { info } from '../utils/logger.js';
 
-const { 
-  UserNotFoundError,
-} = require('../utils/errors');
+import { UserNotFoundError } from '../utils/errors.mjs';
 
 const { Schema } = mongoose;
 
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const nanoidLength = 10;
 
-const nanoid = () => import('nanoid').then(({ customAlphabet }) => customAlphabet(nanoidAlphabet, nanoidLength));
+import { customAlphabet } from 'nanoid';
+const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
 
 
 const eventSchema = new Schema({
@@ -68,7 +67,7 @@ eventSchema.pre('save', async function(next) {
     }
   }
 
-  logger.info('Event saved')
+  info('Event saved')
   next();
   }
 );
@@ -90,7 +89,7 @@ eventSchema.pre('remove', async function(next) {
 
         // Save the user
         await user.save();
-        logger.info('Event removed')
+        info('Event removed')
     }
 
     next();
@@ -100,4 +99,4 @@ eventSchema.pre('remove', async function(next) {
   }
 });
 
-module.exports = mongoose.model('Event', eventSchema);
+export default model('Event', eventSchema);

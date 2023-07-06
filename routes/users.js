@@ -5,7 +5,7 @@ const {
   UserNotFoundError,
   EmailAlreadyExistsError,
   MissingFieldsError
-} = require('../utils/errors');
+} = require('../utils/errors.mjs').default;
 
 const express = require('express');
 const router = express.Router();
@@ -16,7 +16,7 @@ const validator = require('validator');
 
 const jwtExpiry = process.env.JWT_EXPIRY
 
-const User = require('../models/User');
+const User = require('../models/User.mjs').default;
 
 const asyncErrorHandler = require('../middleware/asyncErrorHandler');
 

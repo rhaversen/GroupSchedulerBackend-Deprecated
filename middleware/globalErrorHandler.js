@@ -2,7 +2,7 @@ const {
     ValidationError,
     DatabaseError,
     ServerError
-  } = require('../utils/errors');
+  } = require('../utils/errors.mjs').default;
 
 const logger = require('../utils/logger.js');
 

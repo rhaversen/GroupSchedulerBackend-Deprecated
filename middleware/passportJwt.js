@@ -4,9 +4,9 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 
 const { 
     UserNotFoundError,
-} = require('../utils/errors');
+} = require('../utils/errors.mjs').default;
 
-const User = require('../models/User');
+const User = require('../models/User.mjs').default;
 
 //const logger = require('../utils/logger.js');
 
