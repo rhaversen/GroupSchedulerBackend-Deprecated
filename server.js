@@ -10,7 +10,7 @@ const express = require('express');
 const app = express();
 
 const mongoSanitize = require('express-mongo-sanitize');
-const globalErrorHandler = require('./middleware/globalErrorHandler');
+const globalErrorHandler = require('./middleware/globalErrorHandler').default;
 const passport = require('passport');
 
 // Passport-JWT Strategy setup
