@@ -102,3 +102,20 @@ class HashingError extends ServerError {
     this.underlyingError = underlyingError;
   }
 }
+
+module.exports = {
+  ValidationError,
+  UserNotFoundError,
+  InvalidEmailError,
+  EmailAlreadyExistsError,
+  PasswordIncorrectError,
+  UserNotInEventError,
+  UserNotAdminError,
+  InvalidEventIdOrCode,
+  MissingFieldsError,
+  EventError,
+  EventCodeError,
+  EventNotFoundError,
+  ServerError,
+  HashingError
+};
