@@ -7,16 +7,16 @@ chai.use(chaiHttp);
 const { expect } = chai;
 
 describe('GET /', () => {
-  it(' should return the index page', async function(done) {
-    this.timeout(10000); // Set the timeout to 5 seconds.
+  it(' should return the index page', function() {
+    this.timeout(10000); // Set the timeout to 10 seconds.
 
-    const server = await import('../server.mjs')
-    const res = await chai.request(server.default).get('/');
-
-    expect(res).to.have.status(200);
-    done();
+    return import('../server.mjs').then(async (server) => {
+      const res = await chai.request(server.default).get('/');
+      expect(res).to.have.status(200);
+    });
   });
 });
+
 
 describe('POST /api/v1/users', () => {
     it('should create a new user and return a jwt token', function(done) {
