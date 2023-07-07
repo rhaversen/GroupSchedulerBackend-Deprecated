@@ -12,12 +12,12 @@ import globalErrorHandler from './middleware/globalErrorHandler.mjs';
 import mongoose from 'mongoose';
 import mongoSanitize from 'express-mongo-sanitize';
 
+import RateLimit from 'express-rate-limit';
 import express from 'express';
 const app = express();
 
 import passport from 'passport';
 import configurePassport from './utils/passportJwt.mjs';
-
 configurePassport(passport);
 
 // Connect to MongoDB
@@ -37,11 +37,26 @@ app.use(mongoSanitize());
 app.use(passport.initialize());
 app.use(globalErrorHandler);
 
-// Import and use routes
+// Create rate limiter for general routes
+const apiLimiter = RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 5
+  });
+
+// Import and use routes, apply general rate limiter
 import userRoutes from './routes/users.mjs';
-app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/users', apiLimiter, userRoutes);
 import eventRoutes from './routes/events.mjs';
-app.use('/api/v1/events', eventRoutes);
+app.use('/api/v1/events', apiLimiter, eventRoutes);
+
+// Create stricter rate limiters for routes
+const sensitiveApiLimiter = RateLimit({
+    windowMs: 1*60*1000, // 1 minute
+    max: 2
+  });
+
+// Apply the stricter rate limiters to the routes
+app.use('/api/v1/users/update-password', sensitiveApiLimiter); // This route has a stricter limit
 
 //Test index page
 app.get('/', function(req, res) {
