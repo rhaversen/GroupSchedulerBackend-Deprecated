@@ -1,7 +1,11 @@
 import 'dotenv/config';
 const port = process.env.SERVER_PORT;
 
-import path from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 import logger from './utils/logger.mjs';
 import globalErrorHandler from './middleware/globalErrorHandler.mjs';
 
@@ -41,7 +45,7 @@ app.use('/api/v1/events', eventRoutes);
 
 //Test index page
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname + '/public/index.html'));
+    res.sendFile(join(__dirname, '/public/index.html'));
 });
 
 //Start server
