@@ -12,8 +12,7 @@ const {
 import { Router } from 'express';
 const router = Router();
 
-import passportPkg from 'passport';
-const { authenticate } = passportPkg;
+import passport from 'passport';
 
 import User from '../models/User.mjs';
 
@@ -99,7 +98,7 @@ router.post('/login',
 * @access AUTHENTICATED
 */
 router.get('/events',
-  authenticate('jwt'),
+  passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
     const populatedUser = user.populate('events');
@@ -114,13 +113,13 @@ router.get('/events',
  * @access AUTHENTICATED
 */
 router.post('/new-code',
-    authenticate('jwt'),
-    asyncErrorHandler(async (req, res, next) => {
-        const user = req.user;
-        // Generate a new userCode
-        user.generateNewUserCode();
-        return res.status(200).json(user.userCode);
-    })
+  passport.authenticate('jwt', { session: false }),
+  asyncErrorHandler(async (req, res, next) => {
+    const user = req.user;
+    // Generate a new userCode
+    user.generateNewUserCode();
+    return res.status(200).json(user.userCode);
+  })
 );
 
 /**
@@ -129,7 +128,7 @@ router.post('/new-code',
 * @access AUTHENTICATED
 */
 router.put('/following/:userId',
-  authenticate('jwt'),
+  passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     const followedUserId = req.params.userId;
     const followedUser = await User.findById(followedUserId);
@@ -156,7 +155,7 @@ router.put('/following/:userId',
 * @access AUTHENTICATED
 */
 router.delete('/following/:userId',
-  authenticate('jwt'),
+  passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     const followedUserId = req.params.userId;
     const followedUser = await User.findById(followedUserId);
@@ -183,7 +182,7 @@ router.delete('/following/:userId',
 * @access AUTHENTICATED
 */
 router.get('/',
-  authenticate('jwt'),
+  passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     return res.status(200).json(req.user);
   })
@@ -195,7 +194,7 @@ router.get('/',
 * @access AUTHENTICATED
 */
 router.patch('/update-password',
-  authenticate('jwt'),
+  passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
     user.comparePassword(req.body.oldPassword); // Throws error if password doesn't match
@@ -211,7 +210,7 @@ router.patch('/update-password',
 * @access AUTHENTICATED
 */
 router.patch('/update-name',
-  authenticate('jwt'),
+  passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
     user.name = req.body.newName;

@@ -10,8 +10,7 @@ const {
 import { Router } from 'express';
 const router = Router();
 
-import passportPkg from 'passport';
-const { authenticate } = passportPkg;
+import passport from 'passport';
 
 import logger from '../utils/logger.mjs';
 
@@ -71,7 +70,7 @@ function checkUserIsAdmin(req, res, next) {
  * @access AUTHENTICATED
 */
 router.post('/:eventIdOrCode/new-code',
-    authenticate('jwt'),
+    passport.authenticate('jwt', { session: false }),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     checkUserIsAdmin,
@@ -89,7 +88,7 @@ router.post('/:eventIdOrCode/new-code',
  * @access AUTHENTICATED
  */
 router.get('/:eventIdOrCode',
-    authenticate('jwt'),
+    passport.authenticate('jwt', { session: false }),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
@@ -105,7 +104,7 @@ router.get('/:eventIdOrCode',
  * @access AUTHENTICATED
  */
 router.post('/',
-    authenticate('jwt'),
+    passport.authenticate('jwt', { session: false }),
     asyncErrorHandler(async (req, res, next) => {
         const { 
             eventName, 
@@ -151,7 +150,7 @@ router.post('/',
  * @access AUTHENTICATED
  */
 router.patch('/:eventIdOrCode',
-    authenticate('jwt'),
+    passport.authenticate('jwt', { session: false }),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     checkUserIsAdmin,
@@ -183,7 +182,7 @@ router.patch('/:eventIdOrCode',
  * @access AUTHENTICATED
  */
 router.put('/:eventIdOrCode/users',
-    authenticate('jwt'),
+    passport.authenticate('jwt', { session: false }),
     asyncErrorHandler(getEvent),
     asyncErrorHandler(async (req, res, next) => {
         const event = req.event;
@@ -206,7 +205,7 @@ router.put('/:eventIdOrCode/users',
  * @access AUTHENTICATED
  */
 router.delete('/:eventIdOrCode/users',
-    authenticate('jwt'),
+    passport.authenticate('jwt', { session: false }),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
@@ -229,7 +228,7 @@ router.delete('/:eventIdOrCode/users',
  * @access AUTHENTICATED
  */
 router.delete('/:eventIdOrCode',
-    authenticate('jwt'),
+    passport.authenticate('jwt', { session: false }),
     asyncErrorHandler(getEvent),
     checkUserInEvent,
     checkUserIsAdmin,
