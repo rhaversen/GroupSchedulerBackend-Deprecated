@@ -26,14 +26,21 @@ const jwtExpiry = process.env.JWT_EXPIRY;
 
 // Sanitize middleware
 const sanitizeInput = (req, res, next) => {
-  const keys = ['name', 'email', 'password'];
-  keys.forEach(key => {
-    if(req.body[key]) {
-      req.body[key] = validator.escape(req.body[key]);
-    }
-  });
+  sanitizeObject(req.body);
   next();
 };
+
+function sanitizeObject(obj) {
+  for (let key in obj) {
+      if (obj.hasOwnProperty(key)) {
+          if (typeof obj[key] === 'object' && obj[key] !== null) {
+              sanitizeObject(obj[key]);
+          } else {
+              obj[key] = validator.escape(String(obj[key]));
+          }
+      }
+  }
+}
 
 /**
  * @route POST api/v1/users
