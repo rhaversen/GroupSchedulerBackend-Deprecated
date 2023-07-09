@@ -1,23 +1,27 @@
-import 'dotenv/config';
-const port = process.env.SERVER_PORT;
-
+// Node.js built-in modules
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
-import logger from './utils/logger.mjs';
-import globalErrorHandler from './middleware/globalErrorHandler.mjs';
-
+// Third-party libraries
+import 'dotenv/config';
+import express from 'express';
 import mongoose from 'mongoose';
 import mongoSanitize from 'express-mongo-sanitize';
-
 import RateLimit from 'express-rate-limit';
-import express from 'express';
+import passport from 'passport';
+
+// Own modules
+import logger from './utils/logger.mjs';
+import globalErrorHandler from './middleware/globalErrorHandler.mjs';
+import configurePassport from './utils/passportJwt.mjs';
+
+// Global variables and setup
+const port = process.env.SERVER_PORT;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const app = express();
 
-import passport from 'passport';
-import configurePassport from './utils/passportJwt.mjs';
+// Function invocations
 configurePassport(passport);
 
 // Connect to MongoDB

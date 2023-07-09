@@ -1,30 +1,33 @@
+// Node.js built-in modules
+
+// Third-party libraries
 import dotenv from 'dotenv';
+import jsonwebtokenPkg from 'jsonwebtoken';
+import bcryptjsPkg from 'bcryptjs';
+import { customAlphabet } from 'nanoid';
+import mongoose, { model } from 'mongoose';
+
+// Own modules
+import errors from '../utils/errors.mjs';
+import logger from '../utils/logger.mjs';
+
+// Setup
 dotenv.config();
 
-import errors from '../utils/errors.mjs';
+// Destructuring and global variables
+const { sign } = jsonwebtokenPkg;
+const { compare, genSalt, hash } = bcryptjsPkg;
+const { Schema } = mongoose;
 const {
     HashingError
 } = errors;
-import logger from '../utils/logger.mjs';
 
-import jsonwebtokenPkg from 'jsonwebtoken';
-const { sign } = jsonwebtokenPkg;
-
+// Constants
 const jwtSecret = process.env.JWT_SECRET
-
-import bcryptjsPkg from 'bcryptjs';
-const { compare, genSalt, hash } = bcryptjsPkg;
-
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
-
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const nanoidLength = 10;
-
-import { customAlphabet } from 'nanoid';
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
-
-import mongoose, { model } from 'mongoose';
-const { Schema } = mongoose;
 
 const userSchema = new Schema({
     name: { type: String }, // This is how other users will recognize you. It should reflect your name or nickname. Don't worry, only users in the same events as you can see your name.

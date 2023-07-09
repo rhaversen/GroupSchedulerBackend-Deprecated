@@ -1,9 +1,11 @@
+// Own modules
 import errors from '../utils/errors.mjs';
+import logger from '../utils/logger.mjs';
+
+// Destructuring and global variables
 const {
     ValidationError, DatabaseError, ServerError
 } = errors;
-
-import logger from '../utils/logger.mjs';
 
 export default (function(err, req, res, next) {
     if (err instanceof ValidationError) {

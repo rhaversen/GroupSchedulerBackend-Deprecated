@@ -1,14 +1,20 @@
-import dotenv from 'dotenv';
-dotenv.config();
+// Node.js built-in modules
 
+// Third-party libraries
+import dotenv from 'dotenv';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 
+// Own modules
 import errors from './errors.mjs';
+import User from '../models/User.mjs';
+
+// Setup
+dotenv.config();
+
+// Destructuring and global variables
 const {
     UserNotFoundError,
 } = errors;
-
-import User from '../models/User.mjs';
 
 //const logger = require('../utils/logger.js');
 

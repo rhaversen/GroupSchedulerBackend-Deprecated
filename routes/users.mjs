@@ -1,27 +1,28 @@
+// Node.js built-in modules
+
+// Third-party libraries
 import dotenv from 'dotenv';
+import { Router } from 'express';
+import passport from 'passport';
+import validator from 'validator';
+
+// Own modules
+import errors from '../utils/errors.mjs';
+import User from '../models/User.mjs';
+import asyncErrorHandler from '../middleware/asyncErrorHandler.mjs';
+
+// Setup
 dotenv.config();
 
-import errors from '../utils/errors.mjs';
+// Destructuring and global variables
 const {
   InvalidEmailError, 
   UserNotFoundError,
   EmailAlreadyExistsError,
   MissingFieldsError
 } = errors;
-
-import { Router } from 'express';
 const router = Router();
-
-import passport from 'passport';
-
-import User from '../models/User.mjs';
-
-import validator from 'validator';
-
-import asyncErrorHandler from '../middleware/asyncErrorHandler.mjs';
-
-const jwtExpiry = process.env.JWT_EXPIRY
-
+const jwtExpiry = process.env.JWT_EXPIRY;
 
 // Sanitize middleware
 const sanitizeInput = (req, res, next) => {

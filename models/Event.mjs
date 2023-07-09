@@ -1,20 +1,24 @@
+// Node.js built-in modules
+
+// Third-party libraries
 import mongoose, { model } from 'mongoose';
+import { customAlphabet } from 'nanoid';
+
+// Own modules
 import User from './User.mjs';
 import logger from '../utils/logger.mjs';
-
 import errors from '../utils/errors.mjs';
+
+// Destructuring and global variables
+const { Schema } = mongoose;
 const {
   UserNotFoundError
 } = errors;
 
-const { Schema } = mongoose;
-
+// Constants
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const nanoidLength = 10;
-
-import { customAlphabet } from 'nanoid';
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
-
 
 const eventSchema = new Schema({
   eventName: { type: String, required: true },

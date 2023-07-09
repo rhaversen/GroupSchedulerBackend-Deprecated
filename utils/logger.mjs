@@ -1,13 +1,17 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
-import { createLogger, format as _format, transports as _transports } from 'winston';
+// Node.js built-in modules
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
+// Third-party libraries
+import dotenv from 'dotenv';
+import { createLogger, format as _format, transports as _transports } from 'winston';
+
+// Setup
+dotenv.config();
+
+// Global variables
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 
 const logger = createLogger({
     levels: {info: 0, warn: 1, error: 2},

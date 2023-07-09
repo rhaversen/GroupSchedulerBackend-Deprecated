@@ -1,4 +1,18 @@
+// Node.js built-in modules
+
+// Third-party libraries
+import { Router } from 'express';
+import passport from 'passport';
+import validator from 'validator';
+
+// Own modules
 import errors from '../utils/errors.mjs';
+import logger from '../utils/logger.mjs';
+import Event from '../models/Event.mjs';
+import User from '../models/User.mjs';
+import asyncErrorHandler from '../middleware/asyncErrorHandler.mjs';
+
+// Destructuring and global variables
 const {
     UserNotInEventError,
     MissingFieldsError,
@@ -6,19 +20,9 @@ const {
     UserNotAdminError,
     InvalidEventIdOrCode,
 } = errors;
-
-import { Router } from 'express';
 const router = Router();
 
-import passport from 'passport';
-
-import logger from '../utils/logger.mjs';
-
-import Event from '../models/Event.mjs';
-import User from '../models/User.mjs';
-import validator from 'validator';
-import asyncErrorHandler from '../middleware/asyncErrorHandler.mjs';
-
+// Functions
 function isMongoId(str) {
     return /^[0-9a-fA-F]{24}$/.test(str);
 }
