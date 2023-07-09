@@ -151,7 +151,7 @@ router.put('/following/:userId',
 
 /**
 * @route DELETE api/v1/users/following/:userId
-* @desc Unfollow user. Remove userId from users following array, remove user from userId's followers array
+* @desc Un-follow user. Remove userId from users following array, remove user from userId's followers array
 * @access AUTHENTICATED
 */
 router.delete('/following/:userId',

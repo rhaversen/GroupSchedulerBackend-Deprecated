@@ -125,7 +125,7 @@ router.post('/',
         const participants = user;
 
         let admins;
-        if (isLocked == true){
+        if (isLocked){
             admins = user;
         }
 

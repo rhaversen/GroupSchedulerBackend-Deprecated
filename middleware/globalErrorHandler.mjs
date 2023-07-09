@@ -15,7 +15,7 @@ export default (function(err, req, res, next) {
         logger.error(err.message);
     } else if (err instanceof DatabaseError || err instanceof ServerError) {
         // For server-side errors, send a generic error message
-        res.status(500).json({ error: 'An error occurred, please try again later' });
+        res.status(500).json({ error: 'A server error or database error occurred, please try again later' });
         logger.error(err.message);
     } else {
         // If it's not one of the known errors, it could be anything - consider it a 500 error
