@@ -6,6 +6,9 @@ const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const { expect } = chai;
 
+import { deleteAllDocumentsFromAllCollections } from './database.mjs';
+
+
 let server;
 
 describe('Server Tests', () => {
@@ -19,11 +22,8 @@ describe('Server Tests', () => {
     // For example, close any open connections, stop the server, etc.
     // This is executed once after all tests in this suite have finished
 
-    // Close the server
-    await server.default.close();
-
-    // Disconnect from the MongoDB database
-    await mongoose.disconnect();
+    // Close the server (Automatically disconnects from the database)
+    await deleteAllDocumentsFromAllCollections();
   });
 
   afterEach(async () => {

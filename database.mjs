@@ -43,4 +43,18 @@ const disconnectFromDatabase = async () => {
     }
 };
 
-export { connectToDatabase, disconnectFromDatabase };
+const deleteAllDocumentsFromAllCollections = async () => {
+    try {
+        const collections = Object.keys(mongoose.connection.collections);
+        for (const collectionName of collections) {
+            const collection = mongoose.connection.collections[collectionName];
+            await collection.deleteMany({});
+        }
+        logger.info('All documents from all collections have been deleted');
+    } catch (error) {
+        logger.error(`Error deleting documents from MongoDB: ${error.message}`);
+    }
+};
+
+
+export { connectToDatabase, disconnectFromDatabase, deleteAllDocumentsFromAllCollections };
