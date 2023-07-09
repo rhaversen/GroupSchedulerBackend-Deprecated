@@ -39,7 +39,7 @@ async function getEvent(req, res, next) {
         return next(new InvalidEventIdOrCode('The provided ID or code is not valid'));
     }
 
-    const event = await Event.findOne(query);
+    const event = await Event.findOne(query).exec();
     
     // Check if event exists
     if (!event) return next(new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong'));
@@ -121,7 +121,7 @@ router.post('/',
         }
 
         const userId = req.user.id;
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).exec();
         const participants = user;
 
         let admins;

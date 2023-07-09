@@ -52,7 +52,7 @@ router.post('/',
       return next(new InvalidEmailError('Invalid email format'));
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email }).exec();
     if (existingUser) {
       return next(new EmailAlreadyExistsError( 'Email already exists' ));
     }
@@ -76,7 +76,7 @@ router.post('/login',
     let { email, password } = req.body;
 
     // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).exec();
 
     // Check if user exists
     if (!user) {
@@ -131,7 +131,7 @@ router.put('/following/:userId',
   passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     const followedUserId = req.params.userId;
-    const followedUser = await User.findById(followedUserId);
+    const followedUser = await User.findById(followedUserId).exec();
 
     if (!followedUser) {
       return next(new UserNotFoundError('The user to be followed could not be found' ));
@@ -158,16 +158,15 @@ router.delete('/following/:userId',
   passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     const followedUserId = req.params.userId;
-    const followedUser = await User.findById(followedUserId);
+    const followedUser = await User.findById(followedUserId).exec();
 
     if (!followedUser) {
-      return next(new UserNotFoundError('The user to be unfollowed could not be found'));
+      return next(new UserNotFoundError('The user to be un-followed could not be found'));
     }
 
     const user = req.user;
     user.following.pull(followedUserId);
     followedUser.followers.pull(user.id);
-
 
     await user.save();
     await followedUser.save();

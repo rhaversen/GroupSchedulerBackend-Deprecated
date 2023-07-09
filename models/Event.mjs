@@ -81,7 +81,7 @@ eventSchema.pre('remove', async function(next) {
     // Go through all participants
     for (const participantId of this.participants) {
         // Get the user
-        const user = await User.findById(participantId);
+        const user = await User.findById(participantId).exec();
 
         if (!user) {
             throw new UserNotFoundError('User not found');
