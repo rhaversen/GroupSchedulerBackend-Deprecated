@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url';
 // Third-party libraries
 import 'dotenv/config';
 import express from 'express';
-import mongoose from 'mongoose';
 import mongoSanitize from 'express-mongo-sanitize';
 import RateLimit from 'express-rate-limit';
 import passport from 'passport';
@@ -14,6 +13,7 @@ import passport from 'passport';
 import logger from './utils/logger.mjs';
 import globalErrorHandler from './middleware/globalErrorHandler.mjs';
 import configurePassport from './utils/passportJwt.mjs';
+import { connectToDatabase, disconnectFromDatabase } from './database.mjs';
 
 // Global variables and setup
 const port = process.env.SERVER_PORT;
@@ -25,14 +25,7 @@ const app = express();
 configurePassport(passport);
 
 // Connect to MongoDB
-await mongoose
-    .connect(
-        `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}`, {
-            useNewUrlParser: true, 
-            useUnifiedTopology: true
-        })
-    .then(() => logger.info('MongoDB Connected...'))
-    .catch((err) => logger.error(err));
+connectToDatabase();
 
 // Middleware
 app.use(express.json()); // for parsing application/json
@@ -57,7 +50,7 @@ app.use('/api/v1/events', apiLimiter, eventRoutes);
 const sensitiveApiLimiter = RateLimit({
     windowMs: 1*60*1000, // 1 minute
     max: 2
-  });
+});
 
 // Apply the stricter rate limiters to the routes
 app.use('/api/v1/users/update-password', sensitiveApiLimiter); // This route has a stricter limit
@@ -72,4 +65,23 @@ app.listen(port, () => {
     logger.info(`App listening at http://localhost:${port}`);
 });
 
+process.on('SIGINT', async () => {
+    logger.info('Received SIGINT. Starting cleanup and disconnection...');
+    try {
+      await disconnectFromDatabase();
+      server.close(() => {
+        logger.info('Server closed');
+        process.exit(0); // Exit with code 0 indicating successful termination
+      });
+    } catch (error) {
+      logger.error('Error disconnecting from database:', error);
+      server.close(() => {
+        logger.info('Server closed with error');
+        process.exit(1); // Exit with code 1 indicating termination with error
+      });
+    }
+  });
+  
+  
+  
 export default app;
