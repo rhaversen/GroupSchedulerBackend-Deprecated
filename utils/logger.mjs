@@ -42,15 +42,12 @@ if (process.env.NODE_ENV !== 'production') {
     logger.add(
         new _transports.Console({
             format: _format.combine(
-                _format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
                 _format.colorize(),
-                _format.errors({ stack: true }), // Include stack information for errors
-                _format.json(), // Use JSON format for logs
+                _format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
                 _format.printf((logObject) => {
                     return `${logObject.timestamp} ${logObject.level}: ${logObject.message}`;
                 })
             ),
-            humanReadableUnhandledException: true, // Enable stack trace in console logs
         })
     );
 }
