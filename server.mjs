@@ -89,7 +89,16 @@ async function shutdownServer() {
         process.exit(1); // Exit with code 1 indicating termination with error
       });
     }
-  });
+  }
+  
+  // Handler function to handle the Promise
+  function handleShutdown() {
+    shutdownServer()
+      .then(() => logger.info('Shutdown completed'))
+      .catch((err) => {
+        logger.error('An error occurred during shutdown:', err);
+      });
+  }
   
   
   
