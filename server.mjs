@@ -31,7 +31,6 @@ app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(mongoSanitize());
 app.use(passport.initialize());
-app.use(globalErrorHandler);
 
 // Connect to MongoDB
 await connectToDatabase();
@@ -47,6 +46,9 @@ import userRoutes from './routes/users.mjs';
 app.use('/api/v1/users', apiLimiter, userRoutes);
 import eventRoutes from './routes/events.mjs';
 app.use('/api/v1/events', apiLimiter, eventRoutes);
+
+// Error handler middleware
+app.use(globalErrorHandler);
 
 // Create stricter rate limiters for routes
 const sensitiveApiLimiter = RateLimit({
