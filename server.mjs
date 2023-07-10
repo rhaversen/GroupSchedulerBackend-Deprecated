@@ -1,6 +1,7 @@
 // Node.js built-in modules
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http';
 
 // Third-party libraries
 import 'dotenv/config';
