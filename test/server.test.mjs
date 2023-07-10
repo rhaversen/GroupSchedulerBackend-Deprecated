@@ -20,6 +20,10 @@ describe('Server Tests', () => {
     await deleteAllDocumentsFromAllCollections()
   });
 
+  after(async () => {
+    server.shutDown();
+  });
+
   afterEach(async () => {
     // Clear the database after each test
     // You need to implement the logic to clear your database here
