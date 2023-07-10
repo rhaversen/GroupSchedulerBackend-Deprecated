@@ -4,7 +4,9 @@ import logger from '../utils/logger.mjs';
 
 // Destructuring and global variables
 const {
-    ValidationError, ServerError
+    ValidationError,
+    EventError,
+    ServerError,
 } = errors;
 
 export default (function(err, req, res, next) {
