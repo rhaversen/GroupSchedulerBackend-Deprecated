@@ -100,6 +100,8 @@ async function shutdownServer() {
       });
   }
   
+  // Assigning handler to SIGINT signal
+  process.on('SIGINT', handleShutdown);
   
   
 export default app;
