@@ -109,8 +109,8 @@ router.get('/events',
   passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
-    const populatedUser = await user.populate('events').exec();
-    return res.status(200).json(populatedUser);
+    const populatedUser = await user.populate('events').execPopulate();
+    return res.status(200).json(populatedUser.events);
   })
 );
 
