@@ -48,7 +48,9 @@ if (process.env.NODE_ENV !== 'production') {
                 _format.json(), // Use JSON format for logs
                 _format.printf((logObject) => {
                     return `${logObject.timestamp} ${logObject.level}: ${logObject.message}`;
-                })),
+                })
+            ),
+            humanReadableUnhandledException: true, // Enable stack trace in console logs
         })
     );
 }
