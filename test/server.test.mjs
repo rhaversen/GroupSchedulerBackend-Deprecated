@@ -1,20 +1,23 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-const chai = require('chai');
-const chaiHttp = require('chai-http');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
 
 chai.use(chaiHttp);
 const { expect } = chai;
 
-import { deleteAllDocumentsFromAllCollections } from './database.mjs';
-
+import { deleteAllDocumentsFromAllCollections } from '../database.mjs';
 
 let server;
+
 
 describe('Server Tests', () => {
   before(async () => {
     server = await import('../server.mjs');
-    
+
+    //Wipe database before testing
+    await deleteAllDocumentsFromAllCollections()
   });
 
   after(async () => {
@@ -23,7 +26,7 @@ describe('Server Tests', () => {
     // This is executed once after all tests in this suite have finished
 
     // Close the server (Automatically disconnects from the database)
-    await deleteAllDocumentsFromAllCollections();
+    await server.close();
   });
 
   afterEach(async () => {
@@ -32,8 +35,8 @@ describe('Server Tests', () => {
 
     // Assuming you have a Mongoose model named "User" for the "users" collection
 
-    // Delete all user records
-    await server.default.User.deleteMany({});
+    //Wipe database after each test
+    await deleteAllDocumentsFromAllCollections()
   });
 
   it('GET / should return the index page', async function () {
