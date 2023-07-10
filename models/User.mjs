@@ -64,7 +64,10 @@ userSchema.methods.generateNewUserCode = async function() {
 
 userSchema.methods.generateToken = function(expiresIn) {
     const payload = { id: this._id };
-    return sign(payload, jwtSecret, { expiresIn: expiresIn });
+    const token = sign(payload, jwtSecret, { expiresIn: expiresIn })
+    logger.info('JWT created')
+    logger.info(`Token: ${token}`);
+    return token;
 };
 
 // Password hashing middleware
