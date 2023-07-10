@@ -19,7 +19,9 @@ const { sign } = jsonwebtokenPkg;
 const { compare, genSalt, hash } = bcryptjsPkg;
 const { Schema } = mongoose;
 const {
-    HashingError
+    HashingError,
+    PasswordIncorrectError,
+    UserNotFoundError
 } = errors;
 
 // Constants
