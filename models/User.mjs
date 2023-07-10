@@ -65,6 +65,7 @@ userSchema.methods.generateNewUserCode = async function() {
 };
 
 userSchema.methods.generateToken = function(expiresIn) {
+    console.log('3');
     console.log('Expires in ' + expiresIn);
     const payload = { id: this._id };
     const token = sign(payload, jwtSecret, { expiresIn: expiresIn })

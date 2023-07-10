@@ -68,6 +68,8 @@ router.post('/',
     const newUser = new User({ name, email, password });
     const savedUser = await newUser.save();
 
+    console.log('1');
+    console.log('Expires in ' + jwtExpiry);
     const token = savedUser.generateToken(jwtExpiry);
     res.status(201).json({ auth: true, token: token });
   })
@@ -95,6 +97,8 @@ router.post('/login',
     await user.comparePassword(password); // Throws error if password doesn't match
     
     // User matched, return token
+    console.log('2');
+    console.log('Expires in ' + jwtExpiry);
     const token = user.generateToken(jwtExpiry);
     res.status(200).json({ auth: true, token: token });
   })
