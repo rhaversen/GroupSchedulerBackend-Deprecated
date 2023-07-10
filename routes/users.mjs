@@ -109,8 +109,7 @@ router.get('/events',
   passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
-    const populatedUser = user.populate('events');
-    await user.execPopulate();
+    const populatedUser = await user.populate('events').exec();
     return res.status(200).json(populatedUser);
   })
 );
@@ -125,7 +124,7 @@ router.post('/new-code',
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
     // Generate a new userCode
-    user.generateNewUserCode();
+    await user.generateNewUserCode();
     return res.status(200).json(user.userCode);
   })
 );
@@ -204,7 +203,7 @@ router.patch('/update-password',
   passport.authenticate('jwt', { session: false }),
   asyncErrorHandler(async (req, res, next) => {
     const user = req.user;
-    user.comparePassword(req.body.oldPassword); // Throws error if password doesn't match
+    await user.comparePassword(req.body.oldPassword); // Throws error if password doesn't match
     user.password = req.body.newPassword;
     await user.save();
     return res.status(200).json(user);
