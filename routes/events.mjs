@@ -3,7 +3,6 @@
 // Third-party libraries
 import { Router } from 'express';
 import passport from 'passport';
-import validator from 'validator';
 
 // Own modules
 import errors from '../utils/errors.mjs';
@@ -11,62 +10,20 @@ import logger from '../utils/logger.mjs';
 import Event from '../models/Event.mjs';
 import User from '../models/User.mjs';
 import asyncErrorHandler from '../middleware/asyncErrorHandler.mjs';
+import {
+    getEvent,
+    checkUserInEvent,
+    checkUserIsAdmin
+} from '../middleware/eventFunctions.mjs';
+import {
+    sanitizeInput,
+  } from '../middleware/sanitizer.mjs';
 
 // Destructuring and global variables
 const {
-    UserNotInEventError,
     MissingFieldsError,
-    EventNotFoundError,
-    UserNotAdminError,
-    InvalidEventIdOrCode,
 } = errors;
 const router = Router();
-
-// Functions
-function isMongoId(str) {
-    return /^[0-9a-fA-F]{24}$/.test(str);
-}
-
-function isNanoid(str) {
-    return /^[1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]{10}$/.test(str);
-}
-
-// Get event by eventId or eventCode
-async function getEvent(req, res, next) {
-    const eventIdOrCode = req.params.eventIdOrCode;
-    let query;
-    if (isMongoId(eventIdOrCode)) { // It's a MongoDB ObjectId
-        query = { _id: eventIdOrCode };
-    } else if (isNanoid(eventIdOrCode)) { // It's a nanoid
-        query = { eventCode: eventIdOrCode };
-    } else {
-        return next(new InvalidEventIdOrCode('The provided ID or code is not valid'));
-    }
-
-    const event = await Event.findOne(query).exec();
-    
-    // Check if event exists
-    if (!event) return next(new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong'));
-
-    req.event = event;
-    next();
-}
-
-// Check if the user is a participant of the event
-function checkUserInEvent(req, res, next) {
-    if (!req.event.participants.includes(req.user.id)) {
-        return next(new UserNotInEventError('User not authorized to view this event'));
-    }
-    next();
-}
-
-// Throw error if the event is locked and user is NOT admin
-function checkUserIsAdmin(req, res, next) {
-    if (req.event.isLocked && !req.event.isAdmin(req.user.id)) {
-        return next(new UserNotAdminError('User not authorized to edit this event'));
-    }
-    next();
-}
 
 /**
  * @route POST api/v1/events/:eventIdOrCode/new-code
@@ -75,11 +32,13 @@ function checkUserIsAdmin(req, res, next) {
 */
 router.post('/:eventIdOrCode/new-code',
     passport.authenticate('jwt', { session: false }),
-    asyncErrorHandler(getEvent),
+    sanitizeInput,
     checkUserInEvent,
     checkUserIsAdmin,
     asyncErrorHandler(async (req, res, next) => {
-        const event = req.event;
+        const eventIdOrCode = req.params.eventIdOrCode;
+        const event = getEvent(eventIdOrCode);
+        
         // Generate a new eventCode
         event.generateNewEventCode();
         return res.status(200).json(event.eventCode);
@@ -93,11 +52,11 @@ router.post('/:eventIdOrCode/new-code',
  */
 router.get('/:eventIdOrCode',
     passport.authenticate('jwt', { session: false }),
-    asyncErrorHandler(getEvent),
+    sanitizeInput,
     checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
-        logger.info('return event')
-        const event = req.event;
+        const eventIdOrCode = req.params.eventIdOrCode;
+        const event = getEvent(eventIdOrCode);
         return res.status(200).json(event);
     })
 );
@@ -109,6 +68,7 @@ router.get('/:eventIdOrCode',
  */
 router.post('/',
     passport.authenticate('jwt', { session: false }),
+    sanitizeInput,
     asyncErrorHandler(async (req, res, next) => {
         const { 
             eventName, 
@@ -155,7 +115,7 @@ router.post('/',
  */
 router.patch('/:eventIdOrCode',
     passport.authenticate('jwt', { session: false }),
-    asyncErrorHandler(getEvent),
+    sanitizeInput,
     checkUserInEvent,
     checkUserIsAdmin,
     asyncErrorHandler(async (req, res, next) => {
@@ -166,7 +126,8 @@ router.patch('/:eventIdOrCode',
             endDate,
         } = req.body;
 
-        const event = req.event;
+        const eventIdOrCode = req.params.eventIdOrCode;
+        const event = getEvent(eventIdOrCode)
 
         // Update the event
         if(eventName) event.eventName = eventName;
@@ -187,9 +148,10 @@ router.patch('/:eventIdOrCode',
  */
 router.put('/:eventIdOrCode/users',
     passport.authenticate('jwt', { session: false }),
-    asyncErrorHandler(getEvent),
+    sanitizeInput,
     asyncErrorHandler(async (req, res, next) => {
-        const event = req.event;
+        const eventIdOrCode = req.params.eventIdOrCode;
+        const event = getEvent(eventIdOrCode)
         const user = req.user;
 
         // Add event to user's events and user to event's participants
@@ -210,11 +172,12 @@ router.put('/:eventIdOrCode/users',
  */
 router.delete('/:eventIdOrCode/users',
     passport.authenticate('jwt', { session: false }),
-    asyncErrorHandler(getEvent),
+    sanitizeInput,
     checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
+        const eventIdOrCode = req.params.eventIdOrCode;
+        const event = getEvent(eventIdOrCode);
         const user = req.user;
-        const event = req.event;
 
         // Remove event from user's events, and user from event's participants
         user.events.pull(event.id);
@@ -233,11 +196,13 @@ router.delete('/:eventIdOrCode/users',
  */
 router.delete('/:eventIdOrCode',
     passport.authenticate('jwt', { session: false }),
-    asyncErrorHandler(getEvent),
+    sanitizeInput,
     checkUserInEvent,
     checkUserIsAdmin,
     asyncErrorHandler(async (req, res, next) => {
-        req.event.delete();
+        const eventIdOrCode = req.params.eventIdOrCode;
+        const event = getEvent(eventIdOrCode);
+        event.delete();
         return res.status(204);
 }));
 
