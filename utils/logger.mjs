@@ -16,7 +16,7 @@ const __dirname = dirname(__filename);
 const logger = createLogger({
     levels: {info: 0, warn: 1, error: 2},
     format: _format.combine(
-        _format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        _format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:SSS' }),
         _format.json(), // Use JSON format for logs
         _format.printf((logObject) => {
             return `${logObject.timestamp} ${logObject.level}: ${logObject.message}`;
@@ -33,7 +33,13 @@ const logger = createLogger({
 if (process.env.NODE_ENV !== 'production') {
     logger.add(
         new _transports.Console({
-            format: _format.simple(),
+            format: _format.combine(
+                _format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+                _format.colorize(),
+                _format.json(), // Use JSON format for logs
+                _format.printf((logObject) => {
+                    return `${logObject.timestamp} ${logObject.level}: ${logObject.message}`;
+                })),
         })
     );
 }
