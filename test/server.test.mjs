@@ -7,13 +7,15 @@ import chaiHttp from 'chai-http';
 chai.use(chaiHttp);
 const { expect } = chai;
 
-import { deleteAllDocumentsFromAllCollections } from '../database.mjs';
+import { deleteAllDocumentsFromAllCollections, disconnectFromDatabase } from '../database.mjs';
+import logger from '../utils/logger.mjs';
 
-let serverModule = await import('../server.mjs');
-let shutDown = serverModule.shutDown;
+let server;
+
 
 describe('Server Tests', () => {
   before(async () => {
+    server = await import('../server.mjs');
     // Wipe database before testing
     await deleteAllDocumentsFromAllCollections()
   });
@@ -23,8 +25,8 @@ describe('Server Tests', () => {
     // For example, close any open connections, stop the server, etc.
     // This is executed once after all tests in this suite have finished
 
-    // Close the server (Automatically disconnects from the database)
-    shutDown();
+    // Disconnect from the database
+    await disconnectFromDatabase();
   });
 
   afterEach(async () => {
