@@ -57,12 +57,12 @@ const sensitiveApiLimiter = RateLimit({
 // Apply the stricter rate limiters to the routes
 app.use('/api/v1/users/update-password', sensitiveApiLimiter); // This route has a stricter limit
 
-//Test index page
+// Test index page
 app.get('/', function(req, res) {
     res.sendFile(join(__dirname, '/public/index.html'));
 });
 
-//Start server
+// Start server
 server.listen(port, () => {
     logger.info(`App listening at http://localhost:${port}`);
 });
@@ -75,35 +75,35 @@ process.on('unhandledRejection', (err) => {
     });
 });
 
+// Handler function to handle the Promise
+function shutDown() {
+    cleanUp()
+    .then(() => logger.info('Shutdown completed'))
+    .catch((err) => {
+    logger.error('An error occurred during shutdown:', err);
+    });
+}
+
 // Shutdown function
-async function shutdownServer() {
+async function cleanUp() {
     logger.info('Starting cleanup and disconnection...');
     try {
-      await disconnectFromDatabase();
-      server.close(() => {
-        logger.info('Server closed');
-        process.exit(0); // Exit with code 0 indicating successful termination
-      });
+        await disconnectFromDatabase();
+        server.close(() => {
+            logger.info('Server closed');
+            process.exit(0); // Exit with code 0 indicating successful termination
+        });
     } catch (error) {
-      logger.error('Error disconnecting from database:', error);
-      server.close(() => {
-        logger.info('Server closed with error');
-        process.exit(1); // Exit with code 1 indicating termination with error
-      });
+        logger.error('Error disconnecting from database:', error);
+        server.close(() => {
+            logger.info('Server closed with error');
+            process.exit(1); // Exit with code 1 indicating termination with error
+        });
     }
-  }
-  
-  // Handler function to handle the Promise
-  function handleShutdown() {
-    shutdownServer()
-      .then(() => logger.info('Shutdown completed'))
-      .catch((err) => {
-        logger.error('An error occurred during shutdown:', err);
-      });
-  }
-  
-  // Assigning handler to SIGINT signal
-  process.on('SIGINT', handleShutdown);
+}
+
+// Assigning handler to SIGINT signal
+process.on('SIGINT', shutDown);
   
   
-export default app;
+export { app, shutDown };

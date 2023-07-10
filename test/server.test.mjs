@@ -26,7 +26,7 @@ describe('Server Tests', () => {
     // This is executed once after all tests in this suite have finished
 
     // Close the server (Automatically disconnects from the database)
-    await server.close();
+    server.shutDown();
   });
 
   afterEach(async () => {
@@ -42,7 +42,7 @@ describe('Server Tests', () => {
   it('GET / should return the index page', async function () {
     this.timeout(10000); // Set the timeout to 10 seconds.
 
-    const res = await chai.request(server.default).get('/');
+    const res = await chai.request(server.app).get('/');
     expect(res).to.have.status(200);
   });
 
@@ -51,7 +51,7 @@ describe('Server Tests', () => {
 
     const newUser = { name: 'Test User', email: 'testuser@gmail.com', password: 'testpassword' };
 
-    const res = await chai.request(server.default).post('/api/v1/users').send(newUser);
+    const res = await chai.request(server.app).post('/api/v1/users').send(newUser);
 
     expect(res).to.have.status(201);
     expect(res.body).to.be.a('object');
