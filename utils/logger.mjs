@@ -14,7 +14,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const logger = createLogger({
-    levels: {info: 0, warn: 1, error: 2},
+    levels: {
+        error: 0,
+        warn: 1,
+        info: 2,
+        http: 3,
+        verbose: 4,
+        debug: 5,
+        silly: 6
+    },
     format: _format.combine(
         _format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:SSS' }),
         _format.json(), // Use JSON format for logs
@@ -24,7 +32,7 @@ const logger = createLogger({
     ),
     defaultMeta: { service: 'group-scheduler' }, // Set a default metadata field
     transports: [
-        new _transports.File({ filename: join(__dirname, '../logs/error.log'), level: 2 }),
+        new _transports.File({ filename: join(__dirname, '../logs/error.log'), level: 'error' }),
         new _transports.File({ filename: join(__dirname, '../logs/combined.log') }),
     ],
 });
