@@ -20,6 +20,7 @@ const port = process.env.SERVER_PORT;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const app = express();
+const server = http.createServer(app);
 
 // Function invocations
 configurePassport(passport);
@@ -61,7 +62,7 @@ app.get('/', function(req, res) {
 });
 
 //Start server
-app.listen(port, () => {
+server.listen(port, () => {
     logger.info(`App listening at http://localhost:${port}`);
 });
 
