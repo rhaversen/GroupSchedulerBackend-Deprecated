@@ -37,7 +37,7 @@ router.post('/:eventIdOrCode/new-code',
     checkUserIsAdmin,
     asyncErrorHandler(async (req, res, next) => {
         const eventIdOrCode = req.params.eventIdOrCode;
-        const event = getEvent(eventIdOrCode);
+        const event = await getEvent(eventIdOrCode);
         
         // Generate a new eventCode
         event.generateNewEventCode();
@@ -56,7 +56,7 @@ router.get('/:eventIdOrCode',
     checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
         const eventIdOrCode = req.params.eventIdOrCode;
-        const event = getEvent(eventIdOrCode);
+        const event = await getEvent(eventIdOrCode);
         return res.status(200).json(event);
     })
 );
@@ -176,7 +176,7 @@ router.delete('/:eventIdOrCode/users',
     checkUserInEvent,
     asyncErrorHandler(async (req, res, next) => {
         const eventIdOrCode = req.params.eventIdOrCode;
-        const event = getEvent(eventIdOrCode);
+        const event = await getEvent(eventIdOrCode);
         const user = req.user;
 
         // Remove event from user's events, and user from event's participants
@@ -201,7 +201,7 @@ router.delete('/:eventIdOrCode',
     checkUserIsAdmin,
     asyncErrorHandler(async (req, res, next) => {
         const eventIdOrCode = req.params.eventIdOrCode;
-        const event = getEvent(eventIdOrCode);
+        const event = await getEvent(eventIdOrCode);
         event.delete();
         return res.status(204);
 }));

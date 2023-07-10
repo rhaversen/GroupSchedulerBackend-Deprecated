@@ -19,7 +19,7 @@ export function isNanoid(str) {
 }
 
 // Get event by eventId or eventCode
-export async function getEvent(req, res, next) {
+export async function getEvent(eventIdOrCode) {
     let query;
     if (isMongoId(eventIdOrCode)) { // It's a MongoDB ObjectId
         query = { _id: eventIdOrCode };
