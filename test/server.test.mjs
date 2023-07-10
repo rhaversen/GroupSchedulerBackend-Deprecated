@@ -10,12 +10,13 @@ const { expect } = chai;
 import { deleteAllDocumentsFromAllCollections } from '../database.mjs';
 
 let server;
+let shutDown
 
 
 describe('Server Tests', () => {
   before(async () => {
     server = await import('../server.mjs');
-
+    shutDown = server.shutDown;
     //Wipe database before testing
     await deleteAllDocumentsFromAllCollections()
   });
