@@ -10,14 +10,14 @@ const { expect } = chai;
 import { deleteAllDocumentsFromAllCollections } from '../database.mjs';
 
 let server;
-let shutDown
+let shutDown;
 
 
 describe('Server Tests', () => {
   before(async () => {
     server = await import('../server.mjs');
     shutDown = server.shutDown;
-    //Wipe database before testing
+    // Wipe database before testing
     await deleteAllDocumentsFromAllCollections()
   });
 
@@ -27,7 +27,7 @@ describe('Server Tests', () => {
     // This is executed once after all tests in this suite have finished
 
     // Close the server (Automatically disconnects from the database)
-    server.shutDown();
+    shutDown();
   });
 
   afterEach(async () => {
@@ -36,7 +36,7 @@ describe('Server Tests', () => {
 
     // Assuming you have a Mongoose model named "User" for the "users" collection
 
-    //Wipe database after each test
+    // Wipe database after each test
     await deleteAllDocumentsFromAllCollections()
   });
 
