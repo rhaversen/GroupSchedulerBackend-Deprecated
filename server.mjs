@@ -25,15 +25,15 @@ const server = http.createServer(app);
 // Function invocations
 configurePassport(passport);
 
-// Connect to MongoDB
-connectToDatabase();
-
 // Middleware
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(mongoSanitize());
 app.use(passport.initialize());
 app.use(globalErrorHandler);
+
+// Connect to MongoDB
+await connectToDatabase();
 
 // Create rate limiter for general routes
 const apiLimiter = RateLimit({
