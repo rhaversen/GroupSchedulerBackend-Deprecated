@@ -65,12 +65,9 @@ userSchema.methods.generateNewUserCode = async function() {
 };
 
 userSchema.methods.generateToken = function(jwtExpiry) {
-    console.log('3');
-    console.log('Expires in ' + expiresIn);
     const payload = { id: this._id };
     const token = sign(payload, jwtSecret, { expiresIn: jwtExpiry })
     logger.info('JWT created')
-    logger.info(`Token: ${token}`);
     return token;
 };
 
