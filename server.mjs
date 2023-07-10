@@ -65,8 +65,17 @@ app.listen(port, () => {
     logger.info(`App listening at http://localhost:${port}`);
 });
 
-process.on('SIGINT', async () => {
-    logger.info('Received SIGINT. Starting cleanup and disconnection...');
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled promise rejection:', err);
+    server.close(() => {
+        process.exit(1);
+    });
+});
+
+// Shutdown function
+async function shutdownServer() {
+    logger.info('Starting cleanup and disconnection...');
     try {
       await disconnectFromDatabase();
       server.close(() => {
