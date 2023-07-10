@@ -7,7 +7,7 @@ import chaiHttp from 'chai-http';
 chai.use(chaiHttp);
 const { expect } = chai;
 
-import { deleteAllDocumentsFromAllCollections, disconnectFromDatabase } from '../database.mjs';
+import { deleteAllDocumentsFromAllCollections } from '../database.mjs';
 import logger from '../utils/logger.mjs';
 
 let server;
@@ -20,8 +20,8 @@ describe('Server Tests', () => {
     await deleteAllDocumentsFromAllCollections()
   });
 
-  after(async () => {
-    server.shutDown();
+  beforeEach(async () => {
+
   });
 
   afterEach(async () => {
@@ -32,6 +32,10 @@ describe('Server Tests', () => {
 
     // Wipe database after each test
     await deleteAllDocumentsFromAllCollections()
+  });
+
+  after(async () => {
+    server.shutDown();
   });
 
   it('GET / should return the index page', async function () {
@@ -51,6 +55,9 @@ describe('Server Tests', () => {
     expect(res).to.have.status(201);
     expect(res.body).to.be.a('object');
     expect(res.body).to.have.property('token');
+    expect(res.body).to.have.property('auth');
+
+    expect(res.body.auth).to.be.true;
 
     const token = res.body.token;
 
