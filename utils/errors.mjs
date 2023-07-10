@@ -11,6 +11,7 @@ class UserNotFoundError extends ValidationError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
+    this.statusCode = 404;
   }
 }
 
@@ -18,6 +19,7 @@ class InvalidEmailError extends ValidationError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
+    this.statusCode = 400;
   }
 }
 
@@ -25,6 +27,7 @@ class EmailAlreadyExistsError extends ValidationError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
+    this.statusCode = 400;
   }
 }
 
@@ -32,6 +35,7 @@ class PasswordIncorrectError extends ValidationError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
+    this.statusCode = 400;
   }
 }
 
@@ -39,6 +43,7 @@ class UserNotInEventError extends ValidationError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
+    this.statusCode = 403;
   }
 }
 
@@ -46,6 +51,7 @@ class UserNotAdminError extends ValidationError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
+    this.statusCode = 403;
   }
 }
 
@@ -53,6 +59,7 @@ class InvalidEventIdOrCode extends ValidationError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
+    this.statusCode = 400;
   }
 }
 
@@ -60,6 +67,7 @@ class MissingFieldsError extends ValidationError {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
+    this.statusCode = 400;
   }
 }
 
