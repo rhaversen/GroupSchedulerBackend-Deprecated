@@ -20,15 +20,6 @@ describe('Server Tests', () => {
     await deleteAllDocumentsFromAllCollections()
   });
 
-  after(async () => {
-    // Perform any necessary cleanup after the entire test suite
-    // For example, close any open connections, stop the server, etc.
-    // This is executed once after all tests in this suite have finished
-
-    // Disconnect from the database
-    await disconnectFromDatabase();
-  });
-
   afterEach(async () => {
     // Clear the database after each test
     // You need to implement the logic to clear your database here
