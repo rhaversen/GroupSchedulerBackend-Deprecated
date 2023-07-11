@@ -9,6 +9,7 @@ import express from 'express';
 import mongoSanitize from 'express-mongo-sanitize';
 import RateLimit from 'express-rate-limit';
 import passport from 'passport';
+import helmet from 'helmet';
 
 // Own modules
 import logger from './utils/logger.mjs';
@@ -27,10 +28,18 @@ const server = http.createServer(app);
 configurePassport(passport);
 
 // Middleware
+app.use(helmet());
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(mongoSanitize());
 app.use(passport.initialize());
+
+// Only use HTTPS
+//app.use(helmet.hsts({
+//    maxAge: 60 * 60 * 24 * 365, // 1 year in seconds
+//    includeSubDomains: true,
+//    preload: true
+//}));
 
 // Connect to MongoDB
 await connectToDatabase();
