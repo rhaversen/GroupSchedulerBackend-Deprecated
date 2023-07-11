@@ -139,15 +139,17 @@ router.put('/following/:userId',
   asyncErrorHandler(async (req, res, next) => {
     const followedUserId = req.params.userId;
     const followedUser = await User.findById(followedUserId).exec();
+    const user = req.user;
 
     if (!followedUser) {
       return next(new UserNotFoundError('The user to be followed could not be found' ));
     }
+    if (followedUser._id === user.id) {
+      return next(new UserNotFoundError('User cant follow or un-follow themselves'));
+    }
 
-    const user = req.user;
     user.following.push(followedUserId);
     followedUser.followers.push(user.id);
-
 
     await user.save();
     await followedUser.save();
@@ -166,12 +168,15 @@ router.delete('/following/:userId',
   asyncErrorHandler(async (req, res, next) => {
     const followedUserId = req.params.userId;
     const followedUser = await User.findById(followedUserId).exec();
+    const user = req.user;
 
     if (!followedUser) {
       return next(new UserNotFoundError('The user to be un-followed could not be found'));
     }
+    if (followedUser._id === user.id) {
+      return next(new UserNotFoundError('User cant follow or un-follow themselves'));
+    }
 
-    const user = req.user;
     user.following.pull(followedUserId);
     followedUser.followers.pull(user.id);
 
