@@ -65,5 +65,4 @@ jobs:
        - name: Upload sarif file to repository
          uses: github/codeql-action/upload-sarif@v2
          with:
-          sarif_file: ./ethicalcheck-results.sarif
-
+          sarif_file: ${{ github.workspace }}/ethicalcheck-results.sarif
