@@ -9,7 +9,6 @@ import validator from 'validator';
 // Own modules
 import errors from '../utils/errors.mjs';
 import User from '../models/User.mjs';
-import asyncErrorHandler from '../middleware/asyncErrorHandler.mjs';
 
 // Setup
 dotenv.config();
@@ -49,7 +48,7 @@ function sanitizeObject(obj) {
  */
 router.post('/',
   sanitizeInput,
-  asyncErrorHandler(async (req, res, next) => {
+  async (req, res, next) => {
     let { name, email, password } = req.body;
 
     if (!email || !password) {
@@ -70,7 +69,7 @@ router.post('/',
 
     const token = savedUser.generateToken(jwtExpiry);
     res.status(201).json({ auth: true, token: token });
-  })
+  }
 );
 
 /**
@@ -80,7 +79,7 @@ router.post('/',
 */
 router.post('/login',
   sanitizeInput,
-  asyncErrorHandler(async (req, res, next) => {
+  async (req, res, next) => {
     let { email, password } = req.body;
 
     // Find user by email
@@ -97,7 +96,7 @@ router.post('/login',
     // User matched, return token
     const token = user.generateToken(jwtExpiry);
     res.status(200).json({ auth: true, token: token });
-  })
+  }
 );
 
 /**
@@ -107,11 +106,11 @@ router.post('/login',
 */
 router.get('/events',
   passport.authenticate('jwt', { session: false }),
-  asyncErrorHandler(async (req, res, next) => {
+  async (req, res, next) => {
     const user = req.user;
     const populatedUser = await user.populate('events').execPopulate();
     return res.status(200).json(populatedUser.events);
-  })
+  }
 );
 
 /**
@@ -121,12 +120,12 @@ router.get('/events',
 */
 router.post('/new-code',
   passport.authenticate('jwt', { session: false }),
-  asyncErrorHandler(async (req, res, next) => {
+  async (req, res, next) => {
     const user = req.user;
     // Generate a new userCode
     await user.generateNewUserCode();
     return res.status(200).json(user.userCode);
-  })
+  }
 );
 
 /**
@@ -136,7 +135,7 @@ router.post('/new-code',
 */
 router.put('/following/:userId',
   passport.authenticate('jwt', { session: false }),
-  asyncErrorHandler(async (req, res, next) => {
+  async (req, res, next) => {
     const followedUserId = req.params.userId;
     const followedUser = await User.findById(followedUserId).exec();
     const user = req.user;
@@ -155,7 +154,7 @@ router.put('/following/:userId',
     await followedUser.save();
 
     return res.status(200).json(followedUser);
-  })
+  }
 );
 
 /**
