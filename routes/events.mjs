@@ -10,10 +10,12 @@ import logger from '../utils/logger.mjs';
 import Event from '../models/Event.mjs';
 import User from '../models/User.mjs';
 import {
-    getEvent,
     checkUserInEvent,
     checkUserIsAdmin
-} from '../middleware/eventFunctions.mjs';
+} from '../middleware/eventUserChecks.mjs';
+import {
+    getEvent
+} from '../utils/eventFunctions.mjs';
 import {
     sanitizeInput,
   } from '../middleware/sanitizer.mjs';
