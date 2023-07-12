@@ -9,7 +9,6 @@ import errors from '../utils/errors.mjs';
 import logger from '../utils/logger.mjs';
 import Event from '../models/Event.mjs';
 import User from '../models/User.mjs';
-import asyncErrorHandler from '../middleware/asyncErrorHandler.mjs';
 import {
     getEvent,
     checkUserInEvent,
@@ -35,14 +34,14 @@ router.post('/:eventIdOrCode/new-code',
     sanitizeInput,
     checkUserInEvent,
     checkUserIsAdmin,
-    asyncErrorHandler(async (req, res, next) => {
+    async (req, res, next) => {
         const eventIdOrCode = req.params.eventIdOrCode;
         const event = await getEvent(eventIdOrCode);
         
         // Generate a new eventCode
         event.generateNewEventCode();
         return res.status(200).json(event.eventCode);
-    })
+    }
 );
 
 /**
@@ -54,11 +53,11 @@ router.get('/:eventIdOrCode',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     checkUserInEvent,
-    asyncErrorHandler(async (req, res, next) => {
+    async (req, res, next) => {
         const eventIdOrCode = req.params.eventIdOrCode;
         const event = await getEvent(eventIdOrCode);
         return res.status(200).json(event);
-    })
+    }
 );
 
 /**
@@ -69,7 +68,7 @@ router.get('/:eventIdOrCode',
 router.post('/',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
-    asyncErrorHandler(async (req, res, next) => {
+    async (req, res, next) => {
         const { 
             eventName, 
             eventDescription, 
@@ -105,7 +104,7 @@ router.post('/',
         await newEvent.save();
 
         return res.status(201).json(newEvent);
-    })
+    }
 );
 
 /**
@@ -118,7 +117,7 @@ router.patch('/:eventIdOrCode',
     sanitizeInput,
     checkUserInEvent,
     checkUserIsAdmin,
-    asyncErrorHandler(async (req, res, next) => {
+    async (req, res, next) => {
         const {
             eventName, 
             eventDescription, 
@@ -127,7 +126,7 @@ router.patch('/:eventIdOrCode',
         } = req.body;
 
         const eventIdOrCode = req.params.eventIdOrCode;
-        const event = getEvent(eventIdOrCode)
+        const event = await getEvent(eventIdOrCode)
 
         // Update the event
         if(eventName) event.eventName = eventName;
@@ -138,7 +137,7 @@ router.patch('/:eventIdOrCode',
         await event.save();
 
         return res.status(200).json(event);
-    })
+    }
 );
 
 /**
@@ -149,7 +148,7 @@ router.patch('/:eventIdOrCode',
 router.put('/:eventIdOrCode/users',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
-    asyncErrorHandler(async (req, res, next) => {
+    async (req, res, next) => {
         const eventIdOrCode = req.params.eventIdOrCode;
         const event = getEvent(eventIdOrCode)
         const user = req.user;
@@ -162,7 +161,7 @@ router.put('/:eventIdOrCode/users',
         await event.save();
 
         return res.status(200).json(event);
-    })
+    }
 );
 
 /**
@@ -174,7 +173,7 @@ router.delete('/:eventIdOrCode/users',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     checkUserInEvent,
-    asyncErrorHandler(async (req, res, next) => {
+    async (req, res, next) => {
         const eventIdOrCode = req.params.eventIdOrCode;
         const event = await getEvent(eventIdOrCode);
         const user = req.user;
@@ -187,7 +186,8 @@ router.delete('/:eventIdOrCode/users',
         await event.save();
 
         return res.status(204);
-}));
+    }
+);
 
 /**
  * @route DELETE api/v1/events/:eventIdOrCode
@@ -199,11 +199,12 @@ router.delete('/:eventIdOrCode',
     sanitizeInput,
     checkUserInEvent,
     checkUserIsAdmin,
-    asyncErrorHandler(async (req, res, next) => {
+    async (req, res, next) => {
         const eventIdOrCode = req.params.eventIdOrCode;
         const event = await getEvent(eventIdOrCode);
         event.delete();
         return res.status(204);
-}));
+    }
+);
 
 export default router;

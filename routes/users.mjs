@@ -165,7 +165,7 @@ router.put('/following/:userId',
 */
 router.delete('/following/:userId',
   passport.authenticate('jwt', { session: false }),
-  asyncErrorHandler(async (req, res, next) => {
+  async (req, res, next) => {
     const followedUserId = req.params.userId;
     const followedUser = await User.findById(followedUserId).exec();
     const user = req.user;
@@ -184,7 +184,7 @@ router.delete('/following/:userId',
     await followedUser.save();
 
     return res.status(200).json(followedUser);
-  })
+  }
 );
 
 /**
@@ -194,9 +194,9 @@ router.delete('/following/:userId',
 */
 router.get('/',
   passport.authenticate('jwt', { session: false }),
-  asyncErrorHandler(async (req, res, next) => {
+  async (req, res, next) => {
     return res.status(200).json(req.user);
-  })
+  }
 );
 
 /**
@@ -206,13 +206,13 @@ router.get('/',
 */
 router.patch('/update-password',
   passport.authenticate('jwt', { session: false }),
-  asyncErrorHandler(async (req, res, next) => {
+  async (req, res, next) => {
     const user = req.user;
     await user.comparePassword(req.body.oldPassword); // Throws error if password doesn't match
     user.password = req.body.newPassword;
     await user.save();
     return res.status(200).json(user);
-  })
+  }
 );
 
 /**
@@ -222,12 +222,12 @@ router.patch('/update-password',
 */
 router.patch('/update-name',
   passport.authenticate('jwt', { session: false }),
-  asyncErrorHandler(async (req, res, next) => {
+  async (req, res, next) => {
     const user = req.user;
     user.name = req.body.newName;
     await user.save();
     return res.status(200).json(user);
-  })
+  }
 );
 
 export default router;

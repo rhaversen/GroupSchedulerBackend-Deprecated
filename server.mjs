@@ -6,6 +6,7 @@ import http from 'http';
 // Third-party libraries
 import 'dotenv/config';
 import express from 'express';
+import 'express-async-errors';
 import mongoSanitize from 'express-mongo-sanitize';
 import RateLimit from 'express-rate-limit';
 import passport from 'passport';
