@@ -34,8 +34,7 @@ export async function getEvent(eventIdOrCode) {
     // Check if event exists
     if (!event) return next(new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong'));
 
-    req.event = event;
-    next();
+    return event;
 }
 
 // Check if the user is a participant of the event
