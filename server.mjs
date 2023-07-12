@@ -49,7 +49,7 @@ await connectToDatabase();
 const apiLimiter = RateLimit({
     windowMs: 1*60*1000, // 1 minute
     max: 5
-  });
+});
 
 // Import and use routes, apply general rate limiter
 import userRoutes from './routes/users.mjs';
