@@ -1,13 +1,24 @@
+// Third-party libraries
+import validator from 'validator';
+import dotenv from 'dotenv';
+
 // Own modules
 import errors from '../utils/errors.mjs';
+import User from '../models/User.mjs';
 
 // Destructuring and global variables
 const {
-    InvalidEmailError, 
-    UserNotFoundError,
-    EmailAlreadyExistsError,
-    MissingFieldsError
-  } = errors;
+  InvalidEmailError, 
+  UserNotFoundError,
+  EmailAlreadyExistsError,
+  MissingFieldsError
+} = errors;
+const jwtExpiry = process.env.JWT_EXPIRY;
+
+// Setup
+dotenv.config();
+
+
 
 export const registerUser = async (req, res, next) => {
     let { name, email, password } = req.body;

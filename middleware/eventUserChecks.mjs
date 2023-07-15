@@ -1,12 +1,8 @@
 import errors from '../utils/errors.mjs';
-import Event from '../models/Event.mjs';
 
 const {
     UserNotInEventError,
-    MissingFieldsError,
-    EventNotFoundError,
     UserNotAdminError,
-    InvalidEventIdOrCode,
 } = errors;
 
 // Check if the user is a participant of the event
