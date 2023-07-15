@@ -1,29 +1,29 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { Router } from 'express';
+import Router from 'express';
 import passport from 'passport';
 
 // Own modules
-import errors from '../utils/errors.mjs';
-import logger from '../utils/logger.mjs';
-import Event from '../models/Event.mjs';
-import User from '../models/User.mjs';
 import {
     checkUserInEvent,
     checkUserIsAdmin
 } from '../middleware/eventUserChecks.mjs';
 import {
-    getEvent
-} from '../utils/eventFunctions.mjs';
-import {
     sanitizeInput,
-  } from '../middleware/sanitizer.mjs';
+} from '../middleware/sanitizer.mjs';
+
+// Controller functions
+import {
+    newCode,
+    getEvent,
+    createEvent,
+    updateEvent,
+    joinEvent,
+    leaveEvent,
+    deleteEvent } from '../controllers/eventController.mjs';
 
 // Destructuring and global variables
-const {
-    MissingFieldsError,
-} = errors;
 const router = Router();
 
 /**
@@ -36,14 +36,7 @@ router.post('/:eventIdOrCode/new-code',
     sanitizeInput,
     checkUserInEvent,
     checkUserIsAdmin,
-    async (req, res, next) => {
-        const eventIdOrCode = req.params.eventIdOrCode;
-        const event = await getEvent(eventIdOrCode);
-        
-        // Generate a new eventCode
-        event.generateNewEventCode();
-        return res.status(200).json(event.eventCode);
-    }
+    newCode
 );
 
 /**
@@ -55,11 +48,7 @@ router.get('/:eventIdOrCode',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     checkUserInEvent,
-    async (req, res, next) => {
-        const eventIdOrCode = req.params.eventIdOrCode;
-        const event = await getEvent(eventIdOrCode);
-        return res.status(200).json(event);
-    }
+    getEvent
 );
 
 /**
@@ -70,43 +59,7 @@ router.get('/:eventIdOrCode',
 router.post('/',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
-    async (req, res, next) => {
-        const { 
-            eventName, 
-            eventDescription, 
-            startDate, 
-            endDate,
-            isLocked,
-        } = req.body;
-
-        // Checks if eventName, startDate, and endDate are not falsy (e.g., undefined, null, empty string)
-        // and if isLocked is not undefined
-        if (!eventName || !startDate || !endDate || isLocked === undefined) {
-            return next(new MissingFieldsError('Missing required fields'));
-        }
-
-        const userId = req.user.id;
-        const user = await User.findById(userId).exec();
-        const participants = user;
-
-        let admins;
-        if (isLocked){
-            admins = user;
-        }
-
-        const newEvent = new Event({
-            eventName, 
-            eventDescription, 
-            startDate, 
-            endDate,
-            participants,
-            admins,
-        });
-
-        await newEvent.save();
-
-        return res.status(201).json(newEvent);
-    }
+    createEvent
 );
 
 /**
@@ -119,27 +72,7 @@ router.patch('/:eventIdOrCode',
     sanitizeInput,
     checkUserInEvent,
     checkUserIsAdmin,
-    async (req, res, next) => {
-        const {
-            eventName, 
-            eventDescription, 
-            startDate, 
-            endDate,
-        } = req.body;
-
-        const eventIdOrCode = req.params.eventIdOrCode;
-        const event = await getEvent(eventIdOrCode)
-
-        // Update the event
-        if(eventName) event.eventName = eventName;
-        if(eventDescription) event.eventDescription = eventDescription;
-        if(startDate) event.startDate = startDate;
-        if(endDate) event.endDate = endDate;
-
-        await event.save();
-
-        return res.status(200).json(event);
-    }
+    updateEvent
 );
 
 /**
@@ -150,20 +83,7 @@ router.patch('/:eventIdOrCode',
 router.put('/:eventIdOrCode/users',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
-    async (req, res, next) => {
-        const eventIdOrCode = req.params.eventIdOrCode;
-        const event = getEvent(eventIdOrCode)
-        const user = req.user;
-
-        // Add event to user's events and user to event's participants
-        user.events.push(event._id);
-        event.participants.push(user.id);
-
-        await user.save();
-        await event.save();
-
-        return res.status(200).json(event);
-    }
+    joinEvent
 );
 
 /**
@@ -175,20 +95,7 @@ router.delete('/:eventIdOrCode/users',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     checkUserInEvent,
-    async (req, res, next) => {
-        const eventIdOrCode = req.params.eventIdOrCode;
-        const event = await getEvent(eventIdOrCode);
-        const user = req.user;
-
-        // Remove event from user's events, and user from event's participants
-        user.events.pull(event.id);
-        event.participants.pull(user.id);
-
-        await user.save();
-        await event.save();
-
-        return res.status(204);
-    }
+    leaveEvent,
 );
 
 /**
@@ -201,12 +108,7 @@ router.delete('/:eventIdOrCode',
     sanitizeInput,
     checkUserInEvent,
     checkUserIsAdmin,
-    async (req, res, next) => {
-        const eventIdOrCode = req.params.eventIdOrCode;
-        const event = await getEvent(eventIdOrCode);
-        event.delete();
-        return res.status(204);
-    }
+    deleteEvent
 );
 
 export default router;
