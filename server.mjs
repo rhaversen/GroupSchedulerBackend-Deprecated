@@ -57,6 +57,11 @@ app.use('/api/v1/users', apiLimiter, userRoutes);
 import eventRoutes from './routes/events.mjs';
 app.use('/api/v1/events', apiLimiter, eventRoutes);
 
+// Test index page
+app.get('/', function(req, res) {
+    res.sendFile(join(__dirname, '/public/index.html'));
+});
+
 // Error handler middleware
 app.use(globalErrorHandler);
 
@@ -68,11 +73,6 @@ const sensitiveApiLimiter = RateLimit({
 
 // Apply the stricter rate limiters to the routes
 app.use('/api/v1/users/update-password', sensitiveApiLimiter); // This route has a stricter limit
-
-// Test index page
-app.get('/', function(req, res) {
-    res.sendFile(join(__dirname, '/public/index.html'));
-});
 
 // Start server
 server.listen(port, () => {
@@ -116,6 +116,5 @@ async function cleanUp() {
 
 // Assigning handler to SIGINT signal
 process.on('SIGINT', shutDown);
-  
-  
+
 export { app, shutDown };
