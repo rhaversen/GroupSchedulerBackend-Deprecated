@@ -21,7 +21,8 @@ import {
     updateEvent,
     joinEvent,
     leaveEvent,
-    deleteEvent } from '../controllers/eventController.mjs';
+    deleteEvent
+} from '../controllers/eventController.mjs';
 
 // Destructuring and global variables
 const router = Router();

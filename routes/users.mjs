@@ -1,11 +1,13 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { Router } from 'express';
+import Router from 'express';
 import passport from 'passport';
-import validator from 'validator';
 
 // Own modules
+import {
+  sanitizeInput,
+} from '../middleware/sanitizer.mjs';
 
 // Controller functions
 import {
@@ -22,24 +24,6 @@ import {
 
 // Destructuring and global variables
 const router = Router();
-
-// Sanitize middleware
-const sanitizeInput = (req, res, next) => {
-  sanitizeObject(req.body);
-  next();
-};
-
-function sanitizeObject(obj) {
-  for (let key in obj) {
-      if (obj.hasOwnProperty(key)) {
-          if (typeof obj[key] === 'object' && obj[key] !== null) {
-              sanitizeObject(obj[key]);
-          } else {
-              obj[key] = validator.escape(String(obj[key]));
-          }
-      }
-  }
-}
 
 /**
  * @route POST api/v1/users
