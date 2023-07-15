@@ -35,6 +35,17 @@ app.use(express.urlencoded({ extended: true })); // for parsing application/x-ww
 app.use(mongoSanitize());
 app.use(passport.initialize());
 
+// Helmet security
+// Prevent Cross-Site Scripting (XSS) attacks, which can often lead to CSRF attacks
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'"],
+        },
+    })
+);
 // Only use HTTPS
 //app.use(helmet.hsts({
 //    maxAge: 60 * 60 * 24 * 365, // 1 year in seconds
