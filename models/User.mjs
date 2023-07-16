@@ -32,7 +32,7 @@ const nanoidLength = 10;
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
 
 const userSchema = new Schema({
-    name: { type: String }, // This is how other users will recognize you. It should reflect your name or nickname. Don't worry, only users in the same events as you can see your name.
+    name: { type: String, required: true }, // This is how other users will recognize you. It should reflect your name or nickname. Don't worry, only users in the same events as you can see your name.
     email: { type: String, required: true, unique: true }, // This is how you will log in, no users will be able to see this
     password: { type: String, required: true }, 
     events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
