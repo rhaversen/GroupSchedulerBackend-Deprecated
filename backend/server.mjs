@@ -67,6 +67,8 @@ import userRoutes from './routes/users.mjs';
 app.use('/api/v1/users', apiLimiter, userRoutes);
 import eventRoutes from './routes/events.mjs';
 app.use('/api/v1/events', apiLimiter, eventRoutes);
+import availabilityRoutes from './routes/availabilities.mjs';
+app.use('/api/v1/availabilities', apiLimiter, availabilityRoutes);
 
 // Test index page
 app.get('/', function(req, res) {
