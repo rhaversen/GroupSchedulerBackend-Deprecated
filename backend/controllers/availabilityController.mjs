@@ -4,10 +4,11 @@ import User from "../models/User.mjs";
 export const newOrUpdateAvailability = async (req, res, next) => {
     const {
         description,
-        date,
         status,
         preference
     } = req.body;
+
+    const date = req.params.date;
 
     // Checks if description, date, status and preference are not falsy (e.g., undefined, null, empty string)
     if (!date) {

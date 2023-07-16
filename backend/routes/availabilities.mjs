@@ -12,17 +12,17 @@ import {
 // Controller functions
 import {
     newOrUpdateAvailability
-} from '../middleware/availabilityController.mjs';
+} from '../controllers/availabilityController.mjs';
 
 // Destructuring and global variables
 const router = Router();
 
 /**
- * @route PUT api/v1/users/availabilities
+ * @route PUT api/v1/users/availabilities/:date
  * @desc Create a new availability or update existing if the date is the same.
  * @access AUTHENTICATED
 */
-router.put('/',
+router.put('/date',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     newOrUpdateAvailability
