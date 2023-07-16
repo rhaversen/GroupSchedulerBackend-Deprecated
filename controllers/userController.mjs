@@ -18,8 +18,6 @@ const jwtExpiry = process.env.JWT_EXPIRY;
 // Setup
 dotenv.config();
 
-
-
 export const registerUser = async (req, res, next) => {
     let { name, email, password } = req.body;
 
@@ -32,7 +30,7 @@ export const registerUser = async (req, res, next) => {
     }
 
     const existingUser = await User.findOne({ email }).exec();
-    if (existingUser) {
+    if (existingUser) { // Check if existing user is truthy
       return next(new EmailAlreadyExistsError( 'Email already exists' ));
     }
 
@@ -46,12 +44,16 @@ export const registerUser = async (req, res, next) => {
 export const loginUser = async (req, res, next) => {
     let { email, password } = req.body;
 
+    if (!validator.isEmail(email)) {
+      return next(new InvalidEmailError('Invalid email format'));
+    }
+
     // Find user by email
     const user = await User.findOne({ email }).exec();
 
     // Check if user exists
     if (!user) {
-      return next(new UserNotFoundError('Email not found'));
+      return next(new UserNotFoundError('User not found'));
     }
 
     // Check password
