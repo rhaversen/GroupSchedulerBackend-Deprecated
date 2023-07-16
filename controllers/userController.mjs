@@ -14,15 +14,16 @@ const {
   MissingFieldsError
 } = errors;
 const jwtExpiry = process.env.JWT_EXPIRY;
+const jwtPersistentExpiry = process.env.JWT_PERSISTENT_EXPIRY;
 
 // Setup
 dotenv.config();
 
 export const registerUser = async (req, res, next) => {
-    let { name, email, password } = req.body;
+    let { name, email, password, stayLoggedIn } = req.body;
 
-    if (!email || !password) {
-      return next(new MissingFieldsError( 'Missing Email and/or Password field' ))
+    if (!name || !email || !password) {
+      return next(new MissingFieldsError( 'Missing Name, Email and/or Password' ))
     }
   
     if (!validator.isEmail(email)) {
@@ -37,12 +38,18 @@ export const registerUser = async (req, res, next) => {
     const newUser = new User({ name, email, password });
     const savedUser = await newUser.save();
 
-    const token = savedUser.generateToken(jwtExpiry);
+    const jwtExpiration = stayLoggedIn ? jwtPersistentExpiry : jwtExpiry;
+    const token = savedUser.generateToken(jwtExpiration);
+    
     res.status(201).json({ auth: true, token: token });
 }
 
 export const loginUser = async (req, res, next) => {
-    let { email, password } = req.body;
+    let { email, password, stayLoggedIn } = req.body;
+
+    if (!email || !password || stayLoggedIn === undefined) {
+      return next(new MissingFieldsError( 'Missing Email, Password and/or "Stay logged in"' ))
+    }
 
     if (!validator.isEmail(email)) {
       return next(new InvalidEmailError('Invalid email format'));
@@ -60,7 +67,8 @@ export const loginUser = async (req, res, next) => {
     await user.comparePassword(password); // Throws error if password doesn't match
     
     // User matched, return token
-    const token = user.generateToken(jwtExpiry);
+    const jwtExpiration = stayLoggedIn ? jwtPersistentExpiry : jwtExpiry;
+    const token = user.generateToken(jwtExpiration);
     res.status(200).json({ auth: true, token: token });
 }
 
