@@ -70,11 +70,6 @@ app.use('/api/v1/events', apiLimiter, eventRoutes);
 import availabilityRoutes from './routes/availabilities.mjs';
 app.use('/api/v1/availabilities', apiLimiter, availabilityRoutes);
 
-// Test index page
-app.get('/', function(req, res) {
-    res.sendFile(join(__dirname, '../public/index.html'));
-});
-
 // Create stricter rate limiters for routes
 const sensitiveApiLimiter = RateLimit({
     windowMs: 1*60*1000, // 1 minute

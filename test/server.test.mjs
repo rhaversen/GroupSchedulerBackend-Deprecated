@@ -7,15 +7,15 @@ import chaiHttp from 'chai-http';
 chai.use(chaiHttp);
 const { expect } = chai;
 
-import { deleteAllDocumentsFromAllCollections } from '../backend/database.mjs';
-import logger from '../backend/utils/logger.mjs';
+import { deleteAllDocumentsFromAllCollections } from '../database.mjs';
+import logger from '../utils/logger.mjs';
 
 let server;
 
 
 describe('Server Tests', () => {
   before(async () => {
-    server = await import('../backend/server.mjs');
+    server = await import('../server.mjs');
     // Wipe database before testing
     await deleteAllDocumentsFromAllCollections()
   });
@@ -37,14 +37,6 @@ describe('Server Tests', () => {
   after(async () => {
     server.shutDown();
   });
-
-  it('GET / should return the index page', async function () {
-    this.timeout(10000); // Set the timeout to 10 seconds.
-
-    const res = await chai.request(server.app).get('/');
-    expect(res).to.have.status(200);
-  });
-
   it('POST /api/v1/users should create a new user and return a JWT token', async function () {
     this.timeout(10000); // Set the timeout to 10 seconds.
 
