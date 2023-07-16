@@ -70,7 +70,7 @@ app.use('/api/v1/events', apiLimiter, eventRoutes);
 
 // Test index page
 app.get('/', function(req, res) {
-    res.sendFile(join(__dirname, '/public/index.html'));
+    res.sendFile(join(__dirname, '../public/index.html'));
 });
 
 // Create stricter rate limiters for routes

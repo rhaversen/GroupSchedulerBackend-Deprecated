@@ -7,15 +7,15 @@ import chaiHttp from 'chai-http';
 chai.use(chaiHttp);
 const { expect } = chai;
 
-import { deleteAllDocumentsFromAllCollections } from '../database.mjs';
-import logger from '../utils/logger.mjs';
+import { deleteAllDocumentsFromAllCollections } from '../backend/database.mjs';
+import logger from '../backend/utils/logger.mjs';
 
 let server;
 
 
 describe('Server Tests', () => {
   before(async () => {
-    server = await import('../server.mjs');
+    server = await import('../backend/server.mjs');
     // Wipe database before testing
     await deleteAllDocumentsFromAllCollections()
   });
