@@ -28,13 +28,6 @@ const server = http.createServer(app);
 // Function invocations
 configurePassport(passport);
 
-// Middleware
-app.use(helmet());
-app.use(express.json()); // for parsing application/json
-app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-app.use(mongoSanitize());
-app.use(passport.initialize());
-
 // Helmet security
 // Prevent Cross-Site Scripting (XSS) attacks, which can often lead to CSRF attacks
 app.use(
@@ -52,6 +45,13 @@ app.use(
 //    includeSubDomains: true,
 //    preload: true
 //}));
+
+// Global middleware
+app.use(helmet());
+app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+app.use(mongoSanitize());
+app.use(passport.initialize());
 
 // Connect to MongoDB
 await connectToDatabase();
@@ -73,9 +73,6 @@ app.get('/', function(req, res) {
     res.sendFile(join(__dirname, '/public/index.html'));
 });
 
-// Error handler middleware
-app.use(globalErrorHandler);
-
 // Create stricter rate limiters for routes
 const sensitiveApiLimiter = RateLimit({
     windowMs: 1*60*1000, // 1 minute
@@ -90,9 +87,12 @@ server.listen(port, () => {
     logger.info(`App listening at http://localhost:${port}`);
 });
 
+// Global error handler middleware
+app.use(globalErrorHandler);
+
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
-    console.error('Unhandled promise rejection:', err);
+    logger.error('Unhandled promise rejection:', err);
     server.close(() => {
         process.exit(1);
     });
@@ -109,7 +109,7 @@ function shutDown() {
 
 // Shutdown function
 async function cleanUp() {
-    logger.info('Starting cleanup and disconnection...');
+    logger.info('Starting disconnection...');
     try {
         await disconnectFromDatabase();
         server.close(() => {
