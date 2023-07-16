@@ -33,7 +33,7 @@ export const createEvent = async (req, res, next) => {
         eventDescription, 
         startDate, 
         endDate,
-        isLocked,
+        isLocked
     } = req.body;
 
     // Checks if eventName, startDate, and endDate are not falsy (e.g., undefined, null, empty string)
@@ -57,7 +57,7 @@ export const createEvent = async (req, res, next) => {
         startDate, 
         endDate,
         participants,
-        admins,
+        admins
     });
 
     await newEvent.save();
@@ -70,7 +70,7 @@ export const updateEvent = async (req, res, next) => {
         eventName, 
         eventDescription, 
         startDate, 
-        endDate,
+        endDate
     } = req.body;
 
     const eventIdOrCode = req.params.eventIdOrCode;
