@@ -28,7 +28,9 @@ const eventSchema = new Schema({
   participants: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   admins: [{ type: Schema.Types.ObjectId, ref: 'User' }], //If admins is empty, the event is considered to be editable by all participants
   eventCode: {type: String, unique: true, required: true}
-});
+}); //TODO: Events should have general availabilities set by admins. Event availability takes precedence over users availabilities, which means an admin can add when a
+// summerhouse is available (free), when tickets are cheapest (preferred), when transportation isn't available (busy) and so on. users might prefer one week, but if the
+// event prefers another because it is cheaper, more convenient or whatever, most users would agree they prefer that too. Event availabilities are deleted with the event.
 
 eventSchema.methods.generateNewEventCode = async function() {
   let eventCode;
@@ -76,8 +78,7 @@ eventSchema.pre('save', async function(next) {
 
   logger.info('Event saved')
   next();
-  }
-);
+});
 
 //Remove event from users
 eventSchema.pre('remove', async function(next) {
