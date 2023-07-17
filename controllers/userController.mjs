@@ -26,6 +26,8 @@ export const registerUser = async (req, res, next) => {
     if (!name || !email || !password) {
       return next(new MissingFieldsError( 'Missing Name, Email and/or Password' ))
     }
+
+    email = String(email).toLowerCase();
   
     if (!validator.isEmail(email)) {
       return next(new InvalidEmailError('Invalid email format'));
@@ -55,6 +57,8 @@ export const loginUser = async (req, res, next) => {
     if (!email || !password || stayLoggedIn === undefined) {
       return next(new MissingFieldsError( 'Missing Email, Password and/or "Stay logged in"' ))
     }
+
+    email = String(email).toLowerCase();
 
     if (!validator.isEmail(email)) {
       return next(new InvalidEmailError('Invalid email format'));
