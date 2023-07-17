@@ -38,7 +38,7 @@ export const registerUser = async (req, res, next) => {
       return next(new EmailAlreadyExistsError( 'Email already exists' ));
     }
 
-    if(String(password).length() < 5 ){
+    if(String(password).length < 5 ){
       return next(new InvalidPasswordError('Password must be longer than 5 characters'))
     }
 
