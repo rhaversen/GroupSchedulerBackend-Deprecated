@@ -21,7 +21,8 @@ const { Schema } = mongoose;
 const {
     HashingError,
     PasswordIncorrectError,
-    UserNotFoundError
+    UserNotFoundError,
+    EventNotFoundError
 } = errors;
 
 // Constants
