@@ -23,8 +23,8 @@ dotenv.config();
 export const registerUser = async (req, res, next) => {
     let { name, email, password, stayLoggedIn } = req.body;
 
-    if (!name || !email || !password) {
-      return next(new MissingFieldsError( 'Missing Name, Email and/or Password' ))
+    if (!name || !email || !password || stayLoggedIn === undefined) {
+      return next(new MissingFieldsError( 'Missing Name, Email, Password and/or "Stay logged in"' ))
     }
 
     email = String(email).toLowerCase();
