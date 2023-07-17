@@ -8,7 +8,8 @@ import User from '../models/User.mjs';
 
 // Destructuring and global variables
 const {
-  InvalidEmailError, 
+  InvalidEmailError,
+  InvalidPasswordError,
   UserNotFoundError,
   EmailAlreadyExistsError,
   MissingFieldsError
@@ -33,6 +34,10 @@ export const registerUser = async (req, res, next) => {
     const existingUser = await User.findOne({ email }).exec();
     if (existingUser) { // Check if existing user is truthy
       return next(new EmailAlreadyExistsError( 'Email already exists' ));
+    }
+
+    if(String(password).length() < 5 ){
+      return next(new InvalidPasswordError('Password must be longer than 5 characters'))
     }
 
     const newUser = new User({ name, email, password });

@@ -23,6 +23,14 @@ class InvalidEmailError extends ValidationError {
   }
 }
 
+class InvalidPasswordError extends ValidationError {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+    this.statusCode = 400;
+  }
+}
+
 class EmailAlreadyExistsError extends ValidationError {
   constructor(message) {
     super(message);
@@ -114,6 +122,7 @@ export default {
   ValidationError,
   UserNotFoundError,
   InvalidEmailError,
+  InvalidPasswordError,
   EmailAlreadyExistsError,
   PasswordIncorrectError,
   UserNotInEventError,
