@@ -10,6 +10,23 @@ const { expect } = chai;
 import { deleteAllDocumentsFromAllCollections } from '../database.mjs';
 import logger from '../utils/logger.mjs';
 
+const {
+  ServerError
+} = error;
+
+// Controller functions
+import {
+  registerUser,
+  loginUser,
+  getEvents,
+  newCode,
+  followUser,
+  unfollowUser,
+  getUser,
+  updatePassword,
+  updateName
+} from '../controllers/userController.mjs';
+
 let server;
 
 
