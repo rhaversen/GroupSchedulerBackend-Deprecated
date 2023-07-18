@@ -32,13 +32,15 @@ import {
 let server;
 
 describe('Server Tests', () => {
-  before(async () => {
+  before(async function() {
+    this.timeout(10000); // Set the timeout to 10 seconds.
     server = await import('../server.mjs');
     // Wipe database before testing
     await deleteAllDocumentsFromAllCollections()
   });
 
-  beforeEach(async () => {
+  beforeEach(async function() {
+    this.timeout(10000); // Set the timeout to 10 seconds.
     // Define users
     const names = [
       'a1',
@@ -497,17 +499,19 @@ describe('Server Tests', () => {
     await followedUser.save();
   });
 
-  afterEach(async () => {
+  afterEach(async function() {
+    this.timeout(10000); // Set the timeout to 10 seconds.
     // Wipe database after each test
     await deleteAllDocumentsFromAllCollections()
   });
 
-  after(async () => {
+  after(async function() {
+    this.timeout(10000); // Set the timeout to 10 seconds.
     server.shutDown();
   });
 
   it('POST /api/v1/users should create a new user and return a JWT token', async function () {
-    this.timeout(100000); // Set the timeout to 100 seconds.
+    this.timeout(10000); // Set the timeout to 10 seconds.
 
     const newUser = { name: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', stayLoggedIn: false };
 
