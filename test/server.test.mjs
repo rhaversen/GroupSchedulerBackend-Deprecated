@@ -84,8 +84,6 @@ describe('Server Tests', () => {
 
     logger.info('Creating users');
 
-
-
     // Create users
     let savedUserArray = [];
     for (let i = 0; i <= 10; i++){
@@ -111,390 +109,390 @@ describe('Server Tests', () => {
     // a1 f b2
     followingUser = savedUserArray[0];
     followedUser = savedUserArray[1];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // b2 f a1
     followingUser = savedUserArray[1];
     followedUser = savedUserArray[0];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // c3 f a1
     followingUser = savedUserArray[2];
     followedUser = savedUserArray[0];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f b2
     followedUser = savedUserArray[1];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f d4
     followedUser = savedUserArray[3];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f e5
     followedUser = savedUserArray[4];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f f6
     followedUser = savedUserArray[5];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f g7
     followedUser = savedUserArray[6];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f h8
     followedUser = savedUserArray[7];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f i9
     followedUser = savedUserArray[8];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f j10
     followedUser = savedUserArray[9];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f k11
     followedUser = savedUserArray[10];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // d4 f a1
     followingUser = savedUserArray[3];
     followedUser = savedUserArray[0];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f b2
     followedUser = savedUserArray[1];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f e5
     followedUser = savedUserArray[4];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f f6
     followedUser = savedUserArray[5];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f g7
     followedUser = savedUserArray[6];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f h8
     followedUser = savedUserArray[7];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f i9
     followedUser = savedUserArray[8];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f j10
     followedUser = savedUserArray[9];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // f k11
     followedUser = savedUserArray[10];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();  
 
     // a1 f d4
     followingUser = savedUserArray[0];
     followedUser = savedUserArray[3];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // b2 f
     followingUser = savedUserArray[1];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
   
     //c3 f
     followingUser = savedUserArray[2];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // d4 f
     followingUser = savedUserArray[3];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // e5 f
     followingUser = savedUserArray[4];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f6 f
     followingUser = savedUserArray[5];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // g7 f
     followingUser = savedUserArray[6];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // h8 f
     followingUser = savedUserArray[7];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // i9 f
     followingUser = savedUserArray[8];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // j10 f
     followingUser = savedUserArray[9];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // k11 f
     followingUser = savedUserArray[10];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // k11 f d4
     followingUser = savedUserArray[10];
     followedUser = savedUserArray[3];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // e5 f f6
     followingUser = savedUserArray[4];
     followedUser = savedUserArray[5];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // g7 f h8
     followingUser = savedUserArray[6];
     followedUser = savedUserArray[7];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f i9
     followedUser = savedUserArray[8];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f j10
     followedUser = savedUserArray[9];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f k11
     followedUser = savedUserArray[10];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // h8 f g7
     followingUser = savedUserArray[7];
     followedUser = savedUserArray[6];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f i9
     followedUser = savedUserArray[8];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f j10
     followedUser = savedUserArray[9];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f k11
     followedUser = savedUserArray[10];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // i9 f g7
     followingUser = savedUserArray[8];
     followedUser = savedUserArray[6];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f h8
     followedUser = savedUserArray[7];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f j10
     followedUser = savedUserArray[9];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f k11
     followedUser = savedUserArray[10];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // j10 f g7
     followingUser = savedUserArray[9];
     followedUser = savedUserArray[6];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f h8
     followedUser = savedUserArray[7];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f i9
     followedUser = savedUserArray[8];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f k11
     followedUser = savedUserArray[10];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // k11 f g7
     followingUser = savedUserArray[10];
     followedUser = savedUserArray[6];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f h8
     followedUser = savedUserArray[7];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f i9
     followedUser = savedUserArray[8];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
 
     // f j10
     followedUser = savedUserArray[9];
-    followingUser.following.push(followedUser);
-    followedUser.followers.push(followingUser);
+    followingUser.following.push(followedUser._id);
+    followedUser.followers.push(followingUser._id);
     await followingUser.save();
     await followedUser.save();
   });
