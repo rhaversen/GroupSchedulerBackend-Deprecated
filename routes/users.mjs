@@ -18,8 +18,7 @@ import {
   followUser,
   unfollowUser,
   getUser,
-  updatePassword,
-  updateName
+  updateUser
 } from '../controllers/userController.mjs';
 
 // Destructuring and global variables
@@ -97,22 +96,12 @@ router.get('/',
 
 /**
 * @route PATCH api/v1/users/update-password
-* @desc Update users password
+* @desc Update users name and/or password
 * @access AUTHENTICATED
 */
-router.patch('/update-password',
+router.patch('/update-user',
   passport.authenticate('jwt', { session: false }),
-  updatePassword
-);
-
-/**
-* @route PATCH api/v1/users/update-name
-* @desc Update users name
-* @access AUTHENTICATED
-*/
-router.patch('/update-name',
-  passport.authenticate('jwt', { session: false }),
-  updateName
+  updateUser
 );
 
 export default router;

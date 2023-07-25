@@ -141,17 +141,21 @@ export const getUser = async (req, res, next) => {
     return res.status(200).json(user);
 }
 
-export const updatePassword = async (req, res, next) => {
-    const user = req.user;
-    await user.comparePassword(req.body.oldPassword); // Throws error if password doesn't match
-    user.password = req.body.newPassword;
-    await user.save();
-    return res.status(200).json(user);
-}
+export const updateUser = async (req, res, next) => {
+  const user = req.user;
 
-export const updateName = async (req, res, next) => {
-    const user = req.user;
-    user.name = req.body.newName;
-    await user.save();
-    return res.status(200).json(user);
+  const {
+    newName,
+    newPassword,
+    oldPassword
+  } = req.body;
+
+  if(newName){user.name = newName}
+  if(newPassword && oldPassword){
+    await user.comparePassword(oldPassword); // Throws error if password doesn't match
+    user.password = newPassword
+  }
+
+  await user.save();
+  return res.status(200).json(user);
 }
