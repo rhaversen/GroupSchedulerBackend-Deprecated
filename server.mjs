@@ -61,7 +61,7 @@ await connectToDatabase();
 // Create rate limiter for general routes
 const apiLimiter = RateLimit({
     windowMs: 1*60*1000, // 1 minute
-    max: 5
+    max: 60
 });
 
 // Import and use routes, apply general rate limiter
@@ -98,29 +98,15 @@ process.on('unhandledRejection', (err) => {
 });
 
 // Handler function to handle the Promise
-function shutDown() {
-    cleanUp()
-    .then(() => logger.info('Shutdown completed'))
-    .catch((err) => {
-    logger.error('An error occurred during shutdown:', err);
-    });
-}
-
-// Shutdown function
-async function cleanUp() {
-    logger.info('Starting disconnection...');
-    try {
+async function shutDown() {
+    try{
+        logger.info('Starting database disconnection...');
         await disconnectFromDatabase();
-        server.close(() => {
-            logger.info('Server closed');
-            process.exit(0); // Exit with code 0 indicating successful termination
-        });
-    } catch (error) {
-        logger.error('Error disconnecting from database:', error);
-        server.close(() => {
-            logger.info('Server closed with error');
-            process.exit(1); // Exit with code 1 indicating termination with error
-        });
+        logger.info('Shutdown completed');
+        process.exit(0) // Exit with code 0 indicating successful termination
+    } catch(err){
+        logger.error('An error occurred during shutdown:', err);
+        process.exit(1); // Exit with code 1 indicating termination with error
     }
 }
 

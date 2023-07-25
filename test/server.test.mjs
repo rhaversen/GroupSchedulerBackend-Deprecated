@@ -505,7 +505,7 @@ describe('Server Tests', () => {
 
   after(async function() {
     this.timeout(10000); // Set the timeout to 10 seconds.
-    server.shutDown();
+    await server.shutDown();
   });
 
   it('POST /api/v1/users should create a new user and return a JWT token', async function () {
