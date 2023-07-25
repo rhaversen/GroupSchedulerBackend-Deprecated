@@ -70,7 +70,7 @@ app.use('/api/v1/users', apiLimiter, userRoutes);
 import eventRoutes from './routes/events.mjs';
 app.use('/api/v1/events', apiLimiter, eventRoutes);
 import availabilityRoutes from './routes/availabilities.mjs';
-app.use('/api/v1/availabilities', apiLimiter, availabilityRoutes);
+app.use('/api/v1/users/availabilities', apiLimiter, availabilityRoutes);
 
 // Create stricter rate limiters for routes
 const sensitiveApiLimiter = RateLimit({

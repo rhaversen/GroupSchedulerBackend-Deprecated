@@ -22,7 +22,7 @@ const router = Router();
  * @desc Create a new availability or update existing if the date is the same.
  * @access AUTHENTICATED
 */
-router.put('/date',
+router.put('/:date',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     newOrUpdateAvailability
