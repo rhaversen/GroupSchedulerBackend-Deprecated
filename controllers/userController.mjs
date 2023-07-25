@@ -38,8 +38,8 @@ export const registerUser = async (req, res, next) => {
       return next(new EmailAlreadyExistsError( 'Email already exists' ));
     }
 
-    if(String(password).length < 5 ){
-      return next(new InvalidPasswordError('Password must be longer than 5 characters'))
+    if(String(password).length <= 2 ){
+      return next(new InvalidPasswordError('Password must be at least 3 characters'))
     }
 
     const newUser = new User({ name, email, password });
