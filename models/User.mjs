@@ -43,13 +43,9 @@ const userSchema = new Schema({
     userCode: {type: String, unique: true}
 });
 
-// Method for comparing passwords
+// Method for comparing passwords. Returns true if passwords match
 userSchema.methods.comparePassword = async function(candidatePassword) {
-    const isMatch = await compare(candidatePassword, this.password);
-    if (!isMatch) {
-        throw new PasswordIncorrectError('Password incorrect');
-    }
-    return isMatch;
+    return await compare(candidatePassword, this.password);
 };
 
 userSchema.methods.generateNewUserCode = async function() {

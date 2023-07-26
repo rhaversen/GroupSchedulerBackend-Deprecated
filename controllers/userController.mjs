@@ -73,12 +73,23 @@ export const loginUser = async (req, res, next) => {
     }
 
     // Check password
-    await user.comparePassword(password); // Throws error if password doesn't match
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ auth: false, message: 'Invalid credentials' });
+    }
     
-    // User matched, return token
+    // User matched, generate token
     const jwtExpiration = stayLoggedIn ? jwtPersistentExpiry : jwtExpiry;
     const token = user.generateToken(jwtExpiration);
-    res.status(200).json({ auth: true, token: token });
+
+    // Set the JWT in a cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      // optionally set the SameSite attribute, e.g., 'strict' or 'lax'
+  });
+
+    return res.status(200).json({ auth: true, token: token });
 }
 
 export const getEvents = async (req, res, next) => {
