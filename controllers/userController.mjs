@@ -44,11 +44,8 @@ export const registerUser = async (req, res, next) => {
 
     const newUser = new User({ name, email, password });
     const savedUser = await newUser.save();
-
-    const jwtExpiration = stayLoggedIn ? jwtPersistentExpiry : jwtExpiry;
-    const token = savedUser.generateToken(jwtExpiration);
-    
-    res.status(201).json({ auth: true, token: token });
+ 
+    return res.status(201)
 }
 
 export const loginUser = async (req, res, next) => {
