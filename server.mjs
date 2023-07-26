@@ -11,8 +11,7 @@ import mongoSanitize from 'express-mongo-sanitize';
 import RateLimit from 'express-rate-limit';
 import passport from 'passport';
 import helmet from 'helmet';
-
-//test
+import cors from 'cors';
 
 // Own modules
 import logger from './utils/logger.mjs';
@@ -54,6 +53,7 @@ app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(mongoSanitize());
 app.use(passport.initialize());
+app.use(cors());
 
 // Connect to MongoDB
 await connectToDatabase();
