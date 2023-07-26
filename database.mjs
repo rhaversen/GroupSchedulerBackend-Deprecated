@@ -23,9 +23,9 @@ const connectToDatabase = async () => {
         logger.info('Connected to in-memory MongoDB');
     } else {
         logger.info(`Attempting to connect to to MongoDB`);
-        const maxRetryAttempts = process.env.DB_CONNECTION_RETRY_MAX_ATTEMPTS || 5;
-        const retryInterval = process.env.DB_CONNECTION_RETRY_INTERVAL || 1000;
-        const mongoUri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}`;
+        const maxRetryAttempts = process.env.DB_CONNECTION_RETRY_MAX_ATTEMPTS;
+        const retryInterval = process.env.DB_CONNECTION_RETRY_INTERVAL;
+        const mongoUri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`;
     
         let currentRetryAttempt = 0;
     
