@@ -20,7 +20,7 @@ import {
     createEvent,
     updateEvent,
     joinEvent,
-    leaveEvent,
+    leaveEventOrKick,
     deleteEvent
 } from '../controllers/eventController.mjs';
 
@@ -92,11 +92,11 @@ router.put('/:eventIdOrCode/users',
  * @desc Leave event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
  * @access AUTHENTICATED
  */
-router.delete('/:eventIdOrCode/users',
+router.delete('/:eventIdOrCode/users/:userId?',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     checkUserInEvent,
-    leaveEvent,
+    leaveEventOrKick,
 );
 
 /**

@@ -10,6 +10,7 @@ import {
 // Destructuring and global variables
 const {
     MissingFieldsError,
+    UserNotAdminError
 } = errors;
 
 export const newCode = async (req, res, next) => {
@@ -102,14 +103,36 @@ export const joinEvent = async (req, res, next) => {
     return res.status(200).json(event);
 }
 
-export const leaveEvent = async (req, res, next) => {
+export const leaveEventOrKick = async (req, res, next) => {
     const eventIdOrCode = req.params.eventIdOrCode;
     const event = await getEventByIdOrCode(eventIdOrCode);
     const user = req.user;
 
+    // The optional userId param is for kicking users out of events
+    const removedUserId = req.params.userId; // Kicked users will be able to join again if the event code isn't changed
+    if (removedUserId) { // User deletion requested
+        if (!(event.isLocked && !event.isAdmin(user.id))) { // The event is either not locked, or the user is admin
+            
+            const removedUser = User.findById(removedUserId);
+            removedUser.events.pull(event.id);
+            event.participants.pull(removedUserId);
+
+            await user.save();
+            await event.save();
+
+            return res.status(204);
+        } // Event is locked and user is not admin
+        return next(new UserNotAdminError('Only admins can kick users'));
+    }
+
     // Remove event from user's events, and user from event's participants
     user.events.pull(event.id);
     event.participants.pull(user.id);
+
+    // Remove user from admins if user is admin
+    if (event.isAdmin(user.id)) {
+        event.admins.pull(user.id);
+    }
 
     await user.save();
     await event.save();
