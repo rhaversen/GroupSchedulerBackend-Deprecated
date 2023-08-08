@@ -20,14 +20,12 @@ const { compare, genSalt, hash } = bcryptjsPkg;
 const { Schema } = mongoose;
 const {
     HashingError,
-    PasswordIncorrectError,
     UserNotFoundError,
     EventNotFoundError
 } = errors;
-const jwtExpiry = process.env.JWT_EXPIRY;
-const jwtPersistentExpiry = process.env.JWT_PERSISTENT_EXPIRY;
 
 // Constants
+const jwtExpiry = process.env.JWT_EXPIRY;
 const jwtSecret = process.env.JWT_SECRET
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';

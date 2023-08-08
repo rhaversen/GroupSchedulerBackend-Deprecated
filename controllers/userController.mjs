@@ -14,6 +14,7 @@ const {
   EmailAlreadyExistsError,
   MissingFieldsError
 } = errors;
+const jwtExpiry = process.env.JWT_EXPIRY;
 
 // Setup
 dotenv.config();
@@ -87,7 +88,7 @@ export const loginUser = async (req, res, next) => {
     };
 
     if (stayLoggedIn) {
-      cookieOptions.maxAge = jwtPersistentExpiry
+      cookieOptions.maxAge = jwtExpiry * 1000; // Assuming jwtExpiry is in seconds
     }
 
     // Set the JWT in a cookie
