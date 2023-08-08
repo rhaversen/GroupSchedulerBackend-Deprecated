@@ -21,18 +21,22 @@ const jwtPersistentExpiry = process.env.JWT_PERSISTENT_EXPIRY;
 dotenv.config();
 
 export const registerUser = async (req, res, next) => {
-    let { username, email, password } = req.body;
+    let { username, email, password, confirmPassword } = req.body;
 
     if (!username || !email || !password) {
       return next(new MissingFieldsError( 'Missing Username, Email and/or Password' ))
     }
 
-    email = String(email).toLowerCase();
-  
     if (!validator.isEmail(email)) {
       return next(new InvalidEmailError('Invalid email format'));
     }
 
+    if (password !== confirmPassword) {
+      return next(new InvalidPasswordError( "Password and Confirm Password doesn't match" ))
+    }
+
+    email = String(email).toLowerCase();
+  
     const existingUser = await User.findOne({ email }).exec();
     if (existingUser) { // Check if existing user is truthy
       return next(new EmailAlreadyExistsError( 'Email already exists' ));
