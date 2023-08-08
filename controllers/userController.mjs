@@ -21,10 +21,10 @@ const jwtPersistentExpiry = process.env.JWT_PERSISTENT_EXPIRY;
 dotenv.config();
 
 export const registerUser = async (req, res, next) => {
-    let { name, email, password, stayLoggedIn } = req.body;
+    let { username, email, password } = req.body;
 
-    if (!name || !email || !password || stayLoggedIn === undefined) {
-      return next(new MissingFieldsError( 'Missing Name, Email, Password and/or "Stay logged in"' ))
+    if (!username || !email || !password) {
+      return next(new MissingFieldsError( 'Missing Username, Email and/or Password' ))
     }
 
     email = String(email).toLowerCase();
@@ -39,13 +39,13 @@ export const registerUser = async (req, res, next) => {
     }
 
     if(String(password).length <= 2 ){
-      return next(new InvalidPasswordError('Password must be at least 3 characters'))
+      return next(new InvalidPasswordError( 'Password must be at least 3 characters' ))
     }
 
-    const newUser = new User({ name, email, password });
+    const newUser = new User({ username, email, password });
     const savedUser = await newUser.save();
  
-    return res.status(201)
+    return res.status(201).json(savedUser);
 }
 
 export const loginUser = async (req, res, next) => {
@@ -58,7 +58,7 @@ export const loginUser = async (req, res, next) => {
     email = String(email).toLowerCase();
 
     if (!validator.isEmail(email)) {
-      return next(new InvalidEmailError('Invalid email format'));
+      return next(new InvalidEmailError( 'Invalid email format' ));
     }
 
     // Find user by email
@@ -66,7 +66,7 @@ export const loginUser = async (req, res, next) => {
 
     // Check if user exists
     if (!user) {
-      return next(new UserNotFoundError('User not found'));
+      return next(new UserNotFoundError( 'User not found' ));
     }
 
     // Check password
@@ -108,10 +108,10 @@ export const followUser = async (req, res, next) => {
     const user = req.user;
 
     if (!followedUser) {
-      return next(new UserNotFoundError('The user to be followed could not be found' ));
+      return next(new UserNotFoundError( 'The user to be followed could not be found' ));
     }
     if (followedUser._id === user.id) {
-      return next(new UserNotFoundError('User cant follow or un-follow themselves'));
+      return next(new UserNotFoundError( 'User cant follow or un-follow themselves' ));
     }
 
     user.following.push(followedUserId);
@@ -129,10 +129,10 @@ export const unfollowUser = async (req, res, next) => {
     const user = req.user;
 
     if (!followedUser) {
-      return next(new UserNotFoundError('The user to be un-followed could not be found'));
+      return next(new UserNotFoundError( 'The user to be un-followed could not be found' ));
     }
     if (followedUser._id === user.id) {
-      return next(new UserNotFoundError('User cant follow or un-follow themselves'));
+      return next(new UserNotFoundError( 'User cant follow or un-follow themselves' ));
     }
 
     user.following.pull(followedUserId);
@@ -153,12 +153,12 @@ export const updateUser = async (req, res, next) => {
   const user = req.user;
 
   const {
-    newName,
+    newUsername,
     newPassword,
     oldPassword
   } = req.body;
 
-  if(newName){user.name = newName}
+  if(newUsername){user.username = newName}
   if(newPassword && oldPassword){
     await user.comparePassword(oldPassword); // Throws error if password doesn't match
     user.password = newPassword
