@@ -34,6 +34,7 @@ async function establishFollowing(followingUser, followedUser) {
   followedUser.followers.push(followingUser._id);
   await followingUser.save();
   await followedUser.save();
+  logger.info('User followed');
 }
 
 let server;
@@ -168,7 +169,6 @@ describe('Server Tests', () => {
       let followingUser = savedUserArray[relation[0]];
       let followedUser = savedUserArray[relation[1]];
       await establishFollowing(followingUser, followedUser);
-      logger.info('User followed')
     }
   });
 
@@ -185,10 +185,13 @@ describe('Server Tests', () => {
 
   it('POST /api/v1/users should create a new user and return a JWT token', async function () {
     this.timeout(10000); // Set the timeout to 10 seconds.
+    logger.info('1');
 
     const newUser = { name: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', stayLoggedIn: false };
+    logger.info('2');
 
     const res = await chai.request(server.app).post('/api/v1/users').send(newUser);
+    logger.info('3');
 
     expect(res).to.have.status(201);
     expect(res.body).to.be.a('object');
