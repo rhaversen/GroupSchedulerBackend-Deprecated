@@ -13,6 +13,7 @@ import {
 import {
   registerUser,
   loginUser,
+  logoutUser,
   getEvents,
   newCode,
   followUser,
@@ -36,12 +37,23 @@ router.post('/',
 
 /**
 * @route POST api/v1/users/login
-* @desc Login user and return JWT token
+* @desc Login user and return JWT
 * @access Public
 */
 router.post('/login',
   sanitizeInput,
   loginUser
+);
+
+/**
+* @route DELETE api/v1/users/logout
+* @desc Logout user and clear JWT
+* @access AUTHENTICATED
+*/
+router.delete('/logout',
+  passport.authenticate('jwt', { session: false }),
+  sanitizeInput,
+  logoutUser
 );
 
 /**

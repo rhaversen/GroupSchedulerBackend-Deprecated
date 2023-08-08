@@ -24,6 +24,8 @@ const {
     UserNotFoundError,
     EventNotFoundError
 } = errors;
+const jwtExpiry = process.env.JWT_EXPIRY;
+const jwtPersistentExpiry = process.env.JWT_PERSISTENT_EXPIRY;
 
 // Constants
 const jwtSecret = process.env.JWT_SECRET
@@ -61,7 +63,7 @@ userSchema.methods.generateNewUserCode = async function() {
     await this.save();
 };
 
-userSchema.methods.generateToken = function(jwtExpiry) {
+userSchema.methods.generateToken = function() {
     const payload = { id: this._id };
     const token = sign(payload, jwtSecret, { expiresIn: jwtExpiry })
     logger.info('JWT created')

@@ -14,8 +14,6 @@ const {
   EmailAlreadyExistsError,
   MissingFieldsError
 } = errors;
-const jwtExpiry = process.env.JWT_EXPIRY;
-const jwtPersistentExpiry = process.env.JWT_PERSISTENT_EXPIRY;
 
 // Setup
 dotenv.config();
@@ -80,17 +78,30 @@ export const loginUser = async (req, res, next) => {
     }
     
     // User matched, generate token
-    const jwtExpiration = stayLoggedIn ? jwtPersistentExpiry : jwtExpiry;
-    const token = user.generateToken(jwtExpiration);
+    const token = user.generateToken(stayLoggedIn);
 
-    // Set the JWT in a cookie
-    res.cookie('token', token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: true,
       // optionally set the SameSite attribute, e.g., 'strict' or 'lax'
-  });
+    };
+
+    if (stayLoggedIn) {
+      cookieOptions.maxAge = jwtPersistentExpiry
+    }
+
+    // Set the JWT in a cookie
+    res.cookie('token', token, cookieOptions);
 
     return res.status(200).json({ auth: true, token: token });
+}
+
+export const logoutUser = async (req, res, next) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: true
+  });
+  return res.status(200).json({ message: 'Logged out successfully' }); 
 }
 
 export const getEvents = async (req, res, next) => {
