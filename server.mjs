@@ -20,7 +20,8 @@ import configurePassport from './utils/passportJwt.mjs';
 import { connectToDatabase, disconnectFromDatabase } from './database.mjs';
 
 // Global variables and setup
-const port = process.env.SERVER_PORT;
+const expressPort = process.env.EXPRESS_PORT;
+const nextJsPort = process.env.NEXTJS_PORT;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const app = express();
@@ -47,13 +48,20 @@ app.use(
 //    preload: true
 //}));
 
+// CORS setup
+const corsOptions = {
+    origin: 'http://localhost:' + nextJsPort, // Replace with your Next.js app's localhost domain and port
+    //methods: 'GET,POST,PATCH,PUT,DELETE', // You can specify the methods you want to allow
+  };
+
+
 // Global middleware
 app.use(helmet());
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(mongoSanitize());
 app.use(passport.initialize());
-app.use(cors());
+app.use(cors(corsOptions));
 
 // Connect to MongoDB
 await connectToDatabase();
@@ -82,8 +90,8 @@ const sensitiveApiLimiter = RateLimit({
 app.use('/api/v1/users/update-password', sensitiveApiLimiter); // This route has a stricter limit
 
 // Start server
-server.listen(port, () => {
-    logger.info(`App listening at http://localhost:${port}`);
+server.listen(expressPort, () => {
+    logger.info(`App listening at http://localhost:${expressPort}`);
 });
 
 // Global error handler middleware
