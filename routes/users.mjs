@@ -12,6 +12,7 @@ import {
 // Controller functions
 import {
   registerUser,
+  confirmUser,
   loginUser,
   logoutUser,
   getEvents,
@@ -33,6 +34,16 @@ const router = Router();
 router.post('/',
   sanitizeInput,
   registerUser
+);
+
+/**
+ * @route POST api/v1/users/confirm/:code
+ * @desc Confirm user
+ * @access Public
+ */
+router.post('/confirm/:code',
+  sanitizeInput,
+  confirmUser
 );
 
 /**
