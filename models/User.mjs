@@ -40,7 +40,10 @@ const userSchema = new Schema({
     availabilities: [{ type: Schema.Types.ObjectId, ref: 'Availability' }],
     following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    userCode: {type: String, unique: true}
+    userCode: { type: String, unique: true },
+    status: { type: String, required: true },
+    confirmationCode: { type: String, unique: true }, // Used for email confirmation
+    registrationDate: { type: Date, expires: '24h' }, // TTL index, document will expire in 24 hours  
 });
 
 // Method for comparing passwords. Returns true if passwords match

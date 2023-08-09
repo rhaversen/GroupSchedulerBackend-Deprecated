@@ -1,9 +1,11 @@
 // Third-party libraries
 import validator from 'validator';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 
 // Own modules
 import errors from '../utils/errors.mjs';
+import { sendConfirmationEmail } from '../utils/mailer.mjs';
 import User from '../models/User.mjs';
 
 // Destructuring and global variables
@@ -45,11 +47,32 @@ export const registerUser = async (req, res, next) => {
       return next(new InvalidPasswordError( 'Password must be at least 3 characters' ))
     }
 
-    const newUser = new User({ username, email, password });
+    // Generate a confirmation code
+    const confirmationCode = crypto.randomBytes(20).toString('hex');
+
+    // Add status, confirmationCode, and registrationDate
+    const newUser = new User({
+      username,
+      email,
+      password,
+      status: 'pending',
+      confirmationCode,
+      registrationDate: new Date(),
+    });
+
+    // Generate confirmation link
+    const confirmationLink = `https://yourapp.com/confirm?code=${confirmationCode}`;
+
+    // Send email to the user with the confirmation link (You'll need to implement this part with your email provider)
+    //await sendConfirmationEmail(email, confirmationLink);
+
     const savedUser = await newUser.save();
  
-    return res.status(201).json(savedUser);
-}
+    return res.status(201).json({
+      message: 'Registration successful! Please check your email to confirm your account.',
+      userId: savedUser._id,
+    });
+};
 
 export const loginUser = async (req, res, next) => {
     let { email, password, stayLoggedIn } = req.body;
