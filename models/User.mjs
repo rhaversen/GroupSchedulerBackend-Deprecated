@@ -41,12 +41,18 @@ const userSchema = new Schema({
     following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     userCode: { type: String, unique: true },
-    status: { type: String, required: true },
+    confirmed: { type: Boolean, default: false },
     confirmationCode: { type: String, unique: true }, // Used for email confirmation
     registrationDate: { type: Date, expires: '24h' }, // TTL index, document will expire in 24 hours  
 });
 
-// Method for comparing passwords. Returns true if passwords match
+userSchema.methods.confirmUser = async function() {
+    this.confirmed = true; // Update the user's status to confirmed
+    this.registrationDate = undefined; // Remove the expiration date to cancel auto-deletion
+    await this.save(); // Save the changes to the database
+};
+
+// Method for comparing parameter to this users password. Returns true if passwords match
 userSchema.methods.comparePassword = async function(candidatePassword) {
     return await compare(candidatePassword, this.password);
 };

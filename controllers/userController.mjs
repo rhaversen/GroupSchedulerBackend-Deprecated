@@ -52,18 +52,25 @@ export const registerUser = async (req, res, next) => {
     // Generate a confirmation code
     const confirmationCode = crypto.randomBytes(20).toString('hex');
 
+    console.log(confirmationCode);
+
     // Add status, confirmationCode, and registrationDate
     const newUser = new User({
       username,
       email,
       password,
-      status: 'pending',
       confirmationCode,
       registrationDate: new Date(),
     });
 
     // Generate confirmation link
-    const confirmationLink = `https://yourapp.com/confirm?code=${confirmationCode}`;
+    if(process.env.NODE_ENV === 'production'){
+      const confirmationLink = `https://yourapp.com/confirm/code=${confirmationCode}`;
+    } else {
+      const confirmationLink = `localhost: ` + port + `/confirm/code=${confirmationCode}`;
+    }
+
+    console.log(confirmationLink);
 
     // Send email to the user with the confirmation link (You'll need to implement this part with your email provider)
     //await sendConfirmationEmail(email, confirmationLink);
@@ -71,14 +78,14 @@ export const registerUser = async (req, res, next) => {
     const savedUser = await newUser.save();
  
     return res.status(201).json({
-      message: 'Registration successful! Please check your email to confirm your account.',
+    //  message: 'Registration successful! Please check your email to confirm your account within 24 hours.',
       userId: savedUser._id,
     });
 };
 
 export const confirmUser = async (req, res, next) => {
   // Extract the confirmation code from the query parameters
-  const { code } = req.query;
+  const { code } = req.params;
 
   if (!code) {
     return next(new MissingFieldsError('Confirmation code missing'));
@@ -91,13 +98,12 @@ export const confirmUser = async (req, res, next) => {
     return next(new InvalidConfirmationCodeError('Invalid confirmation code'));
   }
 
-  if (user.status !== 'pending') {
+  if (user.confirmed === true) {
     return next(new AlreadyConfirmedError('User has already been confirmed'));
   }
 
   // Update the user's status to 'confirmed'
-  user.status = 'confirmed';
-  await user.save();
+  await user.confirmUser();
 
   // Redirect the user or send a success message
   return res.status(200).json({
