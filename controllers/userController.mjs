@@ -14,7 +14,9 @@ const {
   InvalidPasswordError,
   UserNotFoundError,
   EmailAlreadyExistsError,
-  MissingFieldsError
+  MissingFieldsError,
+  InvalidConfirmationCodeError,
+  AlreadyConfirmedError
 } = errors;
 const jwtExpiry = process.env.JWT_EXPIRY;
 
@@ -73,6 +75,36 @@ export const registerUser = async (req, res, next) => {
       userId: savedUser._id,
     });
 };
+
+export const confirmUser = async (req, res, next) => {
+  // Extract the confirmation code from the query parameters
+  const { code } = req.query;
+
+  if (!code) {
+    return next(new MissingFieldsError('Confirmation code missing'));
+  }
+
+  // Find the user with the corresponding confirmation code
+  const user = await User.findOne({ confirmationCode: code }).exec();
+  
+  if (!user) {
+    return next(new InvalidConfirmationCodeError('Invalid confirmation code'));
+  }
+
+  if (user.status !== 'pending') {
+    return next(new AlreadyConfirmedError('User has already been confirmed'));
+  }
+
+  // Update the user's status to 'confirmed'
+  user.status = 'confirmed';
+  await user.save();
+
+  // Redirect the user or send a success message
+  return res.status(200).json({
+    message: 'Confirmation successful! Your account has been activated.',
+  });
+};
+
 
 export const loginUser = async (req, res, next) => {
     let { email, password, stayLoggedIn } = req.body;

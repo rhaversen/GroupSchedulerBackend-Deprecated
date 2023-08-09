@@ -79,6 +79,22 @@ class MissingFieldsError extends ValidationError {
   }
 }
 
+class InvalidConfirmationCodeError extends ValidationError {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+    this.statusCode = 400;
+  }
+}
+
+class AlreadyConfirmedError extends ValidationError {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+    this.statusCode = 400;
+  }
+}
+
 //Event errors
 class EventError extends Error {
   constructor(message) {
@@ -125,6 +141,8 @@ export default {
   InvalidPasswordError,
   EmailAlreadyExistsError,
   PasswordIncorrectError,
+  InvalidConfirmationCodeError,
+  AlreadyConfirmedError,
   UserNotInEventError,
   UserNotAdminError,
   InvalidEventIdOrCode,
