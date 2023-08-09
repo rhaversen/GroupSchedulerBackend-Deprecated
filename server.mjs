@@ -1,6 +1,4 @@
 // Node.js built-in modules
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 import http from 'http';
 
 // Third-party libraries
@@ -22,8 +20,6 @@ import { connectToDatabase, disconnectFromDatabase } from './database.mjs';
 // Global variables and setup
 const expressPort = process.env.EXPRESS_PORT;
 const nextJsPort = process.env.NEXTJS_PORT;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 const app = express();
 const server = http.createServer(app);
 
