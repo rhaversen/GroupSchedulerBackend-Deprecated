@@ -23,7 +23,7 @@ export default (function(err, req, res, next) {
         res.status(500).json({ error: 'A server- or database-error occurred, please try again later' });
     } else {
         // If it's not one of the known errors, it could be anything - consider it a 500 error
-        logger.error(err.message);
+        logger.error(err.toString());
         res.status(500).json({ error: 'An error occurred, please try again later' });
     }
 });
