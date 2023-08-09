@@ -52,7 +52,10 @@ export const registerUser = async (req, res, next) => {
     // Generate a confirmation code
     const confirmationCode = crypto.randomBytes(20).toString('hex');
 
-    console.log(confirmationCode);
+    const userExpiry = Number(process.env.UNCONFIRMED_USER_EXPIRY);
+
+    const deletionDate = new Date(Date.now() + userExpiry);
+    
 
     // Add status, confirmationCode, and registrationDate
     const newUser = new User({
@@ -61,6 +64,7 @@ export const registerUser = async (req, res, next) => {
       password,
       confirmationCode,
       registrationDate: new Date(),
+      deletionDate,
     });
 
     let confirmationLink;
@@ -94,7 +98,7 @@ export const confirmUser = async (req, res, next) => {
 
   // Find the user with the corresponding confirmation code
   const user = await User.findOne({ confirmationCode: code }).exec();
-  
+
   if (!user) {
     return next(new InvalidConfirmationCodeError('Invalid confirmation code'));
   }
