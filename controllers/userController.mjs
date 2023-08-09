@@ -77,11 +77,10 @@ export const registerUser = async (req, res, next) => {
     // Send email to the user with the confirmation link (You'll need to implement this part with your email provider)
     //await sendConfirmationEmail(email, confirmationLink);
 
-    const savedUser = await newUser.save();
+    await newUser.save();
  
     return res.status(201).json({
-    //  message: 'Registration successful! Please check your email to confirm your account within 24 hours.',
-      userId: savedUser._id,
+      message: 'Registration successful! Please check your email to confirm your account within 24 hours.',
     });
 };
 
