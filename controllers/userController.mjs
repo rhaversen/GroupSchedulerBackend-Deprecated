@@ -66,10 +66,10 @@ export const registerUser = async (req, res, next) => {
     let confirmationLink;
     // Generate confirmation link
     if(process.env.NODE_ENV === 'production'){
-      confirmationLink = `https://yourapp.com/confirm/code=${confirmationCode}`;
+      confirmationLink = `https://yourapp.com/confirm?code=${confirmationCode}`;
     } else {
       const port = process.env.NEXTJS_PORT;
-      confirmationLink = `localhost:` + port + `/confirm/code=${confirmationCode}`;
+      confirmationLink = `localhost:` + port + `/confirm?code=${confirmationCode}`;
     }
 
     console.log(confirmationLink);
