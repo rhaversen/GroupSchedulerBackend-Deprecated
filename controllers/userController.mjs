@@ -1,7 +1,6 @@
 // Third-party libraries
 import validator from 'validator';
 import dotenv from 'dotenv';
-import crypto from 'crypto';
 
 // Own modules
 import errors from '../utils/errors.mjs';
@@ -49,31 +48,23 @@ export const registerUser = async (req, res, next) => {
       return next(new InvalidPasswordError( 'Password must be at least 3 characters' ))
     }
 
-    // Generate a confirmation code
-    const confirmationCode = crypto.randomBytes(20).toString('hex');
-
-    const userExpiry = Number(process.env.UNCONFIRMED_USER_EXPIRY);
-
-    const deletionDate = new Date(Date.now() + userExpiry);
-    
-
-    // Add status, confirmationCode, and registrationDate
     const newUser = new User({
       username,
       email,
       password,
-      confirmationCode,
-      registrationDate: new Date(),
-      deletionDate,
     });
+
+    const savedUser = await newUser.save();
+
+    const userCode = savedUser.userCode;
 
     let confirmationLink;
     // Generate confirmation link
     if(process.env.NODE_ENV === 'production'){
-      confirmationLink = `https://yourapp.com/confirm?code=${confirmationCode}`;
+      confirmationLink = `https://yourapp.com/confirm?userCode=${userCode}`;
     } else {
       const port = process.env.NEXTJS_PORT;
-      confirmationLink = `localhost:` + port + `/confirm?code=${confirmationCode}`;
+      confirmationLink = `localhost:` + port + `/confirm?userCode=${userCode}`;
     }
 
     console.log(confirmationLink);
@@ -81,7 +72,6 @@ export const registerUser = async (req, res, next) => {
     // Send email to the user with the confirmation link (You'll need to implement this part with your email provider)
     //await sendConfirmationEmail(email, confirmationLink);
 
-    await newUser.save();
  
     return res.status(201).json({
       message: 'Registration successful! Please check your email to confirm your account within 24 hours.',

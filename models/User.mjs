@@ -31,6 +31,7 @@ const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const nanoidLength = 10;
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
+const userExpiry = Number(process.env.UNCONFIRMED_USER_EXPIRY);
 
 const userSchema = new Schema({
     username: { type: String, required: true }, // This is how other users will recognize you. It should reflect your name or nickname. Don't worry, only users in the same events as you can see your name.
@@ -42,15 +43,15 @@ const userSchema = new Schema({
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     userCode: { type: String, unique: true },
     confirmed: { type: Boolean, default: false },
-    confirmationCode: { type: String, unique: true }, // Used for email confirmation
-    registrationDate: { type: Date, required: true }, // Keep track of registration date
-    deletionDate: { type: Date, expires: '24h' }, // TTL index, document will expire in 24 hours if not confirmed
+    registrationDate: { type: Date, default: new Date() }, // Keep track of registration date
+    expirationDate: { type: Date, default: new Date(Date.now() + userExpiry * 1000) }, // TTL index, document will expire in process.env.UNCONFIRMED_USER_EXPIRY seconds if not confirmed
 });
+
+userSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 });
 
 userSchema.methods.confirmUser = async function() {
     this.confirmed = true; // Update the user's status to confirmed
-    this.deletionDate = undefined; // Remove the expiration date to cancel auto-deletion
-    await this.save(); // Save the changes to the database
+    this.expirationDate = undefined; // Remove the expiration date to cancel auto-deletion
 };
 
 // Method for comparing parameter to this users password. Returns true if passwords match
