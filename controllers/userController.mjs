@@ -80,14 +80,14 @@ export const registerUser = async (req, res, next) => {
 
 export const confirmUser = async (req, res, next) => {
   // Extract the confirmation code from the query parameters
-  const { code } = req.params;
+  const { userCode } = req.params;
 
-  if (!code) {
+  if (!userCode) {
     return next(new MissingFieldsError('Confirmation code missing'));
   }
 
   // Find the user with the corresponding confirmation code
-  const user = await User.findOne({ confirmationCode: code }).exec();
+  const user = await User.findOne({ userCode }).exec();
 
   if (!user) {
     return next(new InvalidConfirmationCodeError('Invalid confirmation code'));
