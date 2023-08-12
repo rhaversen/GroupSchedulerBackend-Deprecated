@@ -109,6 +109,7 @@ export const confirmUser = async (req, res, next) => {
 
   // Update the user's status to 'confirmed'
   await user.confirmUser();
+  await user.save();
 
   // Redirect the user or send a success message
   return res.status(200).json({
@@ -181,6 +182,7 @@ export const newCode = async (req, res, next) => {
     const user = req.user;
     // Generate a new userCode
     await user.generateNewUserCode();
+    await user.save();
     return res.status(200).json(user);
 }
 

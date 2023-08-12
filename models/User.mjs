@@ -68,7 +68,6 @@ userSchema.methods.generateNewUserCode = async function() {
     } while (existingUser);
   
     this.userCode = userCode;
-    await this.save();
 };
 
 userSchema.methods.generateToken = function() {
@@ -81,15 +80,7 @@ userSchema.methods.generateToken = function() {
 // Password hashing middleware
 userSchema.pre('save', async function(next) {
     if (this.isNew) {
-        let userCode;
-        let existingUser;
-        
-        do {
-            userCode = nanoid();
-            existingUser = await this.constructor.findOne({ userCode });
-        } while (existingUser);
-    
-        this.userCode = userCode;
+        await this.generateNewUserCode();
     }
 
     if (this.isModified('password')) {
