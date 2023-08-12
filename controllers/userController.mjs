@@ -126,7 +126,7 @@ export const loginUser = async (req, res, next) => {
 
     // Check if user exists
     if (!user) {
-      return next(new UserNotFoundError( 'User not found' ));
+      return next(new UserNotFoundError( 'A user with the email ' + email + ' was not found. Please check spelling or sign up' ));
     }
 
     // Check password
