@@ -21,7 +21,9 @@ class EmailAlreadyExistsError extends ValidationError {}
 class PasswordIncorrectError extends ValidationError {}
 class MissingFieldsError extends ValidationError {}
 class InvalidConfirmationCodeError extends ValidationError {}
-class AlreadyConfirmedError extends ValidationError {}
+class UserAlreadyConfirmedError extends ValidationError {}
+class UserNotConfirmedError extends ValidationError {}
+
 
 class UserNotInEventError extends ValidationError {
   constructor(message) {
@@ -59,7 +61,8 @@ export default {
   EmailAlreadyExistsError,
   PasswordIncorrectError,
   InvalidConfirmationCodeError,
-  AlreadyConfirmedError,
+  UserAlreadyConfirmedError,
+  UserNotConfirmedError,
   UserNotInEventError,
   UserNotAdminError,
   InvalidEventIdOrCode,

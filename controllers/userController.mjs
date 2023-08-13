@@ -15,7 +15,8 @@ const {
   EmailAlreadyExistsError,
   MissingFieldsError,
   InvalidConfirmationCodeError,
-  AlreadyConfirmedError
+  UserAlreadyConfirmedError,
+  UserNotConfirmedError
 } = errors;
 const jwtExpiry = process.env.JWT_EXPIRY;
 
@@ -41,7 +42,10 @@ export const registerUser = async (req, res, next) => {
   
     const existingUser = await User.findOne({ email }).exec();
     if (existingUser) { // Check if existing user is truthy
-      return next(new EmailAlreadyExistsError( 'Email already exists' ));
+      if (existingUser.confirmed === false){
+        return next(new UserNotConfirmedError( 'Email already exists but is not confirmed. Please follow the link sent to your email inbox' ))
+      }
+      return next(new EmailAlreadyExistsError( 'Email already exists, please sign in instead' ));
     }
 
     if(String(password).length <= 2 ){
@@ -74,7 +78,7 @@ export const registerUser = async (req, res, next) => {
 
  
     return res.status(201).json({
-      message: 'Registration successful! Please check your email to confirm your account within 24 hours.',
+      message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.',
     });
 };
 
@@ -94,7 +98,7 @@ export const confirmUser = async (req, res, next) => {
   }
 
   if (user.confirmed === true) {
-    return next(new AlreadyConfirmedError('User has already been confirmed'));
+    return next(new UserAlreadyConfirmedError('User has already been confirmed'));
   }
 
   // Update the user's status to 'confirmed'
