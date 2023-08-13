@@ -41,7 +41,7 @@ router.post('/',
  * @desc Confirm user
  * @access Public
  */
-router.post('/confirm/:code',
+router.post('/confirm/:userCode',
   sanitizeInput,
   confirmUser
 );
