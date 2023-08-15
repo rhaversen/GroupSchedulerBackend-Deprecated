@@ -74,7 +74,7 @@ export const registerUser = async (req, res, next) => {
     console.log(confirmationLink);
 
     // Send email to the user with the confirmation link (You'll need to implement this part with your email provider)
-    //await sendConfirmationEmail(email, confirmationLink);
+    await sendConfirmationEmail(email, confirmationLink);
 
  
     return res.status(201).json({
