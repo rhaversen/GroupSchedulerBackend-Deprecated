@@ -66,6 +66,7 @@ export const createEvent = async (req, res, next) => {
     return res.status(201).json(newEvent);
 }
 
+
 export const updateEvent = async (req, res, next) => {
     const {
         eventName, 
@@ -90,7 +91,7 @@ export const updateEvent = async (req, res, next) => {
 
 export const joinEvent = async (req, res, next) => {
     const eventIdOrCode = req.params.eventIdOrCode;
-    const event = getEventByIdOrCode(eventIdOrCode)
+    const event = await getEventByIdOrCode(eventIdOrCode);
     const user = req.user;
 
     // Add event to user's events and user to event's participants
