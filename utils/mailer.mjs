@@ -2,17 +2,19 @@ import nodemailer from 'nodemailer';
 
 // Configure transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.simply.com',
+  port: 465,    // Common port for SSL
+  secure: true, // true for 465, false for other ports
   auth: {
-    user: 'noreply.gatheron@gmail.com',
-    pass: 'alsdJHLK9077)(/)(/',
+    user: 'rasmus@haversen.dk',
+    pass: 'Rasmus123',
   },
 });
 
 // Generic function to send email
 export const sendEmail = (to, subject, text) => {
   const mailOptions = {
-    from: 'noreply.gatheron@gmail.com',
+    from: 'rasmus@haversen.dk',
     to,
     subject,
     text,
