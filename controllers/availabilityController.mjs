@@ -1,5 +1,14 @@
+// Own modules
 import Availability from "../models/Availability.mjs";
 import User from "../models/User.mjs";
+import errors from '../utils/errors.mjs';
+
+// Destructuring and global variables
+const {
+    MissingFieldsError,
+    UserNotFoundError
+} = errors;
+
 
 export const newOrUpdateAvailability = async (req, res, next) => {
     const {
@@ -15,11 +24,16 @@ export const newOrUpdateAvailability = async (req, res, next) => {
         return next(new MissingFieldsError('Date must be specified'));
     }
 
-    const userId = req.user.id;
-    const user = await User.findById(userId).exec();
-
     // Check if user already has a availability set for this date
-    const existingAvailability = await user.availabilities.findOne({date}).exec();
+    const userId = req.user.id;
+    const populatedUser = await User.findById(userId).populate('availabilities').exec();
+
+    if (!populatedUser) {
+        return next(new UserNotFoundError('The user could not be found'));
+    }
+
+    const existingAvailability = populatedUser.availabilities.findOne({date});
+
     if(existingAvailability){  // Check if availability is truthy
         // Availability exists, update the provided fields instead
         if(description){existingAvailability.description = description}
@@ -43,7 +57,7 @@ export const newOrUpdateAvailability = async (req, res, next) => {
 
     const savedAvailability = await newAvailability.save();
 
-    user.availabilities.push(savedAvailability._id)
+    populatedUser.availabilities.push(savedAvailability._id)
 
     return res.status(201).json(savedAvailability);
 }
