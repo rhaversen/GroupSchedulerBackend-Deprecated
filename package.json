@@ -19,10 +19,13 @@
     "winston": "^3.9.0"
   },
   "devDependencies": {
+    "@types/mongoose": "^5.11.97",
+    "@types/node": "^20.5.0",
     "chai": "^4.3.7",
     "chai-http": "^4.4.0",
     "mocha": "^10.2.0",
-    "mongodb-memory-server": "^8.13.0"
+    "mongodb-memory-server": "^8.13.0",
+    "ts-node": "^10.9.1"
   },
   "scripts": {
     "test": "mocha"

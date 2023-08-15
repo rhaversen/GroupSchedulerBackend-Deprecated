@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "allowJs": true,
+      "checkJs": true,
+      "noEmit": true, // Add this line
+      "target": "ESNext",
+      "module": "ESNext",
+      "moduleResolution": "node"
+    },
+    "include": ["**/*.mjs"]
+  }
+  
