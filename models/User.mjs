@@ -69,6 +69,7 @@ userSchema.methods.generateNewUserCode = async function() {
     } while (existingUser);
   
     this.userCode = userCode;
+    return userCode;
 };
 
 userSchema.methods.generateToken = function() {

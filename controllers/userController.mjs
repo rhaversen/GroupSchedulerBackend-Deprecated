@@ -175,9 +175,9 @@ export const getEvents = async (req, res, next) => {
 export const newCode = async (req, res, next) => {
     const user = req.user;
     // Generate a new userCode
-    await user.generateNewUserCode();
+    const userCode = await user.generateNewUserCode();
     await user.save();
-    return res.status(200).json(user);
+    return res.status(200).json({userCode: userCode});
 }
 
 export const followUser = async (req, res, next) => {
