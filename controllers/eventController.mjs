@@ -114,8 +114,9 @@ export const leaveEventOrKick = async (req, res, next) => {
     if (removedUserId) { // User deletion requested
         if (!(event.isLocked && !event.isAdmin(user.id))) { // The event is either not locked, or the user is admin
             
-            const removedUser = User.findById(removedUserId);
-            removedUser.events.pull(event.id);
+            const populatedUser = await User.findById(removedUserId).populate('events').exec();
+            await populatedUser.events.pull(event.id);            
+
             event.participants.pull(removedUserId);
 
             await user.save();

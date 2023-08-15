@@ -18,7 +18,7 @@ const {
   UserAlreadyConfirmedError,
   UserNotConfirmedError
 } = errors;
-const jwtExpiry = process.env.JWT_EXPIRY;
+const jwtExpiry = Number(process.env.JWT_EXPIRY);
 
 // Setup
 dotenv.config();
@@ -74,7 +74,7 @@ export const registerUser = async (req, res, next) => {
     console.log(confirmationLink);
 
     // Send email to the user with the confirmation link (You'll need to implement this part with your email provider)
-    await sendConfirmationEmail(email, confirmationLink);
+    sendConfirmationEmail(email, confirmationLink);
 
  
     return res.status(201).json({
@@ -236,7 +236,7 @@ export const updateUser = async (req, res, next) => {
     oldPassword
   } = req.body;
 
-  if(newUsername){user.username = newName}
+  if(newUsername){user.username = newUsername}
   if(newPassword && oldPassword){
     await user.comparePassword(oldPassword); // Throws error if password doesn't match
     user.password = newPassword

@@ -23,13 +23,13 @@ export async function getEventByIdOrCode(eventIdOrCode) {
     } else if (isNanoid(eventIdOrCode)) { // It's a nanoid
         query = { eventCode: eventIdOrCode };
     } else {
-        return next(new InvalidEventIdOrCode('The provided ID or code is not valid'));
+        throw new InvalidEventIdOrCode('The provided ID or code is not valid');
     }
 
     const event = await Event.findOne(query).exec();
     
     // Check if event exists
-    if (!event) return next(new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong'));
+    if (!event) throw new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong');
 
     return event;
 }
