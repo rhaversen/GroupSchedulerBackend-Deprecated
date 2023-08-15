@@ -27,6 +27,21 @@ import {
 const router = Router();
 
 /**
+ * @route GET api/v1/users/validate-jwt
+ * @desc Validate JWT
+ * @access Public
+ */
+router.get('/validate-jwt',
+  passport.authenticate('jwt', { session: false }),
+  // If we get here, the JWT is valid, so we just respond with a success message
+  function(req, res) {
+    res.status(200).json({
+      message: 'User has valid JWT.',
+    });
+  }
+);
+
+/**
  * @route POST api/v1/users
  * @desc Register user
  * @access Public
