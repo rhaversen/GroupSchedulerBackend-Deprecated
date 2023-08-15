@@ -94,8 +94,15 @@ server.listen(expressPort, () => {
 app.use(globalErrorHandler);
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-    logger.error('Unhandled promise rejection:', err);
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    server.close(() => {
+        process.exit(1);
+    });
+});
+
+process.on('uncaughtException', (err) => {
+    logger.error('Uncaught exception:', err);
     server.close(() => {
         process.exit(1);
     });
