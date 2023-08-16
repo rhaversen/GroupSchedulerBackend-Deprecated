@@ -6,5 +6,6 @@ npm-debug.log
 .env
 *.log
 .vscode/
+dist/
 
 rasmus.pgp

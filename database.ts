@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 // Own modules
-import logger from './utils/logger.mjs';
+import logger from './utils/logger.js';
 
 const mongooseOpts = {
     useNewUrlParser: true,

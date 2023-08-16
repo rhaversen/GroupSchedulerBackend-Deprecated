@@ -1,12 +1,14 @@
 {
-    "compilerOptions": {
-      "allowJs": true,
-      "checkJs": true,
-      "noEmit": true, // Add this line
-      "target": "ESNext",
-      "module": "ESNext",
-      "moduleResolution": "node"
-    },
-    "include": ["**/*.mjs"]
-  }
-  
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": false,
+    "outDir": "./dist",
+    "allowJs": true,
+    "checkJs": true,
+  },
+  "include": ["**/*.ts", "models/Event.ts", "utils/mailer.ts"],
+  "exclude": ["node_modules"]
+}

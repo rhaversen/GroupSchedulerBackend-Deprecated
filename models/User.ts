@@ -5,11 +5,11 @@ import dotenv from 'dotenv';
 import jsonwebtokenPkg from 'jsonwebtoken';
 import bcryptjsPkg from 'bcryptjs';
 import { customAlphabet } from 'nanoid';
-import mongoose, { model } from 'mongoose';
+import mongoose, { Document, Types, model } from 'mongoose';
 
 // Own modules
-import errors from '../utils/errors.mjs';
-import logger from '../utils/logger.mjs';
+import errors from '../utils/errors.js';
+import logger from '../utils/logger.js';
 
 // Setup
 dotenv.config();
@@ -26,6 +26,7 @@ const {
 
 // Constants
 const jwtExpiry = process.env.JWT_EXPIRY;
+const jwtPersistentExpiry = process.env.JWT_PERSISTENT_EXPIRY;
 const jwtSecret = process.env.JWT_SECRET
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
 const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -33,7 +34,26 @@ const nanoidLength = 10;
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
 const userExpiry = Number(process.env.UNCONFIRMED_USER_EXPIRY);
 
-const userSchema = new Schema({
+export interface IUser extends Document {
+    username: string;
+    email: string;
+    password: string;
+    events: Types.ObjectId[];
+    availabilities: Types.ObjectId[];
+    following: Types.ObjectId[];
+    followers: Types.ObjectId[];
+    userCode: string;
+    confirmed: boolean;
+    registrationDate: Date;
+    expirationDate?: Date;
+  
+    confirmUser(): Promise<void>;
+    comparePassword(candidatePassword: string): Promise<boolean>;
+    generateNewUserCode(): Promise<string>;
+    generateToken(): string;
+  }  
+
+const userSchema = new Schema<IUser>({
     username: { type: String, required: true }, // This is how other users will recognize you. It should reflect your name or nickname. Don't worry, only users in the same events as you can see your name.
     email: { type: String, required: true, unique: true }, // This is how you will log in, no users will be able to see this
     password: { type: String, required: true }, 
@@ -72,9 +92,9 @@ userSchema.methods.generateNewUserCode = async function() {
     return userCode;
 };
 
-userSchema.methods.generateToken = function() {
+userSchema.methods.generateToken = function(stayLoggedIn) {
     const payload = { id: this._id };
-    const token = sign(payload, jwtSecret, { expiresIn: jwtExpiry })
+    const token = sign(payload, jwtSecret, { expiresIn: stayLoggedIn ? jwtPersistentExpiry : jwtExpiry })
     logger.info('JWT created')
     return token;
 };

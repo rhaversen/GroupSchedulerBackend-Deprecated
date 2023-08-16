@@ -1,7 +1,7 @@
 // Own modules
-import Availability from "../models/Availability.mjs";
-import User from "../models/User.mjs";
-import errors from '../utils/errors.mjs';
+import Availability, { IAvailability } from '../models/Availability.js';
+import User from '../models/User.js';
+import errors from '../utils/errors.js';
 
 // Destructuring and global variables
 const {
@@ -32,7 +32,7 @@ export const newOrUpdateAvailability = async (req, res, next) => {
         return next(new UserNotFoundError('The user could not be found'));
     }
 
-    const existingAvailability = populatedUser.availabilities.findOne({date});
+    const existingAvailability = ((populatedUser.availabilities as unknown) as IAvailability[]).find(availability => availability.date === date);
 
     if(existingAvailability){  // Check if availability is truthy
         // Availability exists, update the provided fields instead

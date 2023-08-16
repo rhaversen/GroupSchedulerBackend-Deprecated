@@ -12,10 +12,10 @@ import helmet from 'helmet';
 import cors from 'cors';
 
 // Own modules
-import logger from './utils/logger.mjs';
-import globalErrorHandler from './middleware/globalErrorHandler.mjs';
-import configurePassport from './utils/passportJwt.mjs';
-import { connectToDatabase, disconnectFromDatabase } from './database.mjs';
+import logger from './utils/logger.js';
+import globalErrorHandler from './middleware/globalErrorHandler.js';
+import configurePassport from './utils/passportJwt.js';
+import { connectToDatabase, disconnectFromDatabase } from './database.js';
 
 // Global variables and setup
 const expressPort = process.env.EXPRESS_PORT;
@@ -69,11 +69,11 @@ const apiLimiter = RateLimit({
 });
 
 // Import and use routes, apply general rate limiter
-import userRoutes from './routes/users.mjs';
+import userRoutes from './routes/users.js';
 app.use('/api/v1/users', apiLimiter, userRoutes);
-import eventRoutes from './routes/events.mjs';
+import eventRoutes from './routes/events.js';
 app.use('/api/v1/events', apiLimiter, eventRoutes);
-import availabilityRoutes from './routes/availabilities.mjs';
+import availabilityRoutes from './routes/availabilities.js';
 app.use('/api/v1/users/availabilities', apiLimiter, availabilityRoutes);
 
 // Create stricter rate limiters for routes

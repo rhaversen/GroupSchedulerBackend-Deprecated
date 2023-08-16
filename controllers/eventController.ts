@@ -1,17 +1,43 @@
 // Own modules
-import logger from '../utils/logger.mjs';
-import errors from '../utils/errors.mjs';
-import Event from '../models/Event.mjs';
-import User from '../models/User.mjs';
-import {
-    getEventByIdOrCode
-} from '../utils/eventFunctions.mjs';
+import logger from '../utils/logger.js';
+import errors from '../utils/errors.js';
+import Event, { IEvent } from '../models/Event.js';
+import User, { IUser } from '../models/User.js';
 
 // Destructuring and global variables
 const {
     MissingFieldsError,
-    UserNotAdminError
+    UserNotAdminError,
+    EventNotFoundError,
+    InvalidEventIdOrCode
 } = errors;
+
+// helper functions
+function isMongoId(str) {
+    return /^[0-9a-fA-F]{24}$/.test(str);
+}
+function isNanoid(str) {
+    return /^[1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]{10}$/.test(str);
+}
+
+// Get event by eventId or eventCode
+export async function getEventByIdOrCode(eventIdOrCode) {
+    let query;
+    if (isMongoId(eventIdOrCode)) { // It's a MongoDB ObjectId
+        query = { _id: eventIdOrCode };
+    } else if (isNanoid(eventIdOrCode)) { // It's a nanoid
+        query = { eventCode: eventIdOrCode };
+    } else {
+        throw new InvalidEventIdOrCode('The provided ID or code is not valid');
+    }
+
+    const event = await Event.findOne(query).exec();
+    
+    // Check if event exists
+    if (!event) throw new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong');
+
+    return event;
+}
 
 export const newCode = async (req, res, next) => {
     const eventIdOrCode = req.params.eventIdOrCode;
@@ -114,8 +140,11 @@ export const leaveEventOrKick = async (req, res, next) => {
     if (removedUserId) { // User deletion requested
         if (!(event.isLocked && !event.isAdmin(user.id))) { // The event is either not locked, or the user is admin
             
-            const populatedUser = await User.findById(removedUserId).populate('events').exec();
-            await populatedUser.events.pull(event.id);            
+            const removedUser = await User.findById(removedUserId);
+            if (removedUser) {
+                removedUser.events.pull(event.id);
+                await removedUser.save();
+            }
 
             event.participants.pull(removedUserId);
 

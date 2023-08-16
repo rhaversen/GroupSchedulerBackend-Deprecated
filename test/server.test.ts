@@ -7,10 +7,10 @@ import chaiHttp from 'chai-http';
 chai.use(chaiHttp);
 const { expect } = chai;
 
-import { deleteAllDocumentsFromAllCollections } from '../database.mjs';
-import logger from '../utils/logger.mjs';
-import User from '../models/User.mjs';
-import error from '../utils/errors.mjs';
+import { deleteAllDocumentsFromAllCollections } from '../database.js';
+import logger from '../utils/logger.js';
+import User from '../models/User.js';
+import error from '../utils/errors.js';
 
 const {
   ServerError
@@ -26,7 +26,7 @@ import {
   unfollowUser,
   getUser,
   updateUser
-} from '../controllers/userController.mjs';
+} from '../controllers/userController';
 
 // Helper functions
 async function establishFollowing(followingUser, followedUser) {
@@ -42,7 +42,7 @@ let server;
 describe('Server Tests', () => {
   before(async function() {
     this.timeout(10000); // Set the timeout to 10 seconds.
-    server = await import('../server.mjs');
+    server = await import('../server');
     // Wipe database before testing
     await deleteAllDocumentsFromAllCollections()
   });

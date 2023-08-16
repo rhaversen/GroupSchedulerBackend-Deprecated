@@ -1,6 +1,6 @@
 // Own modules
-import errors from '../utils/errors.mjs';
-import logger from '../utils/logger.mjs';
+import errors from '../utils/errors.js';
+import logger from '../utils/logger.js';
 
 // Destructuring and global variables
 const {

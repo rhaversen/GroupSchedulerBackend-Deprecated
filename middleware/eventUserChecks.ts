@@ -1,4 +1,4 @@
-import errors from '../utils/errors.mjs';
+import errors from '../utils/errors.js';
 
 const {
     UserNotInEventError,

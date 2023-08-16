@@ -5,8 +5,8 @@ import dotenv from 'dotenv';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 
 // Own modules
-import errors from './errors.mjs';
-import User from '../models/User.mjs';
+import errors from './errors.js';
+import User from '../models/User.js';
 
 // Setup
 dotenv.config();

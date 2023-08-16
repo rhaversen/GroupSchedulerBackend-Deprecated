@@ -1,13 +1,13 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import mongoose, { model } from 'mongoose';
+import mongoose, { Document, Types, model } from 'mongoose';
 import { customAlphabet } from 'nanoid';
 
 // Own modules
-import User from './User.mjs';
-import logger from '../utils/logger.mjs';
-import errors from '../utils/errors.mjs';
+import User from './User.js';
+import logger from '../utils/logger.js';
+import errors from '../utils/errors.js';
 
 // Destructuring and global variables
 const { Schema } = mongoose;
@@ -20,7 +20,21 @@ const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 const nanoidLength = 10;
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
 
-const eventSchema = new Schema({
+export interface IEvent extends Document {
+  eventName: string;
+  eventDescription?: string;
+  startDate: Date;
+  endDate: Date;
+  participants: Types.ObjectId[];
+  admins: Types.ObjectId[];
+  eventCode: string;
+
+  generateNewEventCode(): Promise<void>;
+  isAdmin(userId: Types.ObjectId): boolean;
+  isLocked(): boolean;
+}
+
+const eventSchema = new Schema<IEvent>({
   eventName: { type: String, required: true },
   eventDescription: { type: String },
   startDate: { type: Date, required: true, validate: { validator: function(value) { return value < this.endDate; }, message: 'Start date must be before end date' } },

@@ -3,9 +3,9 @@ import validator from 'validator';
 import dotenv from 'dotenv';
 
 // Own modules
-import errors from '../utils/errors.mjs';
-import { sendConfirmationEmail } from '../utils/mailer.mjs';
-import User from '../models/User.mjs';
+import errors from '../utils/errors.js';
+import { sendConfirmationEmail } from '../utils/mailer.js';
+import User from '../models/User.js';
 
 // Destructuring and global variables
 const {

@@ -8,10 +8,10 @@ import passport from 'passport';
 import {
     checkUserInEvent,
     checkUserIsAdmin
-} from '../middleware/eventUserChecks.mjs';
+} from '../middleware/eventUserChecks.js';
 import {
     sanitizeInput,
-} from '../middleware/sanitizer.mjs';
+} from '../middleware/sanitizer.js';
 
 // Controller functions
 import {
@@ -22,7 +22,7 @@ import {
     joinEvent,
     leaveEventOrKick,
     deleteEvent
-} from '../controllers/eventController.mjs';
+} from '../controllers/eventController.js';
 
 // Destructuring and global variables
 const router = Router();

@@ -1,5 +1,6 @@
 class CustomError extends Error {
-  constructor(message, statusCode = 400) {
+  statusCode: number;
+  constructor(message: string, statusCode: number = 400) {
     super(message);
     this.name = this.constructor.name;
     this.statusCode = statusCode;
@@ -10,7 +11,7 @@ class CustomError extends Error {
 class ValidationError extends CustomError {}
 
 class UserNotFoundError extends ValidationError {
-  constructor(message) {
+  constructor(message: string) {
     super(message, 404);
   }
 }
@@ -26,13 +27,13 @@ class UserNotConfirmedError extends ValidationError {}
 
 
 class UserNotInEventError extends ValidationError {
-  constructor(message) {
+  constructor(message: string) {
     super(message, 403);
   }
 }
 
 class UserNotAdminError extends ValidationError {
-  constructor(message) {
+  constructor(message: string) {
     super(message, 403);
   }
 }
@@ -46,7 +47,7 @@ class EventNotFoundError extends EventError {}
 
 // Server errors
 class ServerError extends CustomError {
-  constructor(message) {
+  constructor(message: string) {
     super(message, 500);
   }
 }

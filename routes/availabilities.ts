@@ -7,12 +7,12 @@ import passport from 'passport';
 // Own modules
 import {
     sanitizeInput,
-} from '../middleware/sanitizer.mjs';
+} from '../middleware/sanitizer.js';
 
 // Controller functions
 import {
     newOrUpdateAvailability
-} from '../controllers/availabilityController.mjs';
+} from '../controllers/availabilityController.js';
 
 // Destructuring and global variables
 const router = Router();
