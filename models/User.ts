@@ -107,8 +107,7 @@ userSchema.pre('save', async function(next) {
 
     if (this.isModified('password')) {
         try {
-            const salt = await genSalt(saltRounds); //genSalt and hash is already async
-            this.password = await hash(this.password, salt);
+            this.password = await hash(this.password, saltRounds); // Use a custom salt for each user
             return next();
         } catch (err) {
             return next(new HashingError('Error generating a password hash'));
