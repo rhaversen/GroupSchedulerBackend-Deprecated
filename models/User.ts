@@ -50,7 +50,7 @@ export interface IUser extends Document {
     confirmUser(): Promise<void>;
     comparePassword(candidatePassword: string): Promise<boolean>;
     generateNewUserCode(): Promise<string>;
-    generateToken(): string;
+    generateToken(stayLoggedIn: boolean): string;
   }  
 
 const userSchema = new Schema<IUser>({
@@ -92,7 +92,7 @@ userSchema.methods.generateNewUserCode = async function() {
     return userCode;
 };
 
-userSchema.methods.generateToken = function(stayLoggedIn) {
+userSchema.methods.generateToken = function(stayLoggedIn: boolean) {
     const payload = { id: this._id };
     const token = sign(payload, jwtSecret, { expiresIn: stayLoggedIn ? jwtPersistentExpiry : jwtExpiry })
     logger.info('JWT created')
