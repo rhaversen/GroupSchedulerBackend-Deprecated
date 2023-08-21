@@ -1,4 +1,5 @@
 // Node.js built-in modules
+import config from 'config';
 
 // Third-party libraries
 import 'dotenv/config';
@@ -8,10 +9,10 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 // Own modules
 import logger from './utils/logger.js';
 
-const mongooseOpts = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-};
+// Config
+const mongooseOpts = config.get('mongoose.options');
+const maxRetryAttempts = Number(config.get('mongoose.retrySettings.maxAttempts'));
+const retryInterval = Number(config.get('mongoose.retrySettings.interval')); //ms
 
 let mongoServer;
 
@@ -23,8 +24,6 @@ const connectToDatabase = async () => {
         logger.info('Connected to in-memory MongoDB');
     } else {
         logger.info(`Attempting to connect to to MongoDB`);
-        const maxRetryAttempts = Number(process.env.DB_CONNECTION_RETRY_MAX_ATTEMPTS);
-        const retryInterval = Number(process.env.DB_CONNECTION_RETRY_INTERVAL);
         const mongoUri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`;
     
         let currentRetryAttempt = 0;

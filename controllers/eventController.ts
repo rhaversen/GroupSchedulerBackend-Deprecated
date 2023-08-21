@@ -1,3 +1,6 @@
+// Node.js built-in modules
+import config from 'config';
+
 // Own modules
 import logger from '../utils/logger.js';
 import errors from '../utils/errors.js';
@@ -12,12 +15,17 @@ const {
     InvalidEventIdOrCode
 } = errors;
 
+// Config
+const nanoidAlphabet = String(config.get('nanoid.alphabet'));
+const nanoidLength = Number(config.get('nanoid.length'));
+
 // helper functions
 function isMongoId(str) {
     return /^[0-9a-fA-F]{24}$/.test(str);
 }
 function isNanoid(str) {
-    return /^[1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]{10}$/.test(str);
+    const regex = new RegExp(`^[${nanoidAlphabet}]{${nanoidLength}}$`);
+    return regex.test(str);
 }
 
 // Get event by eventId or eventCode

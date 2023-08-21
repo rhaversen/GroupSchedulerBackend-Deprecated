@@ -1,4 +1,5 @@
 // Node.js built-in modules
+import config from 'config';
 
 // Third-party libraries
 import mongoose, { Document, Types, model } from 'mongoose';
@@ -15,9 +16,11 @@ const {
   UserNotFoundError
 } = errors;
 
+// Config
+const nanoidAlphabet = String(config.get('nanoid.alphabet'));
+const nanoidLength = Number(config.get('nanoid.length'));
+
 // Constants
-const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-const nanoidLength = 10;
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
 
 export interface IEvent extends Document {

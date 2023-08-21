@@ -1,3 +1,6 @@
+// Node.js built-in modules
+import config from 'config';
+
 // Third-party libraries
 import validator from 'validator';
 import dotenv from 'dotenv';
@@ -18,8 +21,13 @@ const {
   UserAlreadyConfirmedError,
   UserNotConfirmedError
 } = errors;
-const jwtExpiry = Number(process.env.JWT_EXPIRY);
-const jwtPersistentExpiry = Number(process.env.JWT_PERSISTENT_EXPIRY);
+
+// Config
+const jwtExpiry = Number(config.get('jwt.expiry'));
+const jwtPersistentExpiry = Number(config.get('jwt.persistentExpiry'));
+const nextJsPort = config.get('ports.nextJs');
+const frontendDomain = config.get('frontend.domain');
+const cookieOptions = config.get('cookieOptions');
 
 // Setup
 dotenv.config();
@@ -66,15 +74,14 @@ export const registerUser = async (req, res, next) => {
     let confirmationLink;
     // Generate confirmation link
     if(process.env.NODE_ENV === 'production'){
-      confirmationLink = `https://yourapp.com/confirm?userCode=${userCode}`;
+      confirmationLink = `http://${frontendDomain}/confirm?userCode=${userCode}`;
     } else {
-      const port = process.env.NEXTJS_PORT;
-      confirmationLink = `localhost:` + port + `/confirm?userCode=${userCode}`;
+      confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${userCode}`;
     }
 
     console.log(confirmationLink);
 
-    // Send email to the user with the confirmation link (You'll need to implement this part with your email provider)
+    // Send email to the user with the confirmation link
     sendConfirmationEmail(email, confirmationLink);
 
  
@@ -143,15 +150,10 @@ export const loginUser = async (req, res, next) => {
     // User matched, generate token
     const token = user.generateToken(stayLoggedIn);
 
-    const cookieOptions = {
-      httpOnly: true,
-      secure: true,
-      SameSite: 'strict',
-      maxAge: jwtExpiry
-    };
-
     if (stayLoggedIn) {
       cookieOptions.maxAge = jwtPersistentExpiry * 1000; // Assuming jwtExpiry is in seconds
+    } else {
+      cookieOptions.maxAge = jwtExpiry * 1000; // Assuming jwtExpiry is in seconds
     }
 
     // Set the JWT in a cookie

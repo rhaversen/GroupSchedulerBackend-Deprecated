@@ -1,12 +1,19 @@
+// Node.js built-in modules
+import config from 'config';
+
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+
+// Config
+const transporterPort = Number(config.get('mail.port'));
+const emailFrom = String(config.get('mail.from'))
 
 dotenv.config();
 
 // Configure transporter
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: 465,    // Common port for SSL
+  port: transporterPort,
   secure: true, // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER,
@@ -17,7 +24,7 @@ const transporter = nodemailer.createTransport({
 // Generic function to send email
 export const sendEmail = (to, subject, text, html = '') => {
   const mailOptions = {
-    from: 'rasmus@haversen.dk',
+    from: emailFrom,
     to,
     subject,
     text,

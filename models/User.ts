@@ -1,4 +1,5 @@
 // Node.js built-in modules
+import config from 'config';
 
 // Third-party libraries
 import dotenv from 'dotenv';
@@ -24,15 +25,17 @@ const {
     EventNotFoundError
 } = errors;
 
+// Config
+const jwtExpiry = config.get('jwt.expiry');
+const jwtPersistentExpiry = config.get('jwt.persistentExpiry');
+const saltRounds = config.get('bcrypt.saltRounds');
+const nanoidAlphabet = String(config.get('nanoid.alphabet'));
+const nanoidLength = Number(config.get('nanoid.length'));
+const userExpiry = Number(config.get('userSettings.unconfirmedUserExpiry'));
+
 // Constants
-const jwtExpiry = process.env.JWT_EXPIRY;
-const jwtPersistentExpiry = process.env.JWT_PERSISTENT_EXPIRY;
 const jwtSecret = process.env.JWT_SECRET
-const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
-const nanoidAlphabet = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-const nanoidLength = 10;
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
-const userExpiry = Number(process.env.UNCONFIRMED_USER_EXPIRY);
 
 export interface IUser extends Document {
     username: string;

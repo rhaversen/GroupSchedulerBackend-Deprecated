@@ -1,0 +1,57 @@
+{
+    "email": {
+        "from": "rasmus@haversen.dk",
+        "port": 465
+    },
+    "userSettings": {
+        "unconfirmedUserExpiry": 86400
+    },
+    "bcrypt": {
+        "saltRounds": 10
+    },
+    "nanoid": {
+        "alphabet": "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+        "length": 10
+    },
+    "cookieOptions": {
+        "httpOnly": true,
+        "secure": true,
+        "SameSite": "strict"
+    },
+    "mongoose": {
+        "retrySettings": {
+            "maxAttempts": 5,
+            "interval": 1000
+        },
+        "options": {
+            "useNewUrlParser": true,
+            "useUnifiedTopology": true
+        }
+    },
+    "jwt": {
+        "expiry": 86400,
+        "persistentExpiry": 2592000
+    },
+    "helmet": {
+        "CSP": {
+            "defaultSrc": ["'self'"],
+            "scriptSrc": ["'self'", "'unsafe-inline'"],
+            "styleSrc": ["'self'"]
+        },
+        "HSTS": {
+            "maxAge": 31536000,
+            "includeSubDomains": true,
+            "preload": true
+        }
+    },
+    "apiLimiter": {
+        "nonSensitive": {
+            "windowMs": 60000,
+            "max": 60
+        },
+        "sensitive": {
+            "windowMs": 60000,
+            "max": 5
+        }
+    }
+}

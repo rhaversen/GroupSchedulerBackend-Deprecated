@@ -1,5 +1,6 @@
 // Node.js built-in modules
 import http from 'http';
+import config from 'config';
 
 // Third-party libraries
 import 'dotenv/config';
@@ -18,38 +19,24 @@ import configurePassport from './utils/passportJwt.js';
 import { connectToDatabase, disconnectFromDatabase } from './database.js';
 
 // Global variables and setup
-const expressPort = process.env.EXPRESS_PORT;
-const nextJsPort = process.env.NEXTJS_PORT;
 const app = express();
 const server = http.createServer(app);
+
+// Configs
+const helmetCSP = config.get('helmet.CSP');
+const corsOptions = config.get('corsOpts');
+const ConfApiLimiter = config.get('apiLimiter');
+const confSensitiveApiLimiter = config.get('sensitiveApiLimiter');
+const expressPort = config.get('ports.express')
+const helmetHSTS = config.get('helmet.HSTS')
 
 // Function invocations
 configurePassport(passport);
 
 // Helmet security
-// Prevent Cross-Site Scripting (XSS) attacks, which can often lead to CSRF attacks
-app.use(
-    helmet.contentSecurityPolicy({
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
-            styleSrc: ["'self'"],
-        },
-    })
-);
+app.use(helmet.contentSecurityPolicy(helmetCSP));
 // Only use HTTPS
-//app.use(helmet.hsts({
-//    maxAge: 60 * 60 * 24 * 365, // 1 year in seconds
-//    includeSubDomains: true,
-//    preload: true
-//}));
-
-// CORS setup
-const corsOptions = {
-    origin: 'http://localhost:' + nextJsPort, // Replace with your Next.js app's localhost domain and port
-    //methods: 'GET,POST,PATCH,PUT,DELETE', // You can specify the methods you want to allow
-  };
-
+//app.use(helmet.hsts(helmetHSTS));
 
 // Global middleware
 app.use(helmet());
@@ -63,10 +50,7 @@ app.use(cors(corsOptions));
 await connectToDatabase();
 
 // Create rate limiter for general routes
-const apiLimiter = RateLimit({
-    windowMs: 1*60*1000, // 1 minute
-    max: 60
-});
+const apiLimiter = RateLimit(ConfApiLimiter);
 
 // Import and use routes, apply general rate limiter
 import userRoutes from './routes/users.js';
@@ -77,13 +61,12 @@ import availabilityRoutes from './routes/availabilities.js';
 app.use('/api/v1/users/availabilities', apiLimiter, availabilityRoutes);
 
 // Create stricter rate limiters for routes
-const sensitiveApiLimiter = RateLimit({
-    windowMs: 1*60*1000, // 1 minute
-    max: 2
-});
+const sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter);
 
 // Apply the stricter rate limiters to the routes
-app.use('/api/v1/users/update-password', sensitiveApiLimiter); // This route has a stricter limit
+app.use('/api/v1/users/update-password', sensitiveApiLimiter);
+app.use('/api/v1/users/login', sensitiveApiLimiter);
+app.use('/api/v1/users/signup', sensitiveApiLimiter);
 
 // Start server
 server.listen(expressPort, () => {

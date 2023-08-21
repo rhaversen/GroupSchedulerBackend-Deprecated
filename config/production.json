@@ -1,0 +1,12 @@
+{
+    "corsOpts": {
+        "origin": "UNIMPLEMENTED"
+    },
+    "frontend": {
+        "domain": "UNIMPLEMENTED"
+    },
+    "ports": {
+        "nextJs": "UNIMPLEMENTED",
+        "express": "UNIMPLEMENTED"
+    }
+}
