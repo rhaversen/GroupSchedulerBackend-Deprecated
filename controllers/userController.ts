@@ -19,6 +19,7 @@ const {
   UserNotConfirmedError
 } = errors;
 const jwtExpiry = Number(process.env.JWT_EXPIRY);
+const jwtPersistentExpiry = Number(process.env.JWT_PERSISTENT_EXPIRY);
 
 // Setup
 dotenv.config();
@@ -145,11 +146,12 @@ export const loginUser = async (req, res, next) => {
     const cookieOptions = {
       httpOnly: true,
       secure: true,
-      // optionally set the SameSite attribute, e.g., 'strict' or 'lax'
+      SameSite: 'strict',
+      maxAge: jwtExpiry
     };
 
     if (stayLoggedIn) {
-      cookieOptions.maxAge = jwtExpiry * 1000; // Assuming jwtExpiry is in seconds
+      cookieOptions.maxAge = jwtPersistentExpiry * 1000; // Assuming jwtExpiry is in seconds
     }
 
     // Set the JWT in a cookie
