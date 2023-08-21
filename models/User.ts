@@ -16,7 +16,7 @@ dotenv.config();
 
 // Destructuring and global variables
 const { sign } = jsonwebtokenPkg;
-const { compare, genSalt, hash } = bcryptjsPkg;
+const { compare, hash } = bcryptjsPkg;
 const { Schema } = mongoose;
 const {
     HashingError,
