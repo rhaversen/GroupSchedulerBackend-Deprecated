@@ -23,6 +23,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       run: npm ci
+    - name: Transpile TypeScript to JavaScript
+      run: npm run build
     - name: Run tests
       run: NODE_ENV=test npm test
       env:
@@ -39,5 +41,3 @@ jobs:
         JWT_PERSISTENT_EXPIRY: ${{ secrets.JWT_PERSISTENT_EXPIRY }}
         BCRYPT_SALT_ROUNDS: ${{ secrets.BCRYPT_SALT_ROUNDS }}
         SERVER_PORT: ${{ secrets.SERVER_PORT }}
-
-

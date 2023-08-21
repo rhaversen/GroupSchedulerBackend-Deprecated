@@ -32,6 +32,7 @@
     "ts-node": "^10.9.1"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha dist/",
+    "build": "tsc"
   }
 }
