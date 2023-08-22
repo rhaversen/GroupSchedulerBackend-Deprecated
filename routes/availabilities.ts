@@ -1,21 +1,21 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import Router from 'express';
-import passport from 'passport';
+import Router from 'express'
+import passport from 'passport'
 
 // Own modules
 import {
-    sanitizeInput,
-} from '../middleware/sanitizer.js';
+    sanitizeInput
+} from '../middleware/sanitizer.js'
 
 // Controller functions
 import {
     newOrUpdateAvailability
-} from '../controllers/availabilityController.js';
+} from '../controllers/availabilityController.js'
 
 // Destructuring and global variables
-const router = Router();
+const router = Router()
 
 /**
  * @route PUT api/v1/users/availabilities/:date
@@ -26,6 +26,6 @@ router.put('/:date',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     newOrUpdateAvailability
-);
+)
 
-export default router;
+export default router

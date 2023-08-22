@@ -1,30 +1,30 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import Router from 'express';
-import passport from 'passport';
+import Router from 'express'
+import passport from 'passport'
 
 // Own modules
 import {
-  sanitizeInput,
-} from '../middleware/sanitizer.js';
+    sanitizeInput
+} from '../middleware/sanitizer.js'
 
 // Controller functions
 import {
-  registerUser,
-  confirmUser,
-  loginUser,
-  logoutUser,
-  getEvents,
-  newCode,
-  followUser,
-  unfollowUser,
-  getUser,
-  updateUser
-} from '../controllers/userController.js';
+    registerUser,
+    confirmUser,
+    loginUser,
+    logoutUser,
+    getEvents,
+    newCode,
+    followUser,
+    unfollowUser,
+    getUser,
+    updateUser
+} from '../controllers/userController.js'
 
 // Destructuring and global variables
-const router = Router();
+const router = Router()
 
 /**
  * @route GET api/v1/users/validate-jwt
@@ -32,14 +32,14 @@ const router = Router();
  * @access Public
  */
 router.get('/validate-jwt',
-  passport.authenticate('jwt', { session: false }),
-  // If we get here, the JWT is valid, so we just respond with a success message
-  function(req, res) {
-    res.status(200).json({
-      message: 'User has valid JWT.',
-    });
-  }
-);
+    passport.authenticate('jwt', { session: false }),
+    // If we get here, the JWT is valid, so we just respond with a success message
+    function (req, res) {
+        res.status(200).json({
+            message: 'User has valid JWT.'
+        })
+    }
+)
 
 /**
  * @route POST api/v1/users
@@ -47,9 +47,9 @@ router.get('/validate-jwt',
  * @access Public
  */
 router.post('/',
-  sanitizeInput,
-  registerUser
-);
+    sanitizeInput,
+    registerUser
+)
 
 /**
  * @route POST api/v1/users/confirm/:code
@@ -57,9 +57,9 @@ router.post('/',
  * @access Public
  */
 router.post('/confirm/:userCode',
-  sanitizeInput,
-  confirmUser
-);
+    sanitizeInput,
+    confirmUser
+)
 
 /**
 * @route POST api/v1/users/login
@@ -67,9 +67,9 @@ router.post('/confirm/:userCode',
 * @access Public
 */
 router.post('/login',
-  sanitizeInput,
-  loginUser
-);
+    sanitizeInput,
+    loginUser
+)
 
 /**
 * @route DELETE api/v1/users/logout
@@ -77,10 +77,10 @@ router.post('/login',
 * @access AUTHENTICATED
 */
 router.delete('/logout',
-  passport.authenticate('jwt', { session: false }),
-  sanitizeInput,
-  logoutUser
-);
+    passport.authenticate('jwt', { session: false }),
+    sanitizeInput,
+    logoutUser
+)
 
 /**
 * @route GET api/v1/users/events
@@ -88,9 +88,9 @@ router.delete('/logout',
 * @access AUTHENTICATED
 */
 router.get('/events',
-  passport.authenticate('jwt', { session: false }),
-  getEvents
-);
+    passport.authenticate('jwt', { session: false }),
+    getEvents
+)
 
 /**
  * @route POST api/v1/users/new-code
@@ -98,9 +98,9 @@ router.get('/events',
  * @access AUTHENTICATED
 */
 router.post('/new-code',
-  passport.authenticate('jwt', { session: false }),
-  newCode
-);
+    passport.authenticate('jwt', { session: false }),
+    newCode
+)
 
 /**
 * @route PUT api/v1/users/following/:userId
@@ -108,9 +108,9 @@ router.post('/new-code',
 * @access AUTHENTICATED
 */
 router.put('/following/:userId',
-  passport.authenticate('jwt', { session: false }),
-  followUser
-);
+    passport.authenticate('jwt', { session: false }),
+    followUser
+)
 
 /**
 * @route DELETE api/v1/users/following/:userId
@@ -118,9 +118,9 @@ router.put('/following/:userId',
 * @access AUTHENTICATED
 */
 router.delete('/following/:userId',
-  passport.authenticate('jwt', { session: false }),
-  unfollowUser
-);
+    passport.authenticate('jwt', { session: false }),
+    unfollowUser
+)
 
 /**
 * @route GET api/v1/users
@@ -128,9 +128,9 @@ router.delete('/following/:userId',
 * @access AUTHENTICATED
 */
 router.get('/',
-  passport.authenticate('jwt', { session: false }),
-  getUser
-);
+    passport.authenticate('jwt', { session: false }),
+    getUser
+)
 
 /**
 * @route PATCH api/v1/users/update-password
@@ -138,8 +138,8 @@ router.get('/',
 * @access AUTHENTICATED
 */
 router.patch('/update-user',
-  passport.authenticate('jwt', { session: false }),
-  updateUser
-);
+    passport.authenticate('jwt', { session: false }),
+    updateUser
+)
 
-export default router;
+export default router

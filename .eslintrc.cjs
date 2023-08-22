@@ -5,7 +5,6 @@ module.exports = {
     },
     "extends": [
         "standard-with-typescript",
-        "plugin:react/recommended"
     ],
     "overrides": [
         {
@@ -20,13 +19,22 @@ module.exports = {
             }
         }
     ],
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": "latest",
-        "sourceType": "module"
+        "sourceType": "module",
+        "project": "./tsconfig.json"
     },
-    "plugins": [
-        "react"
-    ],
     "rules": {
-    }
+        'no-mutate-config-get/no-mutate-config-get': 'warn',
+        "indent": ["error", 4], // Standard ESLint indent rule
+        "@typescript-eslint/indent": ["error", 4] // TypeScript-specific indent rule
+    },
+    "settings": {
+        'import/resolver': {
+          node: {
+            paths: ['eslint-rules/']
+          }
+        },
+    }    
 }

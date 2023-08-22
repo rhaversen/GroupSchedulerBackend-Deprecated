@@ -1,29 +1,29 @@
 // Own modules
-import errors from '../utils/errors.js';
-import logger from '../utils/logger.js';
+import errors from '../utils/errors.js'
+import logger from '../utils/logger.js'
 
 // Destructuring and global variables
 const {
     ValidationError,
     EventError,
-    ServerError,
-} = errors;
+    ServerError
+} = errors
 
-export default (function(err, req, res, next) {
+export default (function (err, req, res, next) {
     if (err instanceof ValidationError) {
-        // These are client-safe errors that can be directly sent to the client.
+    // These are client-safe errors that can be directly sent to the client.
         logger.warn(err.message)
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ error: err.message })
     } else if (err instanceof EventError) {
-        logger.error(err.message);
-        res.status(400).json({ error: err.message });
+        logger.error(err.message)
+        res.status(400).json({ error: err.message })
     } else if (err instanceof ServerError) {
-        // For server-side errors, send a generic error message
-        logger.error(err.message);
-        res.status(500).json({ error: 'A server- or database-error occurred, please try again later' });
+    // For server-side errors, send a generic error message
+        logger.error(err.message)
+        res.status(500).json({ error: 'A server- or database-error occurred, please try again later' })
     } else {
-        // If it's not one of the known errors, it could be anything - consider it a 500 error
-        logger.error(err.toString());
-        res.status(500).json({ error: 'An error occurred, please try again later' });
+    // If it's not one of the known errors, it could be anything - consider it a 500 error
+        logger.error(err.toString())
+        res.status(500).json({ error: 'An error occurred, please try again later' })
     }
-});
+})

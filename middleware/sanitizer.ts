@@ -1,13 +1,13 @@
-import validator from 'validator';
+import validator from 'validator'
 
 // Helper function
-function sanitizeObject(obj) {
-    for (let key in obj) {
+function sanitizeObject (obj) {
+    for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
             if (typeof obj[key] === 'object' && obj[key] !== null) {
-                sanitizeObject(obj[key]);
+                sanitizeObject(obj[key])
             } else {
-                obj[key] = validator.escape(String(obj[key]));
+                obj[key] = validator.escape(String(obj[key]))
             }
         }
     }
@@ -15,6 +15,6 @@ function sanitizeObject(obj) {
 
 // Sanitize middleware
 export const sanitizeInput = (req, res, next) => {
-    sanitizeObject(req.body);
-    next();
-};
+    sanitizeObject(req.body)
+    next()
+}

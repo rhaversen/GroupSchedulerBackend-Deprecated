@@ -1,38 +1,38 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import dotenv from 'dotenv';
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import dotenv from 'dotenv'
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt'
 
 // Own modules
-import errors from './errors.js';
-import User from '../models/User.js';
+import errors from './errors.js'
+import User from '../models/User.js'
 
 // Setup
-dotenv.config();
+dotenv.config()
 
 // Destructuring and global variables
 const {
-    UserNotFoundError,
-} = errors;
+    UserNotFoundError
+} = errors
 
-//const logger = require('../utils/logger.js');
+// const logger = require('../utils/logger.js');
 
 const configurePassport = (passport) => {
     const opts = {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: process.env.JWT_SECRET
-    };
+    }
 
     passport.use(
         new JwtStrategy(opts, async (jwt_payload, done) => {
-            const user = await User.findById(jwt_payload.id).exec();
+            const user = await User.findById(jwt_payload.id).exec()
             if (user) {
-                return done(null, user);
+                return done(null, user)
             }
-            return done(new UserNotFoundError('User not found, it might have been deleted (JWT failed to authenticate)'), false);
+            return done(new UserNotFoundError('User not found, it might have been deleted (JWT failed to authenticate)'), false)
         })
-    );
-};
+    )
+}
 
-export default configurePassport;
+export default configurePassport

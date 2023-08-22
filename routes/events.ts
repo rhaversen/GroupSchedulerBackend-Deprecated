@@ -1,17 +1,17 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import Router from 'express';
-import passport from 'passport';
+import Router from 'express'
+import passport from 'passport'
 
 // Own modules
 import {
     checkUserInEvent,
     checkUserIsAdmin
-} from '../middleware/eventUserChecks.js';
+} from '../middleware/eventUserChecks.js'
 import {
-    sanitizeInput,
-} from '../middleware/sanitizer.js';
+    sanitizeInput
+} from '../middleware/sanitizer.js'
 
 // Controller functions
 import {
@@ -22,10 +22,10 @@ import {
     joinEvent,
     leaveEventOrKick,
     deleteEvent
-} from '../controllers/eventController.js';
+} from '../controllers/eventController.js'
 
 // Destructuring and global variables
-const router = Router();
+const router = Router()
 
 /**
  * @route POST api/v1/events/:eventIdOrCode/new-code
@@ -38,7 +38,7 @@ router.post('/:eventIdOrCode/new-code',
     checkUserInEvent,
     checkUserIsAdmin,
     newCode
-);
+)
 
 /**
  * @route GET api/v1/events/:eventId
@@ -50,7 +50,7 @@ router.get('/:eventIdOrCode',
     sanitizeInput,
     checkUserInEvent,
     getEvent
-);
+)
 
 /**
  * @route POST api/v1/events
@@ -61,7 +61,7 @@ router.post('/',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     createEvent
-);
+)
 
 /**
  * @route PATCH api/v1/events/:eventIdOrCode
@@ -74,7 +74,7 @@ router.patch('/:eventIdOrCode',
     checkUserInEvent,
     checkUserIsAdmin,
     updateEvent
-);
+)
 
 /**
  * @route PUT /api/v1/events/:eventIdOrCode/users
@@ -85,7 +85,7 @@ router.put('/:eventIdOrCode/users',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     joinEvent
-);
+)
 
 /**
  * @route DELETE api/v1/events/:eventIdOrCode/users
@@ -96,8 +96,8 @@ router.delete('/:eventIdOrCode/users/:userId?',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     checkUserInEvent,
-    leaveEventOrKick,
-);
+    leaveEventOrKick
+)
 
 /**
  * @route DELETE api/v1/events/:eventIdOrCode
@@ -110,6 +110,6 @@ router.delete('/:eventIdOrCode',
     checkUserInEvent,
     checkUserIsAdmin,
     deleteEvent
-);
+)
 
-export default router;
+export default router

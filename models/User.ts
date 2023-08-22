@@ -1,65 +1,65 @@
 // Node.js built-in modules
-import config from 'config';
+import config from 'config'
 
 // Third-party libraries
-import dotenv from 'dotenv';
-import jsonwebtokenPkg from 'jsonwebtoken';
-import bcryptjsPkg from 'bcryptjs';
-import { customAlphabet } from 'nanoid';
-import mongoose, { Document, Types, model } from 'mongoose';
+import dotenv from 'dotenv'
+import jsonwebtokenPkg from 'jsonwebtoken'
+import bcryptjsPkg from 'bcryptjs'
+import { customAlphabet } from 'nanoid'
+import mongoose, { type Document, type Types, model } from 'mongoose'
 
 // Own modules
-import errors from '../utils/errors.js';
-import logger from '../utils/logger.js';
+import errors from '../utils/errors.js'
+import logger from '../utils/logger.js'
 
 // Setup
-dotenv.config();
+dotenv.config()
 
 // Destructuring and global variables
-const { sign } = jsonwebtokenPkg;
-const { compare, hash } = bcryptjsPkg;
-const { Schema } = mongoose;
+const { sign } = jsonwebtokenPkg
+const { compare, hash } = bcryptjsPkg
+const { Schema } = mongoose
 const {
     HashingError,
     UserNotFoundError,
     EventNotFoundError
-} = errors;
+} = errors
 
 // Config
-const jwtExpiry = config.get('jwt.expiry');
-const jwtPersistentExpiry = config.get('jwt.persistentExpiry');
-const saltRounds = config.get('bcrypt.saltRounds');
-const nanoidAlphabet = String(config.get('nanoid.alphabet'));
-const nanoidLength = Number(config.get('nanoid.length'));
-const userExpiry = Number(config.get('userSettings.unconfirmedUserExpiry'));
+const jwtExpiry = config.get('jwt.expiry')
+const jwtPersistentExpiry = config.get('jwt.persistentExpiry')
+const saltRounds = config.get('bcrypt.saltRounds')
+const nanoidAlphabet = String(config.get('nanoid.alphabet'))
+const nanoidLength = Number(config.get('nanoid.length'))
+const userExpiry = Number(config.get('userSettings.unconfirmedUserExpiry'))
 
 // Constants
 const jwtSecret = process.env.JWT_SECRET
-const nanoid = customAlphabet(nanoidAlphabet, nanoidLength);
+const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
 
 export interface IUser extends Document {
-    username: string;
-    email: string;
-    password: string;
-    events: Types.ObjectId[];
-    availabilities: Types.ObjectId[];
-    following: Types.ObjectId[];
-    followers: Types.ObjectId[];
-    userCode: string;
-    confirmed: boolean;
-    registrationDate: Date;
-    expirationDate?: Date;
-  
-    confirmUser(): Promise<void>;
-    comparePassword(candidatePassword: string): Promise<boolean>;
-    generateNewUserCode(): Promise<string>;
-    generateToken(stayLoggedIn: boolean): string;
-  }  
+    username: string
+    email: string
+    password: string
+    events: Types.ObjectId[]
+    availabilities: Types.ObjectId[]
+    following: Types.ObjectId[]
+    followers: Types.ObjectId[]
+    userCode: string
+    confirmed: boolean
+    registrationDate: Date
+    expirationDate?: Date
+
+    confirmUser: () => Promise<void>
+    comparePassword: (candidatePassword: string) => Promise<boolean>
+    generateNewUserCode: () => Promise<string>
+    generateToken: (stayLoggedIn: boolean) => string
+}
 
 const userSchema = new Schema<IUser>({
     username: { type: String, required: true }, // This is how other users will recognize you. It should reflect your name or nickname. Don't worry, only users in the same events as you can see your name.
     email: { type: String, required: true, unique: true }, // This is how you will log in, no users will be able to see this
-    password: { type: String, required: true }, 
+    password: { type: String, required: true },
     events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
     availabilities: [{ type: Schema.Types.ObjectId, ref: 'Availability' }],
     following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
@@ -67,100 +67,99 @@ const userSchema = new Schema<IUser>({
     userCode: { type: String, unique: true },
     confirmed: { type: Boolean, default: false },
     registrationDate: { type: Date, default: new Date() }, // Keep track of registration date
-    expirationDate: { type: Date, default: new Date(Date.now() + userExpiry * 1000) }, // TTL index, document will expire in process.env.UNCONFIRMED_USER_EXPIRY seconds if not confirmed
-});
+    expirationDate: { type: Date, default: new Date(Date.now() + userExpiry * 1000) } // TTL index, document will expire in process.env.UNCONFIRMED_USER_EXPIRY seconds if not confirmed
+})
 
-userSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 });
+userSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
 
-userSchema.methods.confirmUser = async function() {
-    this.confirmed = true; // Update the user's status to confirmed
-    this.expirationDate = undefined; // Remove the expiration date to cancel auto-deletion
-};
+userSchema.methods.confirmUser = async function () {
+    this.confirmed = true // Update the user's status to confirmed
+    this.expirationDate = undefined // Remove the expiration date to cancel auto-deletion
+}
 
 // Method for comparing parameter to this users password. Returns true if passwords match
-userSchema.methods.comparePassword = async function(candidatePassword) {
-    return await compare(candidatePassword, this.password);
-};
+userSchema.methods.comparePassword = async function (candidatePassword) {
+    return await compare(candidatePassword, this.password)
+}
 
-userSchema.methods.generateNewUserCode = async function() {
-    let userCode;
-    let existingUser;
-    
+userSchema.methods.generateNewUserCode = async function () {
+    let userCode
+    let existingUser
+
     do {
-        userCode = nanoid();
-        existingUser = await this.constructor.findOne({ userCode });
-    } while (existingUser);
-  
-    this.userCode = userCode;
-    return userCode;
-};
+        userCode = nanoid()
+        existingUser = await this.constructor.findOne({ userCode })
+    } while (existingUser)
 
-userSchema.methods.generateToken = function(stayLoggedIn: boolean) {
-    const payload = { id: this._id };
+    this.userCode = userCode
+    return userCode
+}
+
+userSchema.methods.generateToken = function (stayLoggedIn: boolean) {
+    const payload = { id: this._id }
     const token = sign(payload, jwtSecret, { expiresIn: stayLoggedIn ? jwtPersistentExpiry : jwtExpiry })
     logger.info('JWT created')
-    return token;
-};
+    return token
+}
 
 // Password hashing middleware
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
     if (this.isNew) {
-        await this.generateNewUserCode();
+        await this.generateNewUserCode()
     }
 
     if (this.isModified('password')) {
         try {
-            this.password = await hash(this.password, saltRounds); // Use a custom salt for each user
-            return next();
+            this.password = await hash(this.password, saltRounds) // Use a custom salt for each user
+            next(); return
         } catch (err) {
-            return next(new HashingError('Error generating a password hash'));
+            next(new HashingError('Error generating a password hash')); return
         }
     }
 
     logger.info('User saved')
-});
+})
 
-userSchema.pre('remove', async function(next) {
+userSchema.pre('remove', async function (next) {
     try {
-        // Remove user from followers following array
+    // Remove user from followers following array
         for (const followerId of this.followers) {
             // Get the user
-            const user = await this.constructor.findById(followerId);
-    
+            const user = await this.constructor.findById(followerId)
+
             if (!user) {
-                throw new UserNotFoundError('User not found');
+                throw new UserNotFoundError('User not found')
             }
-    
+
             // Remove this user from the followers's following array
-            user.following = user.following.filter(followerId => followerId.toString() !== this._id.toString());
-    
+            user.following = user.following.filter(followerId => followerId.toString() !== this._id.toString())
+
             // Save the user
-            await user.save();
+            await user.save()
             logger.info('User removed')
         }
 
         // Remove user from events
         for (const eventId of this.events) {
             // Get the user
-            const event = await Event.findById(eventId);
+            const event = await Event.findById(eventId)
 
             if (!event) {
-                throw new EventNotFoundError('Event not found');
+                throw new EventNotFoundError('Event not found')
             }
 
             // Remove this user from the events participants array
-            event.participants = event.participants.filter(userId => userId.toString() !== this._id.toString());
+            event.participants = event.participants.filter(userId => userId.toString() !== this._id.toString())
 
             // Save the event
-            await event.save();
+            await event.save()
             logger.info('User removed')
         }
-  
-        next();
-  
-    } catch (error) {
-      next(error);
-    }
-  });
 
-export default model('User', userSchema);
+        next()
+    } catch (error) {
+        next(error)
+    }
+})
+
+export default model('User', userSchema)
