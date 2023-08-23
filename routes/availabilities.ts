@@ -11,7 +11,8 @@ import {
 
 // Controller functions
 import {
-    newOrUpdateAvailability
+    newOrUpdateAvailability,
+    getAvailabilities
 } from '../controllers/availabilityController.js'
 
 // Destructuring and global variables
