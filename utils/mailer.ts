@@ -22,7 +22,7 @@ const transporter = nodemailer.createTransport({
 })
 
 // Generic function to send email
-export const sendEmail = (to, subject, text, html = '') => {
+export const sendEmail = async (to, subject, text, html = '') => {
     const mailOptions = {
         from: emailFrom,
         to,
@@ -31,7 +31,7 @@ export const sendEmail = (to, subject, text, html = '') => {
         html
     }
 
-    transporter.sendMail(mailOptions)
+    await transporter.sendMail(mailOptions)
 }
 
 // Function to send confirmation email
