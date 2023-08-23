@@ -52,7 +52,7 @@ export async function getEventByIdOrCode (eventIdOrCode: string) {
 }
 
 export const newCode = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const eventIdOrCode = req.params.eventIdOrCode
     const event = await getEventByIdOrCode(eventIdOrCode)
 
@@ -84,13 +84,11 @@ export const createEvent = asyncErrorHandler(
         return next(new MissingFieldsError('Missing required fields'))
     }
 
-    const userId = req.user.id
-    const user = await User.findById(userId).exec()
-    const participants = user
+    const participants = req.user
 
     let admins
     if (isLocked) {
-        admins = user
+        admins = participants
     }
 
     const newEvent = new Event({
@@ -108,7 +106,7 @@ export const createEvent = asyncErrorHandler(
 })
 
 export const updateEvent = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const {
         eventName,
         eventDescription,

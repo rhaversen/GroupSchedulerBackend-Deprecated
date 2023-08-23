@@ -1,3 +1,6 @@
+// Third-party libraries
+import { type Request, type Response, type NextFunction } from 'express'
+
 // Own modules
 import errors from '../utils/errors.js'
 import logger from '../utils/logger.js'
@@ -9,7 +12,7 @@ const {
     ServerError
 } = errors
 
-export default (function (err, req, res, next) {
+export default (function (err: any, req: Request, res: Response, next: NextFunction): void {
     if (err instanceof ValidationError) {
     // These are client-safe errors that can be directly sent to the client.
         logger.warn(err.message)

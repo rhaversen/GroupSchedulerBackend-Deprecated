@@ -5,7 +5,7 @@ import { type Request, type Response, type NextFunction } from 'express'
 
 // Own modules
 import Availability, { type IAvailability } from '../models/Availability.js'
-import User, { type IUser } from '../models/User.js'
+import { type IUser } from '../models/User.js'
 import errors from '../utils/errors.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
@@ -41,10 +41,10 @@ export const newOrUpdateAvailability = asyncErrorHandler(
         next(new UserNotFoundError('The user could not be found')); return
     }
 
-    const existingAvailability = await Availability.findById(availabilityId)
+    const existingAvailability = await Availability.findById(availabilityId).exec() as IAvailability
 
     if (existingAvailability) { // Check if availability is truthy
-    // Availability exists, update the provided fields instead
+        // Availability exists, update the provided fields instead
         existingAvailability.description = description || existingAvailability.description
         existingAvailability.startDate = startDate
         existingAvailability.endDate = endDate
@@ -60,7 +60,7 @@ export const newOrUpdateAvailability = asyncErrorHandler(
         endDate,
         status,
         preference
-    })
+    }) as IAvailability
 
     const savedAvailability = await newAvailability.save()
 
@@ -83,7 +83,7 @@ export const getAvailabilities = asyncErrorHandler(
         next(new DatabaseError('Error populating user')); return
     }
     
-    const availabilities = populatedUser.availabilities
+    const availabilities = populatedUser.availabilities as IAvailability[]
 
     res.status(201).json(availabilities)
 })

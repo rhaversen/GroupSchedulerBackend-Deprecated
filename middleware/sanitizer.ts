@@ -1,3 +1,5 @@
+// Third-party libraries
+import { type Request, type Response, type NextFunction } from 'express'
 import validator from 'validator'
 
 // Helper function
@@ -14,7 +16,7 @@ function sanitizeObject (obj) {
 }
 
 // Sanitize middleware
-export const sanitizeInput = (req, res, next) => {
+export const sanitizeInput = (req: Request, res: Response, next: NextFunction): void => {
     sanitizeObject(req.body)
     next()
 }
