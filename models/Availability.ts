@@ -3,11 +3,12 @@ const { Schema } = mongoose
 
 export interface IAvailability extends Document {
     description?: string
-    date: Date
+    startDate: string
+    endDate: string
     status: 'Free' | 'Busy' | 'Maybe'
-    preference: number
+    preference?: 1 | 2 | 3
 }
-
+// TODO: If an availability is not set, meaning you are undecided on that date, it will be assumed to be free. Before the date for the event is locked, the user will be warned that not all users are decided, if thats the case.
 const availabilitySchema = new Schema<IAvailability>({
     description: { type: String }, // This is public for anyone in the same event as you if the date is within the events date-range
     startDate: { type: String, required: true, match: /^\d{4}-\d{2}-\d{2}$/ }, // YYYY-MM-DD

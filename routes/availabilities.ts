@@ -2,6 +2,7 @@
 
 // Third-party libraries
 import Router from 'express'
+import { body, param, validationResult } from 'express-validator'
 import passport from 'passport'
 
 // Own modules
@@ -19,11 +20,11 @@ import {
 const router = Router()
 
 /**
- * @route PUT api/v1/users/availabilities/:date
+ * @route PUT api/v1/users/availabilities
  * @desc Create a new availability or update existing if the date is the same.
  * @access AUTHENTICATED
 */
-router.put('/:date',
+router.put('/',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     newOrUpdateAvailability

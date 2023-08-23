@@ -1,7 +1,13 @@
+// Node.js built-in modules
+
+// Third-party libraries
+import { type Request, type Response, type NextFunction } from 'express'
+
 // Own modules
 import Availability, { type IAvailability } from '../models/Availability.js'
-import User, { IUser } from '../models/User.js'
+import User, { type IUser } from '../models/User.js'
 import errors from '../utils/errors.js'
+import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Destructuring and global variables
 const {
@@ -10,47 +16,53 @@ const {
     DatabaseError
 } = errors
 
-export const newOrUpdateAvailability = async (req, res, next) => {
+export const newOrUpdateAvailability = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
     const {
         description,
+        startDate,
+        endDate,
         status,
         preference
     } = req.body
 
-    const date = req.params.date
+    const availabilityId = req.params.id
 
     // Checks if description, date, status and preference are not falsy (e.g., undefined, null, empty string)
-    if (!date) {
-        return next(new MissingFieldsError('Date must be specified'))
+    if (!availabilityId || !startDate || !endDate || !status) {
+        next(new MissingFieldsError('Missing required field(s): "availabilityId", "startDate", "endDate" or "status" ')); return
     }
 
     // Check if user already has a availability set for this date
-    const userId = req.user.id
-    const populatedUser = await User.findById(userId).populate('availabilities').exec()
+    const user = req.user as IUser
+    const populatedUser = await user.populate('availabilities')
 
     if (!populatedUser) {
-        return next(new UserNotFoundError('The user could not be found'))
+        next(new UserNotFoundError('The user could not be found')); return
     }
 
-    const existingAvailability = ((populatedUser.availabilities as unknown) as IAvailability[]).find(availability => availability.date === date)
+    const existingAvailability = await Availability.findById(availabilityId)
 
     if (existingAvailability) { // Check if availability is truthy
     // Availability exists, update the provided fields instead
-        if (description) { existingAvailability.description = description }
-        if (status) { existingAvailability.status = status }
-        if (preference) { existingAvailability.preference = preference }
+        existingAvailability.description = description ?? existingAvailability.description
+        existingAvailability.startDate = startDate ?? existingAvailability.startDate
+        existingAvailability.endDate = endDate ?? existingAvailability.endDate
+        existingAvailability.status = description ?? existingAvailability.status
+        existingAvailability.preference = description ?? existingAvailability.preference
         const savedAvailability = await existingAvailability.save()
-        return res.status(201).json(savedAvailability)
+        res.status(201).json(savedAvailability); return
     } // Availability is new, all fields are therefore required
 
     // Check if description, status and preference are not falsy (e.g., undefined, null, empty string)
     if (!description || !status || !preference) {
-        return next(new MissingFieldsError('Missing required fields'))
+        next(new MissingFieldsError('Missing required fields')); return
     }
 
     const newAvailability = new Availability({
         description,
-        date,
+        startDate,
+        endDate,
         status,
         preference
     })
@@ -59,10 +71,11 @@ export const newOrUpdateAvailability = async (req, res, next) => {
 
     populatedUser.availabilities.push(savedAvailability._id)
 
-    return res.status(201).json(savedAvailability)
-}
+    res.status(201).json(savedAvailability)
+})
 
-export const getAvailabilities = async (req: Request, res: Response, next: NextFunction) => {
+export const getAvailabilities = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as IUser
 
     if (!user) {
@@ -77,5 +90,5 @@ export const getAvailabilities = async (req: Request, res: Response, next: NextF
     
     const availabilities = populatedUser.availabilities
 
-    return res.status(201).json(availabilities)
-}
+    res.status(201).json(availabilities)
+})
