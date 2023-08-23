@@ -30,8 +30,8 @@ const server = http.createServer(app)
 // Configs
 const helmetCSP = config.get('helmet.CSP')
 const corsOptions = config.get('corsOpts')
-const ConfApiLimiter = config.get('apiLimiter')
-const confSensitiveApiLimiter = config.get('sensitiveApiLimiter')
+const confRelaxedApiLimiter = config.get('apiLimiter.nonSensitive')
+const confSensitiveApiLimiter = config.get('apiLimiter.sensitive')
 const expressPort = config.get('ports.express')
 const helmetHSTS = config.get('helmet.HSTS')
 
@@ -54,44 +54,50 @@ app.use(cors(corsOptions))
 // Connect to MongoDB
 await connectToDatabase()
 
-// Create rate limiter for general routes
-const apiLimiter = RateLimit(ConfApiLimiter)
-app.use('/api/v1/users', apiLimiter, userRoutes)
-app.use('/api/v1/events', apiLimiter, eventRoutes)
-app.use('/api/v1/users/availabilities', apiLimiter, availabilityRoutes)
-
-// Create stricter rate limiters for routes
+// Create rate limiters
+const relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
 const sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter)
 
-// Apply the stricter rate limiters to the routes
+// Use all routes with relaxed limiter
+app.use('/api/v1/users', relaxedApiLimiter, userRoutes)
+app.use('/api/v1/users/availabilities', relaxedApiLimiter, availabilityRoutes)
+app.use('/api/v1/events', relaxedApiLimiter, eventRoutes)
+
+// Apply stricter rate limiters to routes
 app.use('/api/v1/users/update-password', sensitiveApiLimiter)
 app.use('/api/v1/users/login', sensitiveApiLimiter)
 app.use('/api/v1/users/signup', sensitiveApiLimiter)
+
+// Global error handler middleware
+app.use(globalErrorHandler)
 
 // Start server
 server.listen(expressPort, () => {
     logger.info(`App listening at http://localhost:${expressPort}`)
 })
 
-// Global error handler middleware
-app.use(globalErrorHandler)
-
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
     logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
-    server.close(() => {
+    shutDown().catch(error => {
+        logger.error('An error occurred during shutdown:', error)
         process.exit(1)
     })
 })
 
+// Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
     logger.error('Uncaught exception:', err)
-    server.close(() => {
+    shutDown().catch(error => {
+        logger.error('An error occurred during shutdown:', error)
         process.exit(1)
     })
 })
 
-// Handler function to handle the Promise
+// Assigning shutdown function to SIGINT signal
+process.on('SIGINT', shutDown)
+
+// Shutdown function
 async function shutDown () {
     try {
         logger.info('Starting database disconnection...')
@@ -103,8 +109,5 @@ async function shutDown () {
         process.exit(1) // Exit with code 1 indicating termination with error
     }
 }
-
-// Assigning handler to SIGINT signal
-process.on('SIGINT', shutDown)
 
 export { app, shutDown }
