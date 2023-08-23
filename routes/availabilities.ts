@@ -28,4 +28,15 @@ router.put('/:date',
     newOrUpdateAvailability
 )
 
+/**
+ * @route GET api/v1/users/availabilities
+ * @desc Get all the users availabilities
+ * @access AUTHENTICATED
+*/
+router.get('/',
+    passport.authenticate('jwt', { session: false }),
+    sanitizeInput,
+    getAvailabilities
+)
+
 export default router

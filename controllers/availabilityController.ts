@@ -6,7 +6,8 @@ import errors from '../utils/errors.js'
 // Destructuring and global variables
 const {
     MissingFieldsError,
-    UserNotFoundError
+    UserNotFoundError,
+    DatabaseError
 } = errors
 
 export const newOrUpdateAvailability = async (req, res, next) => {
@@ -59,4 +60,22 @@ export const newOrUpdateAvailability = async (req, res, next) => {
     populatedUser.availabilities.push(savedAvailability._id)
 
     return res.status(201).json(savedAvailability)
+}
+
+export const getAvailabilities = async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as IUser
+
+    if (!user) {
+        next(new MissingFieldsError('Date must be specified')); return
+    }
+
+    const populatedUser = await user.populate('availabilities')
+
+    if (!populatedUser) {
+        next(new DatabaseError('Error populating user')); return
+    }
+    
+    const availabilities = populatedUser.availabilities
+
+    return res.status(201).json(availabilities)
 }

@@ -52,6 +52,7 @@ class ServerError extends CustomError {
 }
 
 class HashingError extends ServerError {}
+class DatabaseError extends ServerError {}
 
 export default {
     ValidationError,
@@ -71,5 +72,6 @@ export default {
     EventCodeError,
     EventNotFoundError,
     ServerError,
-    HashingError
+    HashingError,
+    DatabaseError
 }
