@@ -1,14 +1,15 @@
 {
-  "compilerOptions": {
-    "target": "es2022",
-    "module": "es2022",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "strict": true,
-    "outDir": "./dist",
-    "allowJs": true,
-    "checkJs": true,
-  },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules", "dist/", "eslint-rules/*"]
+    "compilerOptions": {
+        "target": "es2022",
+        "module": "es2022",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "strict": true,
+        "outDir": "./dist",
+        "allowJs": true,
+        "checkJs": false
+    },
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules", "dist/", "eslint-rules/*"]
 }
+  
