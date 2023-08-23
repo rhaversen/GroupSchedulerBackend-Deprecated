@@ -76,7 +76,7 @@ server.listen(expressPort, () => {
     logger.info(`App listening at http://localhost:${expressPort}`)
 })
 
-// Handle unhandled promise rejections
+// Handle unhandled promise rejections outside middleware
 process.on('unhandledRejection', (reason, promise) => {
     logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
     shutDown().catch(error => {
@@ -85,7 +85,7 @@ process.on('unhandledRejection', (reason, promise) => {
     })
 })
 
-// Handle uncaught exceptions
+// Handle uncaught exceptions outside middleware
 process.on('uncaughtException', (err) => {
     logger.error('Uncaught exception:', err)
     shutDown().catch(error => {
