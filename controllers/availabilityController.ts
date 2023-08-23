@@ -45,19 +45,14 @@ export const newOrUpdateAvailability = asyncErrorHandler(
 
     if (existingAvailability) { // Check if availability is truthy
     // Availability exists, update the provided fields instead
-        existingAvailability.description = description ?? existingAvailability.description
-        existingAvailability.startDate = startDate ?? existingAvailability.startDate
-        existingAvailability.endDate = endDate ?? existingAvailability.endDate
-        existingAvailability.status = description ?? existingAvailability.status
-        existingAvailability.preference = description ?? existingAvailability.preference
+        existingAvailability.description = description || existingAvailability.description
+        existingAvailability.startDate = startDate
+        existingAvailability.endDate = endDate
+        existingAvailability.status = status
+        existingAvailability.preference = preference || existingAvailability.preference
         const savedAvailability = await existingAvailability.save()
         res.status(201).json(savedAvailability); return
     } // Availability is new, all fields are therefore required
-
-    // Check if description, status and preference are not falsy (e.g., undefined, null, empty string)
-    if (!description || !status || !preference) {
-        next(new MissingFieldsError('Missing required fields')); return
-    }
 
     const newAvailability = new Availability({
         description,
