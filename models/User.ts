@@ -11,6 +11,8 @@ import mongoose, { type Document, type Types, model } from 'mongoose'
 // Own modules
 import errors from '../utils/errors.js'
 import logger from '../utils/logger.js'
+import { type IAvailability } from './Availability.js'
+import { type IEvent } from './Event.js'
 
 // Setup
 dotenv.config()
@@ -26,25 +28,25 @@ const {
 } = errors
 
 // Config
-const jwtExpiry = config.get('jwt.expiry')
-const jwtPersistentExpiry = config.get('jwt.persistentExpiry')
-const saltRounds = config.get('bcrypt.saltRounds')
+const jwtExpiry = Number(config.get('jwt.expiry'))
+const jwtPersistentExpiry = Number(config.get('jwt.persistentExpiry'))
+const saltRounds = Number(config.get('bcrypt.saltRounds'))
 const nanoidAlphabet = String(config.get('nanoid.alphabet'))
 const nanoidLength = Number(config.get('nanoid.length'))
 const userExpiry = Number(config.get('userSettings.unconfirmedUserExpiry'))
 
 // Constants
-const jwtSecret = process.env.JWT_SECRET
+const jwtSecret = String(process.env.JWT_SECRET)
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
 
 export interface IUser extends Document {
     username: string
     email: string
     password: string
-    events: Types.ObjectId[]
-    availabilities: Types.ObjectId[]
-    following: Types.ObjectId[]
-    followers: Types.ObjectId[]
+    events: Types.ObjectId[] | IEvent[]
+    availabilities: Types.ObjectId[] | IAvailability[]
+    following: Types.ObjectId[] | IUser[]
+    followers: Types.ObjectId[] | IUser[]
     userCode: string
     confirmed: boolean
     registrationDate: Date
@@ -78,7 +80,7 @@ userSchema.methods.confirmUser = async function () {
 }
 
 // Method for comparing parameter to this users password. Returns true if passwords match
-userSchema.methods.comparePassword = async function (candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword: string) {
     return await compare(candidatePassword, this.password)
 }
 
@@ -88,7 +90,7 @@ userSchema.methods.generateNewUserCode = async function () {
 
     do {
         userCode = nanoid()
-        existingUser = await this.constructor.findOne({ userCode })
+        existingUser = await userSchema.findOne({ userCode })
     } while (existingUser)
 
     this.userCode = userCode

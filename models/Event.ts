@@ -6,7 +6,7 @@ import mongoose, { type Document, type Types, model } from 'mongoose'
 import { customAlphabet } from 'nanoid'
 
 // Own modules
-import User from './User.js'
+import User, { type IUser } from './User.js'
 import logger from '../utils/logger.js'
 import errors from '../utils/errors.js'
 
@@ -28,8 +28,8 @@ export interface IEvent extends Document {
     eventDescription?: string
     startDate: Date
     endDate: Date
-    participants: Types.ObjectId[]
-    admins: Types.ObjectId[]
+    participants: Types.ObjectId[] | IUser[]
+    admins: Types.ObjectId[] | IUser[]
     eventCode: string
 
     generateNewEventCode: () => Promise<void>
