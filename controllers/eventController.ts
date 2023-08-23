@@ -24,16 +24,16 @@ const nanoidAlphabet = String(config.get('nanoid.alphabet'))
 const nanoidLength = Number(config.get('nanoid.length'))
 
 // helper functions
-function isMongoId (str) {
+function isMongoId (str: string) {
     return /^[0-9a-fA-F]{24}$/.test(str)
 }
-function isNanoid (str) {
+function isNanoid (str: string) {
     const regex = new RegExp(`^[${nanoidAlphabet}]{${nanoidLength}}$`)
     return regex.test(str)
 }
 
 // Get event by eventId or eventCode
-export async function getEventByIdOrCode (eventIdOrCode) {
+export async function getEventByIdOrCode (eventIdOrCode: string) {
     let query
     if (isMongoId(eventIdOrCode)) { // It's a MongoDB ObjectId
         query = { _id: eventIdOrCode }
@@ -49,7 +49,7 @@ export async function getEventByIdOrCode (eventIdOrCode) {
     if (!event) throw new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong')
 
     return event
-})
+}
 
 export const newCode = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction) => {
@@ -58,14 +58,14 @@ export const newCode = asyncErrorHandler(
 
     // Generate a new eventCode
     event.generateNewEventCode()
-    return res.status(200).json(event.eventCode)
+    res.status(200).json(event.eventCode)
 })
 
 export const getEvent = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction) => {
     const eventIdOrCode = req.params.eventIdOrCode
     const event = await getEventByIdOrCode(eventIdOrCode)
-    return res.status(200).json(event)
+    res.status(200).json(event)
 })
 
 export const createEvent = asyncErrorHandler(
@@ -104,7 +104,7 @@ export const createEvent = asyncErrorHandler(
 
     await newEvent.save()
 
-    return res.status(201).json(newEvent)
+    res.status(201).json(newEvent)
 })
 
 export const updateEvent = asyncErrorHandler(
@@ -127,7 +127,7 @@ export const updateEvent = asyncErrorHandler(
 
     await event.save()
 
-    return res.status(200).json(event)
+    res.status(200).json(event)
 })
 
 export const joinEvent = asyncErrorHandler(
@@ -143,7 +143,7 @@ export const joinEvent = asyncErrorHandler(
     await user.save()
     await event.save()
 
-    return res.status(200).json(event)
+    res.status(200).json(event)
 })
 
 export const leaveEventOrKick = asyncErrorHandler(
@@ -156,7 +156,7 @@ export const leaveEventOrKick = asyncErrorHandler(
     const removedUserId = req.params.userId // Kicked users will be able to join again if the event code isn't changed
     if (removedUserId) { // User deletion requested
         if (!(event.isLocked && !event.isAdmin(user.id))) { // The event is either not locked, or the user is admin
-            const removedUser = await User.findById(removedUserId)
+            const removedUser = await User.findById(removedUserId).exec()
             if (removedUser) {
                 removedUser.events.pull(event.id)
                 await removedUser.save()
@@ -167,7 +167,7 @@ export const leaveEventOrKick = asyncErrorHandler(
             await user.save()
             await event.save()
 
-            return res.status(204)
+            res.status(204); return
         } // Event is locked and user is not admin
         return next(new UserNotAdminError('Only admins can kick users'))
     }
@@ -184,7 +184,7 @@ export const leaveEventOrKick = asyncErrorHandler(
     await user.save()
     await event.save()
 
-    return res.status(204)
+    res.status(204)
 })
 
 export const deleteEvent = asyncErrorHandler(
@@ -192,5 +192,5 @@ export const deleteEvent = asyncErrorHandler(
     const eventIdOrCode = req.params.eventIdOrCode
     const event = await getEventByIdOrCode(eventIdOrCode)
     event.delete()
-    return res.status(204)
+    res.status(204)
 })

@@ -232,13 +232,13 @@ export const unfollowUser = asyncErrorHandler(
     await user.save()
     await followedUser.save()
 
-    return res.status(200).json(followedUser)
+    res.status(200).json(followedUser)
 })
 
 export const getUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
-    return res.status(200).json(user)
+    res.status(200).json(user)
 })
 
 export const updateUser = asyncErrorHandler(
@@ -258,5 +258,5 @@ export const updateUser = asyncErrorHandler(
     }
 
     await user.save()
-    return res.status(200).json(user)
+    res.status(200).json(user)
 })
