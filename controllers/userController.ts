@@ -10,6 +10,7 @@ import { type Request, type Response, type NextFunction } from 'express'
 import errors from '../utils/errors.js'
 import { sendConfirmationEmail } from '../utils/mailer.js'
 import User, { type IUser } from '../models/User.js'
+import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Destructuring and global variables
 const {
@@ -33,7 +34,8 @@ const cookieOptions = config.get('cookieOptions')
 // Setup
 dotenv.config()
 
-export const registerUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const registerUser = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let { username, email, password, confirmPassword } = req.body
 
     if (!username || !email || !password) {
@@ -88,9 +90,10 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     res.status(201).json({
         message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.'
     })
-}
+})
 
-export const confirmUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const confirmUser = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // Extract the confirmation code from the query parameters
     const { userCode } = req.params
 
@@ -117,9 +120,10 @@ export const confirmUser = async (req: Request, res: Response, next: NextFunctio
     res.status(200).json({
         message: 'Confirmation successful! Your account has been activated.'
     })
-}
+})
 
-export const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const loginUser = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let { email, password, stayLoggedIn } = req.body
 
     if (!email || !password || stayLoggedIn === undefined) {
@@ -160,31 +164,35 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
     res.cookie('token', token, cookieOptions)
 
     res.status(200).json({ auth: true, token })
-}
+})
 
-export const logoutUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const logoutUser = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     res.clearCookie('token', {
         httpOnly: true,
         secure: true
     })
     res.status(200).json({ message: 'Logged out successfully' })
-}
+})
 
-export const getEvents = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getEvents = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
     const populatedUser = await user.populate('events')
     res.status(200).json(populatedUser.events)
-}
+})
 
-export const newCode = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const newCode = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
     // Generate a new userCode
     const userCode = await user.generateNewUserCode()
     await user.save()
     res.status(200).json({ userCode })
-}
+})
 
-export const followUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const followUser = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const followedUserId = req.params.userId
     const followedUser = await User.findById(followedUserId).exec()
     const user = req.user as IUser
@@ -203,9 +211,10 @@ export const followUser = async (req: Request, res: Response, next: NextFunction
     await followedUser.save()
 
     res.status(200).json(followedUser)
-}
+})
 
-export const unfollowUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const unfollowUser = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const followedUserId = req.params.userId
     const followedUser = await User.findById(followedUserId).exec()
     const user = req.user as IUser
@@ -224,14 +233,16 @@ export const unfollowUser = async (req: Request, res: Response, next: NextFuncti
     await followedUser.save()
 
     return res.status(200).json(followedUser)
-}
+})
 
-export const getUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getUser = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
     return res.status(200).json(user)
-}
+})
 
-export const updateUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateUser = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
 
     const {
@@ -248,4 +259,4 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 
     await user.save()
     return res.status(200).json(user)
-}
+})

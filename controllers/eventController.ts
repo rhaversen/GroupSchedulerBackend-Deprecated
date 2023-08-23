@@ -1,11 +1,15 @@
 // Node.js built-in modules
 import config from 'config'
 
+// Third-party libraries
+import { type Request, type Response, type NextFunction } from 'express'
+
 // Own modules
 import logger from '../utils/logger.js'
 import errors from '../utils/errors.js'
 import Event, { IEvent } from '../models/Event.js'
 import User, { IUser } from '../models/User.js'
+import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Destructuring and global variables
 const {
@@ -45,24 +49,27 @@ export async function getEventByIdOrCode (eventIdOrCode) {
     if (!event) throw new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong')
 
     return event
-}
+})
 
-export const newCode = async (req, res, next) => {
+export const newCode = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
     const eventIdOrCode = req.params.eventIdOrCode
     const event = await getEventByIdOrCode(eventIdOrCode)
 
     // Generate a new eventCode
     event.generateNewEventCode()
     return res.status(200).json(event.eventCode)
-}
+})
 
-export const getEvent = async (req, res, next) => {
+export const getEvent = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
     const eventIdOrCode = req.params.eventIdOrCode
     const event = await getEventByIdOrCode(eventIdOrCode)
     return res.status(200).json(event)
-}
+})
 
-export const createEvent = async (req, res, next) => {
+export const createEvent = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
     const {
         eventName,
         eventDescription,
@@ -98,9 +105,10 @@ export const createEvent = async (req, res, next) => {
     await newEvent.save()
 
     return res.status(201).json(newEvent)
-}
+})
 
-export const updateEvent = async (req, res, next) => {
+export const updateEvent = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
     const {
         eventName,
         eventDescription,
@@ -120,9 +128,10 @@ export const updateEvent = async (req, res, next) => {
     await event.save()
 
     return res.status(200).json(event)
-}
+})
 
-export const joinEvent = async (req, res, next) => {
+export const joinEvent = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
     const eventIdOrCode = req.params.eventIdOrCode
     const event = await getEventByIdOrCode(eventIdOrCode)
     const user = req.user
@@ -135,9 +144,10 @@ export const joinEvent = async (req, res, next) => {
     await event.save()
 
     return res.status(200).json(event)
-}
+})
 
-export const leaveEventOrKick = async (req, res, next) => {
+export const leaveEventOrKick = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
     const eventIdOrCode = req.params.eventIdOrCode
     const event = await getEventByIdOrCode(eventIdOrCode)
     const user = req.user
@@ -175,11 +185,12 @@ export const leaveEventOrKick = async (req, res, next) => {
     await event.save()
 
     return res.status(204)
-}
+})
 
-export const deleteEvent = async (req, res, next) => {
+export const deleteEvent = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
     const eventIdOrCode = req.params.eventIdOrCode
     const event = await getEventByIdOrCode(eventIdOrCode)
     event.delete()
     return res.status(204)
-}
+})
