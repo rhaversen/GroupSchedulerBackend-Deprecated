@@ -5,7 +5,7 @@ import { type Request, type Response, type NextFunction } from 'express'
 
 // Own modules
 import AvailabilityModel, { type IAvailability } from '../models/Availability.js'
-import { type IUser } from '../models/User.js'
+import UserModel, { type IUser } from '../models/User.js'
 import errors from '../utils/errors.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
@@ -35,11 +35,6 @@ export const newOrUpdateAvailability = asyncErrorHandler(
 
         // Check if user already has a availability set for this date
         const user = req.user as IUser
-        const populatedUser = await user.populate('availabilities')
-
-        if (!populatedUser) {
-            next(new UserNotFoundError('The user could not be found')); return
-        }
 
         const existingAvailability = await AvailabilityModel.findById(availabilityId).exec() as IAvailability
 
@@ -64,7 +59,7 @@ export const newOrUpdateAvailability = asyncErrorHandler(
 
         const savedAvailability = await newAvailability.save()
 
-        populatedUser.availabilities.push(savedAvailability._id)
+        await UserModel.findByIdAndUpdate(user._id, { $push: { availabilities: savedAvailability._id } }).exec()
 
         res.status(201).json(savedAvailability)
     })
