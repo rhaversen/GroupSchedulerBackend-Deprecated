@@ -33,14 +33,14 @@ const {
 type ServerType = {
     app: AppType
     shutDown: ShutDownType
-  };
+};
 
 // Helper functions
 async function establishFollowing (followingUser: IUser, followedUser: IUser) {
-    followingUser.following.push(followedUser._id)
-    followedUser.followers.push(followingUser._id)
-    await followingUser.save()
-    await followedUser.save()
+    await Promise.all([
+        UserModel.findByIdAndUpdate(followingUser._id, { $push: { following: followedUser._id } }).exec(),
+        UserModel.findByIdAndUpdate(followedUser._id, { $push: { followers: followingUser._id._id } }).exec()
+    ])
     logger.info('User followed')
 }
 
@@ -102,16 +102,21 @@ describe('Server Tests', () => {
         // Create users
         const savedUserArray = []
         for (let i = 0; i <= 10; i++) {
-            const name = names[i]
+            const username = names[i]
             const email = emails[i]
             const password = passwords[i]
-            const newUser = new UserModel({ name, email, password })
-            const savedUser = await newUser.save()
-            if (!savedUser) {
-                throw new ServerError('Error saving user')
-            }
-            savedUserArray[i] = savedUser
-            logger.info('User created')
+            const newUser = new UserModel({ username, email, password })
+            try {
+                const savedUser = await newUser.save()
+                if (!savedUser) {
+                    throw new ServerError('Error saving user')
+                }
+                savedUserArray[i] = savedUser
+                logger.info('User created')
+            } catch (err) {
+                logger.error('Error occurred:', err)
+                throw err // Re-throwing the error to fail the test
+            }            
         }
 
         // Follow users according to spreadsheet https://docs.google.com/spreadsheets/d/141samGt6TACfhqiGgxYQHJvSCWAKOiOF8dTemNfQrkk/edit
@@ -192,28 +197,17 @@ describe('Server Tests', () => {
 
     it('POST /api/v1/users should create a new user and return a JWT token', async function () {
         this.timeout(10000) // Set the timeout to 10 seconds.
-        logger.info('1')
 
-        const newUser = { name: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', stayLoggedIn: false }
-        logger.info('2')
-
+        const newUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword', stayLoggedIn: false }
+        
         const res = await chai.request(server.app).post('/api/v1/users').send(newUser)
-        logger.info('3')
 
         expect(res).to.have.status(201)
         expect(res.body).to.be.a('object')
-        expect(res.body).to.have.property('token')
-        expect(res.body).to.have.property('auth')
+        expect(res.body).to.have.property('message')
 
-        expect(res.body.auth).to.be.true
-
-        const token = res.body.token
-
-        // Here, you can further test the JWT token if needed, for example:
-        // - Verify the token's signature
-        // - Decode the token and check its payload
-
-        // For simplicity, let's just check if the token exists
-        expect(token).to.not.be.empty
+        const message = res.body.message
+        
+        expect(message).to.be.string('Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.')
     })
 })

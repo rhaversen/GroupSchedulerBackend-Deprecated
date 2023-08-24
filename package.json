@@ -50,7 +50,7 @@
     "typescript": "^5.1.6"
   },
   "scripts": {
-    "test": "mocha dist/",
+    "test": "mocha dist/test/",
     "build": "tsc"
   }
 }
