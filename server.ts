@@ -16,7 +16,7 @@ import cors, { type CorsOptions } from 'cors'
 import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportJwt.js'
-import { connectToDatabase, disconnectFromDatabase } from './database.js'
+import { connectToDatabase, disconnectFromDatabase } from './utils/database.js'
 
 // Import and use routes, apply general rate limiter
 import userRoutes from './routes/users.js'

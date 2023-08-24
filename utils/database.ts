@@ -7,7 +7,7 @@ import mongoose, { type ConnectOptions } from 'mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 // Own modules
-import logger from './utils/logger.js'
+import logger from './logger.js'
 
 // Config
 const mongooseOpts = config.get('mongoose.options') as ConnectOptions

@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 import chai from 'chai'
 import chaiHttp from 'chai-http'
 
-import { deleteAllDocumentsFromAllCollections } from '../database.js'
+import { deleteAllDocumentsFromAllCollections } from '../utils/database.js'
 import logger from '../utils/logger.js'
 import UserModel, { type IUser } from '../models/User.js'
 import error from '../utils/errors.js'
