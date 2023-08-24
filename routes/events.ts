@@ -16,7 +16,8 @@ import {
 // Controller functions
 import {
     newCode,
-    getEvent,
+    getEventAndSend,
+    getEventAndAttach,
     createEvent,
     updateEvent,
     joinEvent,
@@ -35,6 +36,7 @@ const router = Router()
 router.post('/:eventIdOrCode/new-code',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    getEventAndAttach,
     checkUserInEvent,
     checkUserIsAdmin,
     newCode
@@ -48,8 +50,9 @@ router.post('/:eventIdOrCode/new-code',
 router.get('/:eventIdOrCode',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    getEventAndAttach, // TODO: Fix double call to find event
     checkUserInEvent,
-    getEvent
+    getEventAndSend
 )
 
 /**
@@ -71,6 +74,7 @@ router.post('/',
 router.patch('/:eventIdOrCode',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    getEventAndAttach,
     checkUserInEvent,
     checkUserIsAdmin,
     updateEvent
@@ -84,6 +88,7 @@ router.patch('/:eventIdOrCode',
 router.put('/:eventIdOrCode/users',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    getEventAndAttach,
     joinEvent
 )
 
@@ -95,6 +100,7 @@ router.put('/:eventIdOrCode/users',
 router.delete('/:eventIdOrCode/users/:userId?',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    getEventAndAttach,
     checkUserInEvent,
     leaveEventOrKick
 )
@@ -107,6 +113,7 @@ router.delete('/:eventIdOrCode/users/:userId?',
 router.delete('/:eventIdOrCode',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    getEventAndAttach,
     checkUserInEvent,
     checkUserIsAdmin,
     deleteEvent

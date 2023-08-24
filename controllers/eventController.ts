@@ -10,6 +10,7 @@ import errors from '../utils/errors.js'
 import Event, { IEvent } from '../models/Event.js'
 import User, { IUser } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
+import type IRequestWithEvent from '../routes/events.js'
 
 // Destructuring and global variables
 const {
@@ -22,6 +23,11 @@ const {
 // Config
 const nanoidAlphabet = String(config.get('nanoid.alphabet'))
 const nanoidLength = Number(config.get('nanoid.length'))
+
+// Interfaces
+export interface IRequestWithEvent extends Request {
+    event: IEvent;
+  }
 
 // helper functions
 function isMongoId (str: string) {
@@ -61,11 +67,18 @@ export const newCode = asyncErrorHandler(
     res.status(200).json(event.eventCode)
 })
 
-export const getEvent = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
+export const getEventAndSend = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const eventIdOrCode = req.params.eventIdOrCode
     const event = await getEventByIdOrCode(eventIdOrCode)
     res.status(200).json(event)
+})
+
+export const getEventAndAttach = asyncErrorHandler<IRequestWithEvent>(
+    async (req: IRequestWithEvent, res: Response, next: NextFunction): Promise<void> => {
+    const eventIdOrCode = req.params.eventIdOrCode;
+    req.event = await getEventByIdOrCode(eventIdOrCode)
+    next()
 })
 
 export const createEvent = asyncErrorHandler(
