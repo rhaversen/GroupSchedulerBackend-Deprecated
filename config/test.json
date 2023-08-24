@@ -1,0 +1,12 @@
+{
+    "corsOpts": {
+        "origin": "http://localhost:{nextJsPort}"
+    },
+    "frontend": {
+        "domain": "localhost"
+    },
+    "ports": {
+        "nextJs": 3000,
+        "express": 5000
+    }
+}

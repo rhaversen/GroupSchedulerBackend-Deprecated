@@ -17,7 +17,7 @@ const retryInterval = Number(config.get('mongoose.retrySettings.interval')) // m
 let memoryServer: MongoMemoryServer
 
 const connectToDatabase = async () => {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'test') {
         memoryServer = await MongoMemoryServer.create()
         const mongoUri = memoryServer.getUri()
         await mongoose.connect(mongoUri, mongooseOpts)
@@ -48,7 +48,7 @@ const connectToDatabase = async () => {
 }
 
 const disconnectFromDatabase = async () => {
-    if (process.env.NODE_ENV === 'development' && memoryServer) {
+    if (process.env.NODE_ENV === 'test' && memoryServer) {
         try {
             await mongoose.disconnect()
             await memoryServer.stop()
