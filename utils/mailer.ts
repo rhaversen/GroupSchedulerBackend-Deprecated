@@ -5,8 +5,8 @@ import nodemailer from 'nodemailer'
 import dotenv from 'dotenv'
 
 // Config
-const transporterPort = Number(config.get('mail.port'))
-const emailFrom = String(config.get('mail.from'))
+const transporterPort = Number(config.get('email.port'))
+const emailFrom = String(config.get('email.from'))
 
 dotenv.config()
 
