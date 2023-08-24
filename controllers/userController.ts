@@ -38,8 +38,8 @@ export const registerUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         let { username, email, password, confirmPassword } = req.body
 
-        if (!username || !email || !password) {
-            next(new MissingFieldsError('Missing Username, Email and/or Password')); return
+        if (!username || !email || !password || !confirmPassword) {
+            next(new MissingFieldsError('Missing Username, Email, Password and/or Confirm Password')); return
         }
 
         if (!validator.isEmail(email)) {
