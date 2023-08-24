@@ -1,7 +1,7 @@
 // Third-party libraries
-import { RequestHandler, type Request, type Response, type NextFunction } from 'express'
+import { type RequestHandler, type Request, type Response, type NextFunction } from 'express'
 
-type AsyncMiddleware<TRequest = Request> = (req: TRequest, res: Response, next: NextFunction) => Promise<void>;
+type AsyncMiddleware<TRequest = Request> = (req: TRequest, res: Response, next: NextFunction) => Promise<void>
 
 const asyncErrorHandler = <TRequest = Request>(fn: AsyncMiddleware<TRequest>): RequestHandler => {
     return (req: Request, res: Response, next: NextFunction): void => {
@@ -11,7 +11,7 @@ const asyncErrorHandler = <TRequest = Request>(fn: AsyncMiddleware<TRequest>): R
         } catch (err) {
             next(err)
         }
-    };
-};
+    }
+}
 
-export default asyncErrorHandler;
+export default asyncErrorHandler

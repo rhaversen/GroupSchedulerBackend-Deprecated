@@ -22,7 +22,7 @@ const transporter = nodemailer.createTransport({
 })
 
 // Generic function to send email
-export const sendEmail = async (to, subject, text, html = '') => {
+export const sendEmail = async (to: string, subject: string, text: string, html = ''): Promise<void> => {
     const mailOptions = {
         from: emailFrom,
         to,
@@ -35,10 +35,10 @@ export const sendEmail = async (to, subject, text, html = '') => {
 }
 
 // Function to send confirmation email
-export const sendConfirmationEmail = (email, confirmationLink) => {
+export const sendConfirmationEmail = async (email: string, confirmationLink: string): Promise<void> => {
     const subject = 'Please confirm your email address'
     const text = `Please confirm your email by pasting this link into your browser: ${confirmationLink} \n (Your email inbox does not support HTML)`
     const html = `<a href="${confirmationLink}">${confirmationLink}</a> <br> <p>Please confirm your email by clicking the link above.</p>`
 
-    sendEmail(email, subject, text, html)
+    await sendEmail(email, subject, text, html)
 }

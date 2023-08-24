@@ -5,8 +5,9 @@ import chaiHttp from 'chai-http'
 
 import { deleteAllDocumentsFromAllCollections } from '../database.js'
 import logger from '../utils/logger.js'
-import User from '../models/User.js'
+import UserModel, { type IUser } from '../models/User.js'
 import error from '../utils/errors.js'
+import { AppType, ShutDownType } from '../server.js'
 
 // Controller functions
 import {
@@ -28,8 +29,14 @@ const {
     ServerError
 } = error
 
+// Types
+type ServerType = {
+    app: AppType
+    shutDown: ShutDownType
+  };
+
 // Helper functions
-async function establishFollowing (followingUser, followedUser) {
+async function establishFollowing (followingUser: IUser, followedUser: IUser) {
     followingUser.following.push(followedUser._id)
     followedUser.followers.push(followingUser._id)
     await followingUser.save()
@@ -37,12 +44,12 @@ async function establishFollowing (followingUser, followedUser) {
     logger.info('User followed')
 }
 
-let server
+let server: ServerType
 
 describe('Server Tests', () => {
     before(async function () {
         this.timeout(10000) // Set the timeout to 10 seconds.
-        server = await import('../server')
+        server = await import('../server.js')
         // Wipe database before testing
         await deleteAllDocumentsFromAllCollections()
     })
@@ -98,7 +105,7 @@ describe('Server Tests', () => {
             const name = names[i]
             const email = emails[i]
             const password = passwords[i]
-            const newUser = new User({ name, email, password })
+            const newUser = new UserModel({ name, email, password })
             const savedUser = await newUser.save()
             if (!savedUser) {
                 throw new ServerError('Error saving user')

@@ -6,13 +6,13 @@ import dotenv from 'dotenv'
 import jsonwebtokenPkg from 'jsonwebtoken'
 import bcryptjsPkg from 'bcryptjs'
 import { customAlphabet } from 'nanoid'
-import mongoose, { type Document, type Types, model } from 'mongoose'
+import mongoose, { type Document, type Types, model, type Model } from 'mongoose'
 
 // Own modules
 import errors from '../utils/errors.js'
 import logger from '../utils/logger.js'
 import { type IAvailability } from './Availability.js'
-import { type IEvent } from './Event.js'
+import EventModel, { type IEvent } from './Event.js'
 
 // Setup
 dotenv.config()
@@ -38,6 +38,13 @@ const userExpiry = Number(config.get('userSettings.unconfirmedUserExpiry'))
 // Constants
 const jwtSecret = String(process.env.JWT_SECRET)
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
+
+export interface IUserPopulated extends IUser {
+    events: IEvent[]
+    availabilities: IAvailability[]
+    following: IUser[]
+    followers: IUser[]
+}
 
 export interface IUser extends Document {
     username: string
@@ -80,24 +87,24 @@ userSchema.methods.confirmUser = async function () {
 }
 
 // Method for comparing parameter to this users password. Returns true if passwords match
-userSchema.methods.comparePassword = async function (candidatePassword: string) {
-    return await compare(candidatePassword, this.password)
+userSchema.methods.comparePassword = async function (this: IUser, candidatePassword: string & { constructor: Model<IEvent> }): Promise<void> {
+    await compare(candidatePassword, this.password)
 }
 
-userSchema.methods.generateNewUserCode = async function () {
-    let userCode
-    let existingUser
+userSchema.methods.generateNewUserCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
+    let userCode: string
+    let existingUser: IUser | null
 
     do {
         userCode = nanoid()
-        existingUser = await userSchema.findOne({ userCode })
+        existingUser = await this.constructor.findOne({ userCode }).exec()
     } while (existingUser)
 
     this.userCode = userCode
     return userCode
 }
 
-userSchema.methods.generateToken = function (stayLoggedIn: boolean) {
+userSchema.methods.generateToken = function (this: IUser, stayLoggedIn: boolean): string {
     const payload = { id: this._id }
     const token = sign(payload, jwtSecret, { expiresIn: stayLoggedIn ? jwtPersistentExpiry : jwtExpiry })
     logger.info('JWT created')
@@ -122,19 +129,22 @@ userSchema.pre('save', async function (next) {
     logger.info('User saved')
 })
 
-userSchema.pre('remove', async function (next) {
+// Remove event from users
+const deleteLogic = async function (this: IUser & { constructor: Model<IUser> }, next: mongoose.CallbackWithoutResultAndOptionalError): Promise<void> {
     try {
-    // Remove user from followers following array
+        // Remove user from followers following array
         for (const followerId of this.followers) {
             // Get the user
-            const user = await this.constructor.findById(followerId)
+            const user = await this.constructor.findById(followerId).exec()
 
             if (!user) {
-                throw new UserNotFoundError('User not found')
+                next(new UserNotFoundError('User not found')); return
             }
 
             // Remove this user from the followers's following array
-            user.following = user.following.filter(followerId => followerId.toString() !== this._id.toString())
+            await UserModel.findByIdAndUpdate(followerId, {
+                $pull: { following: this._id }
+            }).exec()
 
             // Save the user
             await user.save()
@@ -143,25 +153,29 @@ userSchema.pre('remove', async function (next) {
 
         // Remove user from events
         for (const eventId of this.events) {
-            // Get the user
-            const event = await Event.findById(eventId)
+            await EventModel.findByIdAndUpdate(eventId, {
+                $pull: { participants: this._id }
+            }).exec()
 
-            if (!event) {
-                throw new EventNotFoundError('Event not found')
-            }
-
-            // Remove this user from the events participants array
-            event.participants = event.participants.filter(userId => userId.toString() !== this._id.toString())
-
-            // Save the event
-            await event.save()
             logger.info('User removed')
         }
 
         next()
-    } catch (error) {
-        next(error)
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            next(error)
+        } else {
+            // Log or handle the error as it's not of type Error
+            logger.error('An unexpected error occurred:', error)
+            next() // You can call next without an argument, as the error is optional
+        }
     }
-})
+}
 
-export default model('User', userSchema)
+userSchema.pre('deleteOne', { document: true, query: false }, deleteLogic)
+userSchema.pre('findOneAndDelete', { document: true, query: false }, deleteLogic)
+userSchema.pre('deleteMany', { document: true, query: false }, deleteLogic)
+
+const UserModel = model<IUser>('User', userSchema)
+
+export default UserModel

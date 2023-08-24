@@ -3,23 +3,23 @@ import config from 'config'
 
 // Third-party libraries
 import 'dotenv/config'
-import mongoose from 'mongoose'
+import mongoose, { type ConnectOptions } from 'mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 // Own modules
 import logger from './utils/logger.js'
 
 // Config
-const mongooseOpts = config.get('mongoose.options')
+const mongooseOpts = config.get('mongoose.options') as ConnectOptions
 const maxRetryAttempts = Number(config.get('mongoose.retrySettings.maxAttempts'))
 const retryInterval = Number(config.get('mongoose.retrySettings.interval')) // ms
 
-let mongoServer
+let memoryServer: MongoMemoryServer
 
 const connectToDatabase = async () => {
     if (process.env.NODE_ENV === 'test') {
-        mongoServer = await MongoMemoryServer.create()
-        const mongoUri = mongoServer.getUri()
+        memoryServer = await MongoMemoryServer.create()
+        const mongoUri = memoryServer.getUri()
         await mongoose.connect(mongoUri, mongooseOpts)
         logger.info('Connected to in-memory MongoDB')
     } else {
@@ -34,7 +34,11 @@ const connectToDatabase = async () => {
                 logger.info('MongoDB Connected...')
                 return // Exit the function if the connection is successful
             } catch (error) {
-                logger.error(`Error connecting to MongoDB: ${error.message}`)
+                if (error instanceof Error) {
+                    logger.error(`Error connecting to MongoDB: ${error.message}`)
+                } else {
+                    logger.error(`Error connecting to MongoDB: ${error}`)
+                }
                 currentRetryAttempt++
                 await new Promise((resolve) => setTimeout(resolve, retryInterval))
             }
@@ -44,20 +48,28 @@ const connectToDatabase = async () => {
 }
 
 const disconnectFromDatabase = async () => {
-    if (process.env.NODE_ENV === 'test' && mongoServer) {
+    if (process.env.NODE_ENV === 'test' && memoryServer) {
         try {
             await mongoose.disconnect()
-            await mongoServer.stop()
+            await memoryServer.stop()
             logger.info('Disconnected from in-memory MongoDB')
         } catch (error) {
-            logger.error(`Error disconnecting from in-memory MongoDB: ${error.message}`)
+            if (error instanceof Error) {
+                logger.error(`Error connecting to MongoDB: ${error.message}`)
+            } else {
+                logger.error(`Error connecting to MongoDB: ${error}`)
+            }
         }
     } else {
         try {
             await mongoose.disconnect()
             logger.info('Disconnected from MongoDB')
         } catch (error) {
-            logger.error(`Error disconnecting from MongoDB: ${error.message}`)
+            if (error instanceof Error) {
+                logger.error(`Error disconnecting from MongoDB: ${error.message}`)
+            } else {
+                logger.error(`Error disconnecting from MongoDB: ${error}`)
+            }
         }
     }
 }
@@ -71,7 +83,11 @@ const deleteAllDocumentsFromAllCollections = async () => {
         }
         logger.info('All documents from all collections have been deleted')
     } catch (error) {
-        logger.error(`Error deleting documents from MongoDB: ${error.message}`)
+        if (error instanceof Error) {
+            logger.error(`Error deleting documents from MongoDB: ${error.message}`)
+        } else {
+            logger.error(`Error deleting documents from MongoDB: ${error}`)
+        }
     }
 }
 

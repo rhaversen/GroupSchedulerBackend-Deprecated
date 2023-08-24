@@ -7,10 +7,10 @@ import 'dotenv/config'
 import express from 'express'
 import 'express-async-errors'
 import mongoSanitize from 'express-mongo-sanitize'
-import RateLimit from 'express-rate-limit'
+import RateLimit, { type Options as RateLimitOptions } from 'express-rate-limit'
 import passport from 'passport'
-import helmet from 'helmet'
-import cors from 'cors'
+import helmet, { type HelmetOptions } from 'helmet'
+import cors, { type CorsOptions } from 'cors'
 
 // Own modules
 import logger from './utils/logger.js'
@@ -27,21 +27,33 @@ import availabilityRoutes from './routes/availabilities.js'
 const app = express()
 const server = http.createServer(app)
 
+// Types
+type ContentSecurityPolicyOptions = HelmetOptions['contentSecurityPolicy']
+type HstsOptions = HelmetOptions['hsts']
+
 // Configs
-const helmetCSP = config.get('helmet.CSP')
-const corsOptions = config.get('corsOpts')
-const confRelaxedApiLimiter = config.get('apiLimiter.nonSensitive')
-const confSensitiveApiLimiter = config.get('apiLimiter.sensitive')
+const helmetCSP = config.get('helmet.CSP') as ContentSecurityPolicyOptions
+const helmetHSTS = config.get('helmet.HSTS') as HstsOptions
+const confCorsOptions = config.get('corsOpts') as CorsOptions
+const confRelaxedApiLimiter = config.get('apiLimiter.nonSensitive') as RateLimitOptions
+const confSensitiveApiLimiter = config.get('apiLimiter.sensitive') as RateLimitOptions
 const expressPort = config.get('ports.express')
-const helmetHSTS = config.get('helmet.HSTS')
 
 // Function invocations
 configurePassport(passport)
 
 // Helmet security
-app.use(helmet.contentSecurityPolicy(helmetCSP))
+if (typeof helmetCSP === 'object' && helmetCSP !== null) {
+    app.use(helmet.contentSecurityPolicy(helmetCSP))
+} else {
+    logger.warn('Helmet ContentSecurityPolicyOptions is not set! App not using CSP!')
+}
 // Only use HTTPS
-// app.use(helmet.hsts(helmetHSTS));
+if (typeof helmetHSTS === 'object' && helmetHSTS !== null) {
+    app.use(helmet.strictTransportSecurity(helmetHSTS))
+} else {
+    logger.warn('Helmet StrictTransportSecurityOptions is not set! App not using HSTS!')
+}
 
 // Global middleware
 app.use(helmet())
@@ -49,7 +61,7 @@ app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.use(mongoSanitize())
 app.use(passport.initialize())
-app.use(cors(corsOptions))
+app.use(cors(confCorsOptions))
 
 // Connect to MongoDB
 await connectToDatabase()
@@ -95,7 +107,13 @@ process.on('uncaughtException', (err) => {
 })
 
 // Assigning shutdown function to SIGINT signal
-process.on('SIGINT', shutDown)
+process.on('SIGINT', () => {
+    logger.info('Received SIGINT')
+    shutDown().catch(error => {
+        logger.error('An error occurred during shutdown:', error)
+        process.exit(1)
+    })
+})
 
 // Shutdown function
 async function shutDown () {
@@ -104,10 +122,12 @@ async function shutDown () {
         await disconnectFromDatabase()
         logger.info('Shutdown completed')
         process.exit(0) // Exit with code 0 indicating successful termination
-    } catch (err) {
-        logger.error('An error occurred during shutdown:', err)
+    } catch (error) {
+        logger.error('An error occurred during shutdown:', error)
         process.exit(1) // Exit with code 1 indicating termination with error
     }
 }
 
+export type AppType = typeof app;
+export type ShutDownType = typeof shutDown;
 export { app, shutDown }
