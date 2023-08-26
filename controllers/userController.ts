@@ -11,6 +11,7 @@ import errors from '../utils/errors.js'
 import { sendConfirmationEmail } from '../utils/mailer.js'
 import UserModel, { type IUser } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
+import logger from '../utils/logger.js'
 
 // Destructuring and global variables
 const {
@@ -82,7 +83,7 @@ export const registerUser = asyncErrorHandler(
             confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${userCode}`
         }
 
-        console.log(confirmationLink)
+        logger.info(confirmationLink)
 
         // Send email to the user with the confirmation link
         sendConfirmationEmail(email, confirmationLink)
