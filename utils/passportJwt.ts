@@ -3,6 +3,7 @@
 // Third-party libraries
 import dotenv from 'dotenv'
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt'
+import { Request } from 'express';
 
 // Own modules
 import errors from './errors.js'
@@ -21,13 +22,18 @@ const {
 
 const configurePassport = (passport: PassportStatic) => {
     const opts = {
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: process.env.JWT_SECRET
+        jwtFromRequest: (req: Request): string => {
+            let token = null;
+            token = req?.cookies['token'];
+            return token;
+        },
+        secretOrKey: String(process.env.JWT_SECRET),
+        audience: 'localhost'
     }
 
     passport.use(
-        new JwtStrategy(opts, (jwt_payload: { id: any }, done): void => {
-            UserModel.findById(jwt_payload.id).exec()
+        new JwtStrategy(opts, function(jwt_payload: string, done): void {
+            UserModel.findById(jwt_payload.sub).exec()
                 .then(user => {
                     if (user) {
                         done(null, user); return

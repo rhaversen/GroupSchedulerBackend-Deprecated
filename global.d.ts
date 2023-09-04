@@ -5,3 +5,10 @@ declare module 'express-serve-static-core' {
         user?: IUser
     }
 }
+
+declare namespace Express {
+    export interface Request {
+      cookies: { [key: string]: string };
+    }
+  }
+  

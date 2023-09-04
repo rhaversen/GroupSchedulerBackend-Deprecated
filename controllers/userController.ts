@@ -147,32 +147,32 @@ export const loginUser = asyncErrorHandler(
 
         // Check password
         const isMatch = await user.comparePassword(password)
+
         if (!isMatch) {
-            res.status(401).json({ auth: false, message: 'Invalid credentials' })
+            res.status(401).json({ auth: false, error: 'Invalid credentials' })
             return
         }
 
         // User matched, generate token
         const token = user.generateToken(stayLoggedIn)
 
+        let maxAge: number
+
         if (stayLoggedIn) {
-            cookieOptions.maxAge = jwtPersistentExpiry * 1000 // Assuming jwtExpiry is in seconds
+            maxAge = jwtPersistentExpiry * 1000 // Assuming jwtExpiry is in seconds
         } else {
-            cookieOptions.maxAge = jwtExpiry * 1000 // Assuming jwtExpiry is in seconds
+            maxAge = jwtExpiry * 1000 // Assuming jwtExpiry is in seconds
         }
 
         // Set the JWT in a cookie
-        res.cookie('token', token, cookieOptions)
+        res.cookie('token', token, {...cookieOptions, maxAge})
 
-        res.status(200).json({ auth: true, token })
+        res.status(200).json({ auth: true })
     })
 
 export const logoutUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: true
-        })
+        res.clearCookie('token', cookieOptions)
         res.status(200).json({ message: 'Logged out successfully' })
     })
 

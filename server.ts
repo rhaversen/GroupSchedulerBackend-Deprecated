@@ -11,6 +11,7 @@ import RateLimit, { type Options as RateLimitOptions } from 'express-rate-limit'
 import passport from 'passport'
 import helmet, { type HelmetOptions } from 'helmet'
 import cors, { type CorsOptions } from 'cors'
+import cookieParser from 'cookie-parser';
 
 // Own modules
 import logger from './utils/logger.js'
@@ -58,6 +59,7 @@ if (typeof helmetHSTS === 'object' && helmetHSTS !== null) {
 // Global middleware
 app.use(helmet())
 app.use(express.json()) // for parsing application/json
+app.use(cookieParser()) // For parsing cookies
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.use(mongoSanitize())
 app.use(passport.initialize())
