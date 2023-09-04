@@ -16,6 +16,11 @@ const { expect } = chai
 const server = await import('../server.js')
 // Wipe database before testing
 
+after(async function () {
+    this.timeout(10000) // Set the timeout to 10 seconds.
+    await server.shutDown()
+})
+
 describe('User Registration Endpoint POST /api/v1/users', function() {    
     let testUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' };
     
@@ -216,7 +221,7 @@ describe('User Login Endpoint POST /api/v1/users/login', function() {
         expect(res.body.error).to.be.equal('Missing Email, Password and/or "Stay logged in"');
     });
 
-    it('should fail due to invalid email', async function () {
+    it('should fail due to invalid email format', async function () {
         const invalidEmailUser = { email: 'invalid-email', password: 'testpassword', stayLoggedIn: true };
 
         const res = await chai.request(server.app).post('/api/v1/users/login').send(invalidEmailUser);
