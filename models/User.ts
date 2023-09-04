@@ -87,8 +87,8 @@ userSchema.methods.confirmUser = async function () {
 }
 
 // Method for comparing parameter to this users password. Returns true if passwords match
-userSchema.methods.comparePassword = async function (this: IUser, candidatePassword: string & { constructor: Model<IEvent> }): Promise<void> {
-    await compare(candidatePassword, this.password)
+userSchema.methods.comparePassword = async function (this: IUser, candidatePassword: string): Promise<boolean> {
+    return await compare(candidatePassword, this.password)
 }
 
 userSchema.methods.generateNewUserCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
@@ -105,7 +105,11 @@ userSchema.methods.generateNewUserCode = async function (this: IUser & { constru
 }
 
 userSchema.methods.generateToken = function (this: IUser, stayLoggedIn: boolean): string {
-    const payload = { id: this._id }
+    const payload = {
+        sub: this._id,
+        aud: 'localhost', //TODO
+        iat: Date.now()
+    }
     const token = sign(payload, jwtSecret, { expiresIn: stayLoggedIn ? jwtPersistentExpiry : jwtExpiry })
     logger.info('JWT created')
     return token
