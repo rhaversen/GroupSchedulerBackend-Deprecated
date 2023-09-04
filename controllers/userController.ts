@@ -2,6 +2,7 @@
 import config from 'config'
 
 // Third-party libraries
+import passport from 'passport'
 import validator from 'validator'
 import dotenv from 'dotenv'
 import { type Request, type Response, type NextFunction, type CookieOptions } from 'express'
@@ -34,6 +35,15 @@ const cookieOptions: CookieOptions = config.get('cookieOptions')
 
 // Setup
 dotenv.config()
+
+export const ensureAuthenticated = 
+    (req: Request, res: Response, next: NextFunction): void => {
+        if (req.isAuthenticated()) {
+            next(); return
+        }
+        // If not authenticated, you can redirect or send an error response
+        res.status(401).json({ error: "Unauthorized" });
+    }
 
 export const registerUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -123,52 +133,38 @@ export const confirmUser = asyncErrorHandler(
         })
     })
 
-export const loginUser = asyncErrorHandler(
+export const loginUserLocal = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        let { email, password, stayLoggedIn } = req.body
-
-        if (!email || !password || stayLoggedIn === undefined) {
-            next(new MissingFieldsError('Missing Email, Password and/or "Stay logged in"')); return
-        }
-
-        email = String(email).toLowerCase()
-
-        if (!validator.isEmail(email)) {
-            next(new InvalidEmailError('Invalid email format')); return
-        }
-
-        // Find user by email
-        const user = await UserModel.findOne({ email }).exec()
-
-        // Check if user exists
-        if (!user) {
-            next(new UserNotFoundError('A user with the email ' + email + ' was not found. Please check spelling or sign up')); return
-        }
-
-        // Check password
-        const isMatch = await user.comparePassword(password)
-
-        if (!isMatch) {
-            res.status(401).json({ auth: false, error: 'Invalid credentials' })
-            return
-        }
-
-        // User matched, generate token
-        const token = user.generateToken(stayLoggedIn)
-
-        let maxAge: number
-
-        if (stayLoggedIn) {
-            maxAge = jwtPersistentExpiry * 1000 // Assuming jwtExpiry is in seconds
-        } else {
-            maxAge = jwtExpiry * 1000 // Assuming jwtExpiry is in seconds
-        }
-
-        // Set the JWT in a cookie
-        res.cookie('token', token, {...cookieOptions, maxAge})
-
-        res.status(200).json({ auth: true })
+        passport.authenticate('local', (err: Error, user: IUser, info: { message: string }) => {
+            if (err) {
+                next(err); return
+            }
+    
+            if (!user) {
+                if (info.message === 'Invalid email format') {
+                    next(new InvalidEmailError('Invalid email format')); return
+                }
+    
+                // Handle other errors here, such as "Invalid credentials"
+                return res.status(401).json({ auth: false, error: info.message });
+            }
+    
+            req.login(user, err => {
+                if (err) {
+                    next(err); return
+                }
+    
+                if (req.body.stayLoggedIn) {
+                    req.session.cookie.maxAge = jwtPersistentExpiry * 1000
+                } else {
+                    req.session.cookie.maxAge = jwtExpiry * 1000
+                }
+    
+                res.status(200).json({ auth: true })
+            });
+        })(req, res, next)
     })
+    
 
 export const logoutUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {

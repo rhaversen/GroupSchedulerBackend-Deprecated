@@ -11,9 +11,10 @@ import {
 
 // Controller functions
 import {
+    ensureAuthenticated,
     registerUser,
     confirmUser,
-    loginUser,
+    loginUserLocal,
     logoutUser,
     getEvents,
     newCode,
@@ -27,16 +28,16 @@ import {
 const router = Router()
 
 /**
- * @route GET api/v1/users/validate-jwt
- * @desc Validate JWT
+ * @route GET api/v1/users/ensureAuthenticated
+ * @desc Validate session
  * @access Public
  */
-router.get('/validate-jwt',
-    passport.authenticate('jwt', { session: false }),
-    // If we get here, the JWT is valid, so we just respond with a success message
+router.get('/ensureAuthenticated',
+    ensureAuthenticated,
+    // If we get here, the session is valid, so we just respond with a success message
     function (req, res) {
         res.status(200).json({
-            message: 'User has valid JWT.'
+            message: 'User has valid session.'
         })
     }
 )
@@ -68,7 +69,7 @@ router.post('/confirm/:userCode',
 */
 router.post('/login',
     sanitizeInput,
-    loginUser
+    loginUserLocal
 )
 
 /**
@@ -77,7 +78,7 @@ router.post('/login',
 * @access AUTHENTICATED
 */
 router.delete('/logout',
-    passport.authenticate('jwt', { session: false }),
+    ensureAuthenticated,
     sanitizeInput,
     logoutUser
 )
@@ -88,7 +89,7 @@ router.delete('/logout',
 * @access AUTHENTICATED
 */
 router.get('/events',
-    passport.authenticate('jwt', { session: false }),
+    ensureAuthenticated,
     getEvents
 )
 
@@ -98,7 +99,7 @@ router.get('/events',
  * @access AUTHENTICATED
 */
 router.post('/new-code',
-    passport.authenticate('jwt', { session: false }),
+    ensureAuthenticated,
     newCode
 )
 
@@ -108,7 +109,7 @@ router.post('/new-code',
 * @access AUTHENTICATED
 */
 router.put('/following/:userId',
-    passport.authenticate('jwt', { session: false }),
+    ensureAuthenticated,
     followUser
 )
 
@@ -118,7 +119,7 @@ router.put('/following/:userId',
 * @access AUTHENTICATED
 */
 router.delete('/following/:userId',
-    passport.authenticate('jwt', { session: false }),
+    ensureAuthenticated,
     unfollowUser
 )
 
@@ -128,7 +129,7 @@ router.delete('/following/:userId',
 * @access AUTHENTICATED
 */
 router.get('/',
-    passport.authenticate('jwt', { session: false }),
+    ensureAuthenticated,
     getUser
 )
 
@@ -138,7 +139,7 @@ router.get('/',
 * @access AUTHENTICATED
 */
 router.patch('/update-user',
-    passport.authenticate('jwt', { session: false }),
+    ensureAuthenticated,
     updateUser
 )
 
