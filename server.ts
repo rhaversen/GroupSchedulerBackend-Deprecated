@@ -40,6 +40,14 @@ const confRelaxedApiLimiter = config.get('apiLimiter.nonSensitive') as RateLimit
 const confSensitiveApiLimiter = config.get('apiLimiter.sensitive') as RateLimitOptions
 const expressPort = config.get('ports.express')
 
+// Config warns
+helmetCSP ?? logger.warn('Config helmet.CSP missing')
+helmetHSTS ?? logger.warn('Config helmet.HSTS missing')
+confCorsOptions ?? logger.warn('Config corsOpts missing')
+confRelaxedApiLimiter ?? logger.warn('Config apiLimiter.nonSensitive missing')
+confSensitiveApiLimiter ?? logger.warn('Config apiLimiter.sensitive missing')
+expressPort ?? logger.warn('Config ports.express missing')
+
 // Function invocations
 configurePassport(passport)
 
