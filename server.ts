@@ -65,16 +65,16 @@ if (typeof helmetHSTS === 'object' && helmetHSTS !== null) {
     logger.warn('Helmet StrictTransportSecurityOptions is not set! App not using HSTS!')
 }
 
-// Set up session handling
-app.use(session({
-    secret: 'your_secret_key', // You'd typically store this in an environment variable or config
+// Configuration for session
+const sessionMiddleware  = session({
+    secret: process.env.SESSION_SECRET || 'default_secret_key', // Ideally from an environment variable
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: true, // Only use cookies over HTTPS
-        httpOnly: true // Don't let browser JavaScript access cookies
+        secure: true, 
+        httpOnly: true
     }
-}));
+});
 
 // Global middleware
 app.use(helmet())
@@ -82,6 +82,7 @@ app.use(express.json()) // for parsing application/json
 app.use(cookieParser()) // For parsing cookies
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.use(mongoSanitize())
+app.use(sessionMiddleware)
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(cors(confCorsOptions))
