@@ -2,7 +2,6 @@
 
 // Third-party libraries
 import Router from 'express'
-import passport from 'passport'
 
 // Own modules
 import {

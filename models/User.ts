@@ -3,7 +3,6 @@ import config from 'config'
 
 // Third-party libraries
 import dotenv from 'dotenv'
-import jsonwebtokenPkg from 'jsonwebtoken'
 import bcryptjsPkg from 'bcryptjs'
 import { customAlphabet } from 'nanoid'
 import mongoose, { type Document, type Types, model, type Model } from 'mongoose'
@@ -18,7 +17,6 @@ import EventModel, { type IEvent } from './Event.js'
 dotenv.config()
 
 // Destructuring and global variables
-const { sign } = jsonwebtokenPkg
 const { compare, hash } = bcryptjsPkg
 const { Schema } = mongoose
 const {
@@ -28,15 +26,12 @@ const {
 } = errors
 
 // Config
-const jwtExpiry = Number(config.get('jwt.expiry'))
-const jwtPersistentExpiry = Number(config.get('jwt.persistentExpiry'))
 const saltRounds = Number(config.get('bcrypt.saltRounds'))
 const nanoidAlphabet = String(config.get('nanoid.alphabet'))
 const nanoidLength = Number(config.get('nanoid.length'))
 const userExpiry = Number(config.get('userSettings.unconfirmedUserExpiry'))
 
 // Constants
-const jwtSecret = String(process.env.JWT_SECRET)
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
 
 export interface IUserPopulated extends IUser {
@@ -62,7 +57,6 @@ export interface IUser extends Document {
     confirmUser: () => Promise<void>
     comparePassword: (candidatePassword: string) => Promise<boolean>
     generateNewUserCode: () => Promise<string>
-    generateToken: (stayLoggedIn: boolean) => string
 }
 
 const userSchema = new Schema<IUser>({
@@ -102,17 +96,6 @@ userSchema.methods.generateNewUserCode = async function (this: IUser & { constru
 
     this.userCode = userCode
     return userCode
-}
-
-userSchema.methods.generateToken = function (this: IUser, stayLoggedIn: boolean): string {
-    const payload = {
-        sub: this._id,
-        aud: 'localhost', //TODO
-        iat: Date.now()
-    }
-    const token = sign(payload, jwtSecret, { expiresIn: stayLoggedIn ? jwtPersistentExpiry : jwtExpiry })
-    logger.info('JWT created')
-    return token
 }
 
 // Password hashing middleware
