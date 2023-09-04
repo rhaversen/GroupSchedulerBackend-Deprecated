@@ -38,7 +38,7 @@ const logger = createLogger({
 })
 
 // If you want to log to the console in addition to files during development, you can add the following code:
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV !== 'production') {
     logger.add(
         new _transports.Console({
             format: _format.combine(

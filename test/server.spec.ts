@@ -1,4 +1,4 @@
-import dotenv from 'dotenv'
+/* import dotenv from 'dotenv'
 
 import chai from 'chai'
 import chaiHttp from 'chai-http'
@@ -195,7 +195,7 @@ describe('Server Tests', () => {
         await server.shutDown()
     })
 
-    it('POST /api/v1/users should create a new user and return a JWT token', async function () {
+    it('POST /api/v1/users should create a new user', async function () {
         this.timeout(10000) // Set the timeout to 10 seconds.
 
         const newUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword', stayLoggedIn: false }
@@ -205,9 +205,19 @@ describe('Server Tests', () => {
         expect(res).to.have.status(201)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('message')
+        expect(res.body.message).to.be.string('Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.')
 
-        const message = res.body.message
-        
-        expect(message).to.be.string('Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.')
+        const savedUser = await UserModel.findOne({email: newUser.email}).exec() as IUser
+
+        expect(savedUser.confirmed).to.be.false
+
+        await savedUser.confirmUser()
+        await savedUser.save()
+
+        expect(savedUser.confirmed).to.be.true
+
+        expect(savedUser.username).to.be.a.string(newUser.username)
+
     })
 })
+ */

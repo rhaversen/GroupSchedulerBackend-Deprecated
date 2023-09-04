@@ -9,7 +9,6 @@
         "allowJs": true,
         "checkJs": false
     },
-    "include": ["**/*.ts"],
+    "include": ["**/*.ts", "test/**/*.spec.ts", "*.d.ts"],
     "exclude": ["node_modules", "dist/", "eslint-rules/*"]
 }
-  
