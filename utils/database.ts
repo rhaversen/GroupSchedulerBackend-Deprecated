@@ -91,4 +91,4 @@ const deleteAllDocumentsFromAllCollections = async () => {
     }
 }
 
-export { connectToDatabase, disconnectFromDatabase, deleteAllDocumentsFromAllCollections }
+export { connectToDatabase, disconnectFromDatabase, deleteAllDocumentsFromAllCollections, mongoose }
