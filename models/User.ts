@@ -20,9 +20,7 @@ dotenv.config()
 const { compare, hash } = bcryptjsPkg
 const { Schema } = mongoose
 const {
-    HashingError,
-    UserNotFoundError,
-    EventNotFoundError
+    UserNotFoundError
 } = errors
 
 // Config
@@ -98,21 +96,41 @@ userSchema.methods.generateNewUserCode = async function (this: IUser & { constru
     return userCode
 }
 
+userSchema.pre(/^find/, function(next) { // This will work for find, findOne, findOneAndDelete, etc.
+    const conditions = this as { _conditions?: { email?: string } };
+    
+    if (conditions._conditions?.email) { // Check if the query has an email field
+        conditions._conditions.email = conditions._conditions.email.toLowerCase(); // Convert the email to lowercase
+    }
+    next();
+});
+
+
 // Password hashing middleware
 userSchema.pre('save', async function (next) {
     if (this.isNew) {
         await this.generateNewUserCode()
+        this.email = this.email.toLowerCase();
+    }
+
+    if (this.isModified('email')) {
+        this.email = this.email.toLowerCase();
     }
 
     if (this.isModified('password')) {
         try {
-            this.password = await hash(this.password, saltRounds) // Use a custom salt for each user
+            this.password = await hash(this.password, saltRounds) // Using a custom salt for each user
             next(); return
-        } catch (err) {
-            next(new HashingError('Error generating a password hash')); return
+        } catch (error) {
+            if (error instanceof Error) {
+                next(error)
+            } else {
+                // Log or handle the error as it's not of type Error
+                logger.error('An unexpected error occurred:', error)
+                next() // You can call next without an argument, as the error is optional
+            }
         }
     }
-
     logger.info('User saved')
 })
 
