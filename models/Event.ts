@@ -26,6 +26,7 @@ const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
 export interface IEventPopulated extends IEvent {
     participants: IUser[]
     admins: IUser[]
+    //owner: IUser
 }
 
 export interface IEvent extends Document {
@@ -35,6 +36,7 @@ export interface IEvent extends Document {
     endDate: Date
     participants: Types.ObjectId[] | IUser[]
     admins: Types.ObjectId[] | IUser[]
+    //owner: Types.ObjectId | IUser
     eventCode: string
 
     generateNewEventCode: () => Promise<void>
@@ -49,6 +51,7 @@ const eventSchema = new Schema<IEvent>({
     endDate: { type: Date, required: true, validate: { validator: function (this: IEvent, value: Date) { return value > this.startDate }, message: 'End date must be after start date' } },
     participants: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     admins: [{ type: Schema.Types.ObjectId, ref: 'User' }], // If admins is empty, the event is considered to be editable by all participants
+    //owner: { type: Schema.Types.ObjectId, ref: 'User' },
     eventCode: { type: String, unique: true, required: true }
 })
 // TODO: Events should have general availabilities set by admins. Event availability takes precedence over users availabilities, which means an admin can add when a
