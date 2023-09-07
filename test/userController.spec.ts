@@ -1,7 +1,13 @@
+// Node.js built-in modules
+import config from 'config'
+
+// Third-party libraries
 import dotenv from 'dotenv'
 import chai from 'chai'
 import chaiHttp from 'chai-http'
+import { parse } from 'cookie';
 
+// Own modules
 import logger from '../utils/logger.js'
 import UserModel, { type IUser } from '../models/User.js'
 import EventModel, { type IEvent } from '../models/Event.js'
@@ -13,8 +19,11 @@ dotenv.config()
 chai.use(chaiHttp)
 const { expect } = chai
 
+const sessionExpiry = Number(config.get('session.expiry'))
+const sessionPersistentExpiry = Number(config.get('session.persistentExpiry'))
 const server = await import('../server.js')
-// Wipe database before testing
+const expressPort = config.get('ports.express')
+
 
 after(async function () {
     this.timeout(10000) // Set the timeout to 10 seconds.
@@ -22,15 +31,21 @@ after(async function () {
 })
 
 describe('User Registration Endpoint POST /api/v1/users', function() {    
-    let testUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' };
+    let testUser = { username: 'Test User', email: 'TestUser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' };
+    let agent: ChaiHttp.Agent;
+
+    beforeEach(async function() {
+        agent = chai.request.agent(server.app);  // Create an agent instance
+    })
     
     afterEach(async function() {
         // Remove test user if exists before running tests
-        await UserModel.findOneAndDelete({email: 'testuser@gmail.com'}).exec()
+        await UserModel.findOneAndDelete({email: 'TestUser@gmail.com'}).exec()
+        agent.close();
     });
 
     it('should successfully register a new user', async function () {     
-        const res = await chai.request(server.app).post('/api/v1/users').send(testUser);
+        const res = await agent.post('/api/v1/users').send(testUser);
         
         expect(res).to.have.status(201);
         expect(res.body).to.be.a('object');
@@ -41,7 +56,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
     it('should fail due to missing fields (email)', async function () {
         const incompleteUser = { username: 'Test User', password: 'testpassword', confirmPassword: 'testpassword' };
         
-        const res = await chai.request(server.app).post('/api/v1/users').send(incompleteUser);
+        const res = await agent.post('/api/v1/users').send(incompleteUser);
 
         expect(res).to.have.status(400);  // assuming 400 is the status code for missing fields
         expect(res.body).to.have.property('error');
@@ -49,9 +64,9 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
     });
 
     it('should fail due to missing fields (username)', async function () {
-        const incompleteUser = { email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' };
+        const incompleteUser = { email: 'TestUser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' };
         
-        const res = await chai.request(server.app).post('/api/v1/users').send(incompleteUser);
+        const res = await agent.post('/api/v1/users').send(incompleteUser);
 
         expect(res).to.have.status(400);  // assuming 400 is the status code for missing fields
         expect(res.body).to.have.property('error');
@@ -59,9 +74,9 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
     });
 
     it('should fail due to missing fields (password)', async function () {
-        const incompleteUser = { username: 'Test User', email: 'testuser@gmail.com', confirmPassword: 'testpassword' };
+        const incompleteUser = { username: 'Test User', email: 'TestUser@gmail.com', confirmPassword: 'testpassword' };
         
-        const res = await chai.request(server.app).post('/api/v1/users').send(incompleteUser);
+        const res = await agent.post('/api/v1/users').send(incompleteUser);
 
         expect(res).to.have.status(400);  // assuming 400 is the status code for missing fields'
         expect(res.body).to.have.property('error');
@@ -69,9 +84,9 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
     });
 
     it('should fail due to missing fields (confirmPassword)', async function () {
-        const incompleteUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword' };
+        const incompleteUser = { username: 'Test User', email: 'TestUser@gmail.com', password: 'testpassword' };
         
-        const res = await chai.request(server.app).post('/api/v1/users').send(incompleteUser);
+        const res = await agent.post('/api/v1/users').send(incompleteUser);
 
         expect(res).to.have.status(400);  // assuming 400 is the status code for missing fields
         expect(res.body).to.have.property('error');
@@ -81,7 +96,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
     it('should fail due to invalid email', async function () {
         const invalidEmailUser = { ...testUser, email: 'invalid-email' };
         
-        const res = await chai.request(server.app).post('/api/v1/users').send(invalidEmailUser);
+        const res = await agent.post('/api/v1/users').send(invalidEmailUser);
 
         expect(res).to.have.status(400);  // assuming 400 is the status code for invalid email
         expect(res.body).to.have.property('error');
@@ -91,7 +106,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
     it('should fail due to password mismatch', async function () {
         const passwordMismatchUser = { ...testUser, confirmPassword: 'differentpassword' };
         
-        const res = await chai.request(server.app).post('/api/v1/users').send(passwordMismatchUser);
+        const res = await agent.post('/api/v1/users').send(passwordMismatchUser);
 
         expect(res).to.have.status(400);  // assuming 400 is the status code for password mismatch
         expect(res.body).to.have.property('error');
@@ -101,7 +116,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
     it('should fail due to short password', async function () {
         const shortPasswordUser = { ...testUser, password: '123', confirmPassword: '123' };
         
-        const res = await chai.request(server.app).post('/api/v1/users').send(shortPasswordUser);
+        const res = await agent.post('/api/v1/users').send(shortPasswordUser);
 
         expect(res).to.have.status(400);  // assuming 400 is the status code for short password
         expect(res.body).to.have.property('error');
@@ -112,7 +127,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
         const user = new UserModel({...testUser, confirmed: true });
         await user.save();
 
-        const res = await chai.request(server.app).post('/api/v1/users').send(testUser);
+        const res = await agent.post('/api/v1/users').send(testUser);
 
         expect(res).to.have.status(400);  // assuming 400 is the status code for email already exists
         expect(res.body).to.have.property('error');
@@ -123,7 +138,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
         const unconfirmedUser = new UserModel({...testUser, confirmed: false });
         await unconfirmedUser.save();
 
-        const res = await chai.request(server.app).post('/api/v1/users').send(testUser);
+        const res = await agent.post('/api/v1/users').send(testUser);
 
         expect(res).to.have.status(400);  // assuming 400 is the status code for email exists but not confirmed
         expect(res.body).to.have.property('error');
@@ -134,25 +149,29 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
 describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', function() {
     let savedUser: IUser
     let userCode: string
+    let agent: ChaiHttp.Agent
     
     beforeEach(async function() {
         // Create a user before running tests
         const newUser = new UserModel({
             username: 'ToBeConfirmed',
-            email: 'toBeConfirmed@gmail.com',
-            password: 'toBeConfirmedPassword',
+            email: 'ToBeConfirmed@gmail.com',
+            password: 'ToBeConfirmedPassword',
         });
         savedUser = await newUser.save();
         userCode = savedUser.userCode;
+
+        agent = chai.request.agent(server.app);  // Create an agent instance
     });
 
     afterEach(async function() {
         // Remove test user if exists before running tests
-        await UserModel.findOneAndDelete({email: 'toBeConfirmed@gmail.com'}).exec()
+        await UserModel.findOneAndDelete({email: 'ToBeConfirmed@gmail.com'}).exec()
+        agent.close();
     });
 
     it('should confirm a user', async function () {
-        const res = await chai.request(server.app).post(`/api/v1/users/confirm/${userCode}`).send();
+        const res = await agent.post(`/api/v1/users/confirm/${userCode}`).send();
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('message')
@@ -163,7 +182,7 @@ describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', func
     });
 
     it('should fail if invalid code provided', async function () {
-        const res = await chai.request(server.app).post(`/api/v1/users/confirm/INVALID_CODE`).send()
+        const res = await agent.post(`/api/v1/users/confirm/INVALID_CODE`).send()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
@@ -171,8 +190,8 @@ describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', func
     });
 
     it('should fail if user already confirmed', async function () {
-        await chai.request(server.app).post(`/api/v1/users/confirm/${userCode}`).send()
-        const res = await chai.request(server.app).post(`/api/v1/users/confirm/${userCode}`).send()
+        await agent.post(`/api/v1/users/confirm/${userCode}`).send()
+        const res = await agent.post(`/api/v1/users/confirm/${userCode}`).send()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
@@ -180,51 +199,172 @@ describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', func
     });
 });
 
-describe('User Login Endpoint POST /api/v1/users/login', function() {
+describe('User Login Endpoint POST /api/v1/users/login-local', function() {
     let registeredUser;
+    let agent: ChaiHttp.Agent
 
     beforeEach(async function() {
         // Create a user for login tests
         registeredUser = new UserModel({
             username: 'TestUser',
-            email: 'testuser@gmail.com',
+            email: 'TestUser@gmail.com',
             password: 'testpassword',
         });
         registeredUser.confirmUser()
         await registeredUser.save()
+
+        agent = chai.request.agent(server.app);  // Create an agent instance
     });
 
     afterEach(async function() {
         // Cleanup: remove test user
-        await UserModel.findOneAndDelete({email: 'testuser@gmail.com'}).exec();
+        await UserModel.findOneAndDelete({email: 'TestUser@gmail.com'}).exec();
+        agent.close();
     });
 
     it('should successfully login a user', async function () {
-        const loginUser = { email: 'testuser@gmail.com', password: 'testpassword', stayLoggedIn: true };
+        const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword', stayLoggedIn: true };
+    
+        const res = await agent.post('/api/v1/users/login-local').send(loginUser);
+    
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('auth');
+        expect(res).to.have.cookie('connect.sid'); // Expecting the default session cookie name.
+        expect(res.body.auth).to.be.true;
+    });    
 
-        const res = await chai.request(server.app).post('/api/v1/users/login').send(loginUser);
+    it('should successfully login a user even though the user is not confirmed', async function () {
+        const unconfirmedUser = new UserModel({
+            username: 'UnconfirmedUser',
+            email: 'UnconfirmedUser@gmail.com',
+            password: 'testpassword',
+        });
+        await unconfirmedUser.save()
+
+        const unconfirmedUserCreds = { email: 'UnconfirmedUser@gmail.com', password: 'testpassword', stayLoggedIn: true };
+
+        const res = await agent.post('/api/v1/users/login-local').send(unconfirmedUserCreds);
 
         expect(res).to.have.status(200);
         expect(res.body).to.be.a('object');
         expect(res.body).to.have.property('auth');
-        expect(res).to.have.cookie('token');
+        expect(res).to.have.cookie('connect.sid'); // Expecting the default session cookie name.
         expect(res.body.auth).to.be.true;
     });
 
-    it('should fail due to missing fields', async function () {
-        const incompleteUser = { email: 'testuser@gmail.com', stayLoggedIn: true };
+    it('should successfully login a user even though the email is capitalized', async function () {
+        const loginUser = { email: 'TESTUSER@gmail.com', password: 'testpassword', stayLoggedIn: true };
+    
+        const res = await agent.post('/api/v1/users/login-local').send(loginUser);
+    
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('auth');
+        expect(res).to.have.cookie('connect.sid'); // Expecting the default session cookie name.
+        expect(res.body.auth).to.be.true;
+    });
 
-        const res = await chai.request(server.app).post('/api/v1/users/login').send(incompleteUser);
+    it('should successfully login a user with short session expiration if stayLoggedIn is false', async function () {
+        const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword', stayLoggedIn: false };
+    
+        const res = await agent.post('/api/v1/users/login-local').send(loginUser);
+    
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('auth');
+        expect(res).to.have.cookie('connect.sid'); // Expecting the default session cookie name.
+        expect(res.body.auth).to.be.true;
+    
+        // Check the expiration of the cookie
+        const cookies = res.headers['set-cookie'];
+        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid'));
+        const parsedCookie = parse(sessionCookie);
+        const expiresDate = new Date(parsedCookie.Expires);
+
+        const expectedExpiryDate = new Date(Date.now() + sessionExpiry * 1000);
+
+        expect(expiresDate.getTime()).to.be.closeTo(expectedExpiryDate.getTime(), 10000); // Allowing a 5-second window
+    });
+
+    it('should successfully login a user with long session expiration if stayLoggedIn is true', async function () {
+        const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword', stayLoggedIn: true };
+    
+        const res = await agent.post('/api/v1/users/login-local').send(loginUser);
+    
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('auth');
+        expect(res).to.have.cookie('connect.sid'); // Expecting the default session cookie name.
+        expect(res.body.auth).to.be.true;
+    
+        // Check the expiration of the cookie
+        const cookies = res.headers['set-cookie'];
+        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid'));
+        const parsedCookie = parse(sessionCookie);
+        const expiresDate = new Date(parsedCookie.Expires);
+
+        const expectedExpiryDate = new Date(Date.now() + sessionPersistentExpiry * 1000);
+
+        expect(expiresDate.getTime()).to.be.closeTo(expectedExpiryDate.getTime(), 5000); // Allowing a 5-second window
+    });
+
+    it('should successfully login a user with short session expiration if stayLoggedIn is not defined', async function () {
+        const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword' };
+    
+        const res = await agent.post('/api/v1/users/login-local').send(loginUser);
+    
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('auth');
+        expect(res).to.have.cookie('connect.sid'); // Expecting the default session cookie name.
+        expect(res.body.auth).to.be.true;
+    
+        // Check the expiration of the cookie
+        const cookies = res.headers['set-cookie'];
+        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid'));
+        const parsedCookie = parse(sessionCookie);
+        const expiresDate = new Date(parsedCookie.Expires);
+
+        const expectedExpiryDate = new Date(Date.now() + sessionExpiry * 1000);
+
+        expect(expiresDate.getTime()).to.be.closeTo(expectedExpiryDate.getTime(), 5000); // Allowing a 5-second window
+    });
+
+    it('should fail due to missing email', async function () {
+        const incompleteUser = { password: 'testpassword', stayLoggedIn: true };
+
+        const res = await agent.post('/api/v1/users/login-local').send(incompleteUser);
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('Missing Email, Password and/or "Stay logged in"');
+        expect(res.body.error).to.be.equal('Missing Email');
+    });
+
+    it('should fail due to missing password', async function () {
+        const incompleteUser = { email: 'TestUser@gmail.com', stayLoggedIn: true };
+
+        const res = await agent.post('/api/v1/users/login-local').send(incompleteUser);
+
+        expect(res).to.have.status(400);
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('Missing Password');
+    });
+
+        it('should fail due to missing email and password', async function () {
+        const incompleteUser = { stayLoggedIn: true };
+
+        const res = await agent.post('/api/v1/users/login-local').send(incompleteUser);
+
+        expect(res).to.have.status(400);
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('Missing Email and Password');
     });
 
     it('should fail due to invalid email format', async function () {
         const invalidEmailUser = { email: 'invalid-email', password: 'testpassword', stayLoggedIn: true };
 
-        const res = await chai.request(server.app).post('/api/v1/users/login').send(invalidEmailUser);
+        const res = await agent.post('/api/v1/users/login-local').send(invalidEmailUser);
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
@@ -232,84 +372,108 @@ describe('User Login Endpoint POST /api/v1/users/login', function() {
     });
 
     it('should fail due to user not found', async function () {
-        const notFoundUser = { email: 'notfound@gmail.com', password: 'testpassword', stayLoggedIn: true };
+        const notFoundUser = { email: 'NotFound@gmail.com', password: 'testpassword', stayLoggedIn: true };
 
-        const res = await chai.request(server.app).post('/api/v1/users/login').send(notFoundUser);
+        const res = await agent.post('/api/v1/users/login-local').send(notFoundUser);
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('A user with the email notfound@gmail.com was not found. Please check spelling or sign up');
+        expect(res.body.error).to.be.equal('A user with the email NotFound@gmail.com was not found. Please check spelling or sign up');
     });
 
     it('should fail due to invalid credentials', async function () {
-        const invalidCreds = { email: 'testuser@gmail.com', password: 'wrongpassword', stayLoggedIn: true };
+        const invalidCreds = { email: 'TestUser@gmail.com', password: 'wrongpassword', stayLoggedIn: true };
 
-        const res = await chai.request(server.app).post('/api/v1/users/login').send(invalidCreds);
+        const res = await agent.post('/api/v1/users/login-local').send(invalidCreds);
 
-        expect(res).to.have.status(401);
+        expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
         expect(res.body.error).to.be.equal('Invalid credentials');
     });
 });
 
-describe('User Logout Endpoint POST /api/v1/users/logout', function() {
-    let agent = chai.request.agent(server.app);  // Create an agent instance
+describe('User Logout Endpoint DELETE /api/v1/users/logout', function() {
+    let agent: ChaiHttp.Agent;
     let registeredUser;
 
     beforeEach(async function() {
-        // Create a user for logout tests
         registeredUser = new UserModel({
             username: 'TestUser',
-            email: 'testuser@gmail.com',
+            email: 'TestUser@gmail.com',
             password: 'testpassword',
         });
         registeredUser.confirmUser()
-        await registeredUser.save();
+        await registeredUser.save()
 
-        // This might be needed: Login the user to generate the token and set the cookie.
-        await agent.post('/api/v1/users/login').send({
-            email: 'testuser@gmail.com',
+        agent = chai.request.agent(server.app);  // Create an agent instance
+        await agent.post('/api/v1/users/login-local').send({
+            email: 'TestUser@gmail.com',
             password: 'testpassword',
             stayLoggedIn: true
         });
     });
 
     afterEach(async function() {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({email: 'testuser@gmail.com'}).exec();
-    });
-
-    after(function() {
+        await UserModel.findOneAndDelete({email: 'TestUser@gmail.com'}).exec();
         agent.close();  // Close the agent after tests
     });
 
     it('should successfully log out a user', async function() {
-        const res = await agent.post('/api/v1/users/logout');
+        
+        const res = await agent.delete('/api/v1/users/logout');
 
         expect(res).to.have.status(200);
         expect(res.body).to.be.a('object');
         expect(res.body).to.have.property('message');
         expect(res.body.message).to.be.equal('Logged out successfully');
 
-        // Check that the 'token' cookie is not present
-        expect(res).to.not.have.cookie('token');
+        // Check that the session cookie has been cleared or invalidated.
+        expect(res).to.not.have.cookie('connect.sid');
+
+        // Test that the session is indeed invalidated:
+        const protectedRes = await agent.get('/api/v1/users/events');
+        expect(protectedRes).to.have.status(401);  // Assuming 401 is your status for unauthorized
     });
 
-    // You can add more specific scenarios as required, for instance:
-    // If your system has scenarios where a user can't log out without being logged in first, you should test that as well.
-    // Or scenarios where an invalid token is presented, etc.
+    it('should not allow logout without logging in', async function() {
+        // Using a new agent that hasn't logged in:
+        const newAgent = chai.request.agent(server.app);
+        const res = await newAgent.delete('/api/v1/users/logout');
+
+        expect(res).to.have.status(401);  // Assuming 401 is your status for unauthorized
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('message');
+        expect(res.body.message).to.be.equal('Unauthorized');  // Adjust this based on your actual message
+
+        newAgent.close();
+    });
+
+    it('should not allow logout with an invalid session cookie', async function() {
+        // Manipulating the session cookie (token) for the already logged-in user:
+        const newAgent = chai.request.agent(server.app)
+        newAgent.jar.setCookie('connect.sid=invalidSessionTokenHere', `localhost:${expressPort}`);
+
+        const res = await newAgent.delete('/api/v1/users/logout');
+
+        expect(res).to.have.status(401);  // Assuming 401 is your status for unauthorized
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('message');
+        expect(res.body.message).to.be.equal('Unauthorized');  // Adjust this based on your actual message
+        
+        newAgent.close()
+    });
 });
 
+
 describe('Get User Events Endpoint GET /api/v1/users/events', function() {
-    let agent = chai.request.agent(server.app);  // Create an agent instance
-    let token: string;
+    let agent: ChaiHttp.Agent
     let testUser: IUser;
     let testEvent: IEvent;
 
     beforeEach(async function() {
         testUser = new UserModel({
             username: 'TestUser',
-            email: 'testuser@gmail.com',
+            email: 'TestUser@gmail.com',
             password: 'testpassword',
         });
         testUser.confirmUser()
@@ -324,21 +488,20 @@ describe('Get User Events Endpoint GET /api/v1/users/events', function() {
         await UserModel.findByIdAndUpdate(testUser._id, { $push: { events: testEvent._id } }).exec();
         
         const user = { email: testUser.email, password: 'testpassword', stayLoggedIn: true };
-        
+        agent = chai.request.agent(server.app);  // Create an agent instance
+
         // Log the user in to get a token
-        const res = await agent.post('/api/v1/users/login').send(user);
-        token = res.body.token;
+        await agent.post('/api/v1/users/login-local').send(user);
     });
 
     afterEach(async function() {
         // Cleanup: remove test user
-        await UserModel.findOneAndDelete({email: 'testuser@gmail.com'}).exec();
+        await UserModel.findOneAndDelete({email: 'TestUser@gmail.com'}).exec();
+        agent.close();
     });
 
     it('should fetch user events successfully', async function () {
-        const res = await agent
-            .get('/api/v1/users/events')
-            .set('Authorization', `Bearer ${token}`);
+        const res = await agent.get('/api/v1/users/events')
 
         expect(res).to.have.status(200);
         expect(res.body).to.be.a('array');
@@ -346,10 +509,101 @@ describe('Get User Events Endpoint GET /api/v1/users/events', function() {
     });
 
     it('should fail due to lack of authentication', async function () {
-        const res = await agent
-            .get('/api/v1/users/events');
+        const newAgent = chai.request.agent(server.app)
+        const res = await newAgent.get('/api/v1/users/events');
 
         expect(res).to.have.status(401);
         expect(res.body.message).to.be.equal('Unauthorized');  // Assuming that's your error message for unauthorized
+        
+        newAgent.close()
     });
 });
+
+describe('Follow User Endpoint PUT /api/v1/users/following/:userId', function() {
+    let userA: IUser, userB: IUser;
+    let agent: ChaiHttp.Agent;
+
+    beforeEach(async function() {
+        // Create two test users
+        userA = new UserModel({
+            username: 'UserA',
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        });
+        await userA.save();
+
+        userB = new UserModel({
+            username: 'UserB',
+            email: 'userB@gmail.com',
+            password: 'passwordB'
+        });
+        await userB.save();
+
+        // Login as userA
+        agent = chai.request.agent(server.app);
+        await agent.post('/api/v1/users/login-local').send({
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        });
+    });
+
+    afterEach(async function() {
+        // Cleanup: remove test users
+        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec();
+        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec();
+        agent.close();
+    });
+
+    it('should allow userA to follow userB', async function () {
+        const res = await agent.put(`/api/v1/users/following/${userB._id}`);
+
+        expect(res).to.have.status(200);
+        
+        // Fetch both users from the database
+        const updatedUserA = await UserModel.findById(userA._id).exec() as IUser;
+        const updatedUserB = await UserModel.findById(userB._id).exec() as IUser;
+
+        // Check that userA's following array contains userB's ID
+        expect(updatedUserA.following).to.include(userB._id);
+
+        // Check that userB's followers array contains userA's ID
+        expect(updatedUserB.followers).to.include(userA._id);
+    });
+
+    it('should not allow following if user is not authenticated', async function() {
+        const newAgent = chai.request.agent(server.app);  // New agent without logging in
+        const res = await newAgent.put(`/api/v1/users/following/${userB._id}`);
+        
+        expect(res).to.have.status(401);
+        expect(res.body.message).to.be.equal('Unauthorized');
+
+        newAgent.close();
+    });
+
+    it('should not allow following a non-existent user', async function() {
+        const invalidUserId = '5f5f5f5f5f5f5f5f5f5f5f5f';  // An example of a non-existent ObjectId
+        const res = await agent.put(`/api/v1/users/following/${invalidUserId}`);
+        
+        expect(res).to.have.status(404);  // Assuming you're returning a 404 for not found
+        // Add your expected error message
+    });
+
+    it('should not allow a user to follow themselves', async function() {
+        const res = await agent.put(`/api/v1/users/following/${userA._id}`);
+        
+        expect(res).to.have.status(400);  // Bad Request
+        expect(res.body.message).to.be.equal('User cannot follow themselves.');
+    });
+
+    it('should handle when a user tries to follow another user they are already following', async function() {
+        // First, let's make userA follow userB
+        await agent.put(`/api/v1/users/following/${userB._id}`);
+        
+        // Now, try to follow again
+        const res = await agent.put(`/api/v1/users/following/${userB._id}`);
+        
+        expect(res).to.have.status(200);  // Success
+        expect(res.body.message).to.be.equal('User is already followed.');  // Custom message
+    });
+});
+
