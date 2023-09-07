@@ -5,15 +5,13 @@ import { type Request, type Response, type NextFunction } from 'express'
 
 // Own modules
 import AvailabilityModel, { type IAvailability } from '../models/Availability.js'
-import UserModel, { type IUser } from '../models/User.js'
+import UserModel, { IUserPopulated, type IUser } from '../models/User.js'
 import errors from '../utils/errors.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Destructuring and global variables
 const {
     MissingFieldsError,
-    UserNotFoundError,
-    DatabaseError
 } = errors
 
 export const newOrUpdateAvailability = asyncErrorHandler(
@@ -72,11 +70,7 @@ export const getAvailabilities = asyncErrorHandler(
             next(new MissingFieldsError('Date must be specified')); return
         }
 
-        const populatedUser = await user.populate('availabilities')
-
-        if (!populatedUser) {
-            next(new DatabaseError('Error populating user')); return
-        }
+        const populatedUser = await user.populate('availabilities') as IUserPopulated
 
         const availabilities = populatedUser.availabilities as IAvailability[]
 
