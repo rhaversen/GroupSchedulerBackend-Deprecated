@@ -63,17 +63,17 @@ router.post('/confirm/:userCode',
 
 /**
 * @route POST api/v1/users/login
-* @desc Login user and return JWT
+* @desc Login user and return session cookie
 * @access Public
 */
-router.post('/login',
+router.post('/login-local',
     sanitizeInput,
     loginUserLocal
 )
 
 /**
 * @route DELETE api/v1/users/logout
-* @desc Logout user and clear JWT
+* @desc Logout user and delete session from store
 * @access AUTHENTICATED
 */
 router.delete('/logout',
