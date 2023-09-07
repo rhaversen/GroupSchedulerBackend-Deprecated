@@ -10,44 +10,41 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import errors from './errors.js'
 import UserModel, { type IUser} from '../models/User.js'
 import { type PassportStatic } from 'passport'
+import logger from './logger.js';
+
+// Destructuring and global variables
+const {
+    InvalidEmailError,
+    InvalidCredentialsError,
+    UserNotFoundError
+} = errors
 
 // Setup
 dotenv.config()
 
-// Destructuring and global variables
-const {
-    UserNotFoundError
-} = errors
-
-// const logger = require('../utils/logger.js');
-
 const configurePassport = (passport: PassportStatic) => {
 
     // Local Strategy
-passport.use(new LocalStrategy({ usernameField: 'email' },
+    passport.use(new LocalStrategy({ usernameField: 'email' },
     (email, password, done) => {
-        email = email.toLowerCase();
-
         try {
             // Validate email format
             if (!validator.isEmail(email)) {
-                return done(null, false, { message: 'Invalid email format' });
+                done(new InvalidEmailError('Invalid email format')); return
             }
-
             // Find user by email
             UserModel.findOne({ email }).exec()
                 .then(async user => {
                     // Check if user exists
                     if (!user) {
-                        return done(null, false, { message: 'A user with the email ' + email + ' was not found. Please check spelling or sign up' });
+                        return done(new InvalidEmailError('A user with the email ' + email + ' was not found. Please check spelling or sign up'))
                     }
 
                     // Check password
                     const isMatch = await user.comparePassword(password);
                     if (!isMatch) {
-                        return done(null, false, { message: 'Invalid credentials' });
+                        return done(new InvalidCredentialsError('Invalid credentials'))
                     }
-
                     return done(null, user);
                 })
                 .catch(err => done(err));
@@ -80,7 +77,7 @@ passport.use(new LocalStrategy({ usernameField: 'email' },
             if (user) {
                 done(null, user); return
             }
-            done(new UserNotFoundError('User not found, it might have been deleted (JWT failed to authenticate)'), false)
+            done(new UserNotFoundError('User not found, it might have been deleted (Session failed to authenticate)'), false)
         })
         .catch(err => { done(err, false) })
     });

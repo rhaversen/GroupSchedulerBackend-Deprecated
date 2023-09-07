@@ -17,7 +17,7 @@ class UserNotFoundError extends ValidationError {
 }
 
 class InvalidEmailError extends ValidationError {}
-class InvalidPasswordError extends ValidationError {}
+class InvalidCredentialsError extends ValidationError {}
 class EmailAlreadyExistsError extends ValidationError {}
 class PasswordIncorrectError extends ValidationError {}
 class MissingFieldsError extends ValidationError {}
@@ -51,14 +51,11 @@ class ServerError extends CustomError {
     }
 }
 
-class HashingError extends ServerError {}
-class DatabaseError extends ServerError {}
-
 export default {
     ValidationError,
     UserNotFoundError,
     InvalidEmailError,
-    InvalidPasswordError,
+    InvalidCredentialsError,
     EmailAlreadyExistsError,
     PasswordIncorrectError,
     InvalidConfirmationCodeError,
@@ -72,6 +69,4 @@ export default {
     EventCodeError,
     EventNotFoundError,
     ServerError,
-    HashingError,
-    DatabaseError
 }

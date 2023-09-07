@@ -28,7 +28,7 @@
             "useUnifiedTopology": true
         }
     },
-    "jwt": {
+    "session": {
         "expiry": 86400,
         "persistentExpiry": 2592000
     },

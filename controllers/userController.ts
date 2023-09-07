@@ -17,7 +17,7 @@ import logger from '../utils/logger.js'
 // Destructuring and global variables
 const {
     InvalidEmailError,
-    InvalidPasswordError,
+    InvalidCredentialsError,
     UserNotFoundError,
     EmailAlreadyExistsError,
     MissingFieldsError,
@@ -27,8 +27,8 @@ const {
 } = errors
 
 // Config
-const jwtExpiry = Number(config.get('jwt.expiry'))
-const jwtPersistentExpiry = Number(config.get('jwt.persistentExpiry'))
+const sessionExpiry = Number(config.get('session.expiry'))
+const sessionPersistentExpiry = Number(config.get('session.persistentExpiry'))
 const nextJsPort = config.get('ports.nextJs')
 const frontendDomain = config.get('frontend.domain')
 const cookieOptions: CookieOptions = config.get('cookieOptions')
@@ -42,7 +42,7 @@ export const ensureAuthenticated =
             next(); return
         }
         // If not authenticated, you can redirect or send an error response
-        res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ message: "Unauthorized" });
     }
 
 export const registerUser = asyncErrorHandler(
@@ -58,50 +58,55 @@ export const registerUser = asyncErrorHandler(
         }
 
         if (password !== confirmPassword) {
-            next(new InvalidPasswordError("Password and Confirm Password doesn't match")); return
+            next(new InvalidCredentialsError("Password and Confirm Password doesn't match")); return
         }
 
-        email = String(email).toLowerCase()
+        if (String(password).length < 4) {
+            next(new InvalidCredentialsError('Password must be at least 5 characters')); return
+        }
 
         const existingUser = await UserModel.findOne({ email }).exec()
-        if (existingUser) { // Check if existing user is truthy
+        
+        if (!existingUser) {
+            // User doesn't exist, create a new user
+            const newUser = new UserModel({
+                username,
+                email,
+                password
+            })
+            const savedUser = await newUser.save()
+
+            const confirmationLink = generateConfirmationLink(savedUser.userCode)
+            sendConfirmationEmail(email, confirmationLink)
+        } else {
             if (!existingUser.confirmed) {
+                // User exists, but is not confirmed. Send a new confirmation link
+                const confirmationLink = generateConfirmationLink(existingUser.userCode)
+                sendConfirmationEmail(email, confirmationLink)
+                
                 next(new UserNotConfirmedError('Email already exists but is not confirmed. Please follow the link sent to your email inbox')); return
             }
             next(new EmailAlreadyExistsError('Email already exists, please sign in instead')); return
         }
 
-        if (String(password).length < 4) {
-            next(new InvalidPasswordError('Password must be at least 5 characters')); return
-        }
-
-        const newUser = new UserModel({
-            username,
-            email,
-            password
-        })
-
-        const savedUser = await newUser.save()
-
-        const userCode = savedUser.userCode
-
-        let confirmationLink: string
-        // Generate confirmation link
-        if (process.env.NODE_ENV === 'production') {
-            confirmationLink = `http://${frontendDomain}/confirm?userCode=${userCode}`
-        } else {
-            confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${userCode}`
-        }
-
-        logger.info(confirmationLink)
-
-        // Send email to the user with the confirmation link
-        sendConfirmationEmail(email, confirmationLink)
-
         res.status(201).json({
             message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.'
         })
     })
+
+function generateConfirmationLink(userCode: string): string{
+    let confirmationLink: string
+    // Generate confirmation link
+    if (process.env.NODE_ENV === 'production') {
+        confirmationLink = `http://${frontendDomain}/confirm?userCode=${userCode}`
+    } else {
+        confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${userCode}`
+    }
+
+    logger.info(confirmationLink)
+
+    return confirmationLink
+}
 
 export const confirmUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -135,42 +140,58 @@ export const confirmUser = asyncErrorHandler(
 
 export const loginUserLocal = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        let { email, password } = req.body
+
+        if (!email && !password) {
+            next(new MissingFieldsError('Missing Email and Password')); return
+        }
+        if (!email) {
+            next(new MissingFieldsError('Missing Email')); return
+        }
+        if (!password) {
+            next(new MissingFieldsError('Missing Password')); return
+        }
+
         passport.authenticate('local', (err: Error, user: IUser, info: { message: string }) => {
             if (err) {
                 next(err); return
             }
     
             if (!user) {
-                if (info.message === 'Invalid email format') {
-                    next(new InvalidEmailError('Invalid email format')); return
-                }
-    
-                // Handle other errors here, such as "Invalid credentials"
-                return res.status(401).json({ auth: false, error: info.message });
+                res.status(401).json({ auth: false, error: info.message }); return
             }
     
             req.login(user, err => {
                 if (err) {
                     next(err); return
                 }
-    
-                if (req.body.stayLoggedIn) {
-                    req.session.cookie.maxAge = jwtPersistentExpiry * 1000
+
+                if (req.body.stayLoggedIn === 'true') {
+                    req.session.cookie.maxAge = sessionPersistentExpiry * 1000
                 } else {
-                    req.session.cookie.maxAge = jwtExpiry * 1000
+                    req.session.cookie.maxAge = sessionExpiry * 1000
                 }
     
                 res.status(200).json({ auth: true })
             });
         })(req, res, next)
-    })
-    
+    }
+) 
 
 export const logoutUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        res.clearCookie('token', cookieOptions)
-        res.status(200).json({ message: 'Logged out successfully' })
-    })
+        req.logout(function(err) {
+            if (err) { return next(err); }
+
+            req.session.destroy(function(sessionErr) {
+                if (sessionErr) {
+                    return next(sessionErr);
+                }
+                res.status(200).json({ message: "Logged out successfully" });
+            })
+        })
+    }
+)
 
 export const getEvents = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
