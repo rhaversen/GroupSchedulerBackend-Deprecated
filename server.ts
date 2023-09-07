@@ -13,14 +13,15 @@ import helmet, { type HelmetOptions } from 'helmet'
 import cors, { type CorsOptions } from 'cors'
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 
 // Own modules
 import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
-import { connectToDatabase, disconnectFromDatabase } from './utils/database.js'
+import { connectToDatabase, disconnectFromDatabase, mongoose } from './utils/database.js'
 
-// Import and use routes, apply general rate limiter
+// Import routes
 import userRoutes from './routes/users.js'
 import eventRoutes from './routes/events.js'
 import availabilityRoutes from './routes/availabilities.js'
@@ -65,15 +66,21 @@ if (typeof helmetHSTS === 'object' && helmetHSTS !== null) {
     logger.warn('Helmet StrictTransportSecurityOptions is not set! App not using HSTS!')
 }
 
+// Connect to MongoDB
+await connectToDatabase()
+
 // Configuration for session
 const sessionMiddleware  = session({
     secret: process.env.SESSION_SECRET || 'default_secret_key', // Ideally from an environment variable
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: true, 
+        secure: process.env.NODE_ENV === 'production', 
         httpOnly: true
-    }
+    },
+    store: new MongoStore({
+        client: mongoose.connection.getClient()
+    })
 });
 
 // Global middleware
@@ -87,14 +94,11 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(cors(confCorsOptions))
 
-// Connect to MongoDB
-await connectToDatabase()
-
 // Create rate limiters
 const relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
 const sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter)
 
-// Use all routes with relaxed limiter
+// Use all routes and with relaxed limiter
 app.use('/api/v1/users', relaxedApiLimiter, userRoutes)
 app.use('/api/v1/users/availabilities', relaxedApiLimiter, availabilityRoutes)
 app.use('/api/v1/events', relaxedApiLimiter, eventRoutes)
