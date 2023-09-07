@@ -65,7 +65,7 @@ export const registerUser = asyncErrorHandler(
             next(new InvalidCredentialsError('Password must be at least 5 characters')); return
         }
 
-        const existingUser = await UserModel.findOne({ email }).exec()
+        const existingUser = await UserModel.findOne({ email: { $eq: email } }).exec()
         
         if (!existingUser) {
             // User doesn't exist, create a new user
@@ -118,7 +118,7 @@ export const confirmUser = asyncErrorHandler(
         }
 
         // Find the user with the corresponding confirmation code
-        const user = await UserModel.findOne({ userCode }).exec()
+        const user = await UserModel.findOne({ userCode: { $eq: userCode } }).exec()
 
         if (!user) {
             next(new InvalidConfirmationCodeError('Invalid confirmation code')); return
@@ -212,7 +212,7 @@ export const newCode = asyncErrorHandler(
 export const followUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const followedUserId = req.params.userId
-        const followedUser = await UserModel.findById(followedUserId).exec()
+        const followedUser = await UserModel.findOne({ _id: { $eq: followedUserId } }).exec()
         const user = req.user as IUser
 
         if (!followedUser) {
@@ -223,9 +223,9 @@ export const followUser = asyncErrorHandler(
         }
 
         await Promise.all([
-            UserModel.findByIdAndUpdate(user._id, { $push: { following: followedUserId } }).exec(),
-            UserModel.findByIdAndUpdate(followedUserId, { $push: { following: user._id } }).exec()
-        ])
+            UserModel.findByIdAndUpdate(user._id, { $push: { following: { $each: [followedUserId] } } }).exec(),
+            UserModel.findByIdAndUpdate(followedUserId, { $push: { following: { $each: [user._id] } } }).exec()
+        ])        
 
         res.status(200).json(followedUser)
     })
@@ -233,7 +233,7 @@ export const followUser = asyncErrorHandler(
 export const unfollowUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const followedUserId = req.params.userId
-        const followedUser = await UserModel.findById(followedUserId).exec()
+        const followedUser = await UserModel.findOne({ _id: { $eq: followedUserId } }).exec()
         const user = req.user as IUser
 
         if (!followedUser) {
