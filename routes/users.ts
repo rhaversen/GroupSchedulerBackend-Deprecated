@@ -10,7 +10,6 @@ import {
 
 // Controller functions
 import {
-    ensureAuthenticated,
     registerUser,
     confirmUser,
     loginUserLocal,
@@ -22,6 +21,8 @@ import {
     getUser,
     updateUser
 } from '../controllers/userController.js'
+
+import { ensureAuthenticated } from '../utils/passportConfig.js'
 
 // Destructuring and global variables
 const router = Router()

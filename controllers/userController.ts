@@ -37,14 +37,6 @@ const cookieOptions: CookieOptions = config.get('cookieOptions')
 // Setup
 dotenv.config()
 
-export const ensureAuthenticated = 
-(req: Request, res: Response, next: NextFunction): void => {
-    if (req.isAuthenticated()) {
-        next(); return
-    }
-    // If not authenticated, you can redirect or send an error response
-    res.status(401).json({ message: "Unauthorized" });
-}
 
 export const registerUser = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {

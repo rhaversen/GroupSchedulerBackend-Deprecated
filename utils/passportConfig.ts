@@ -11,6 +11,7 @@ import errors from './errors.js'
 import UserModel, { type IUser} from '../models/User.js'
 import { type PassportStatic } from 'passport'
 import logger from './logger.js';
+import { type Request, type Response, type NextFunction } from 'express'
 
 // Destructuring and global variables
 const {
@@ -21,6 +22,15 @@ const {
 
 // Setup
 dotenv.config()
+
+export const ensureAuthenticated = 
+(req: Request, res: Response, next: NextFunction): void => {
+    if (req.isAuthenticated()) {
+        next(); return
+    }
+    // If not authenticated, you can redirect or send an error response
+    res.status(401).json({ message: "Unauthorized" });
+}
 
 const configurePassport = (passport: PassportStatic) => {
 
