@@ -36,6 +36,19 @@ const frontendDomain = config.get('frontend.domain')
 // Setup
 dotenv.config()
 
+function generateConfirmationLink(userCode: string): string{
+    let confirmationLink: string
+    // Generate confirmation link
+    if (process.env.NODE_ENV === 'production') {
+        confirmationLink = `http://${frontendDomain}/confirm?userCode=${userCode}`
+    } else {
+        confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${userCode}`
+    }
+
+    logger.info(confirmationLink)
+
+    return confirmationLink
+}
 
 export const registerUser = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -85,20 +98,6 @@ async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.'
     })
 })
-
-function generateConfirmationLink(userCode: string): string{
-    let confirmationLink: string
-    // Generate confirmation link
-    if (process.env.NODE_ENV === 'production') {
-        confirmationLink = `http://${frontendDomain}/confirm?userCode=${userCode}`
-    } else {
-        confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${userCode}`
-    }
-
-    logger.info(confirmationLink)
-
-    return confirmationLink
-}
 
 export const confirmUser = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {
