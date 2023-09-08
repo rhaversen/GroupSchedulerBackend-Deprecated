@@ -219,14 +219,13 @@ export const followUser = asyncErrorHandler(
         if (!followedUser) {
             next(new UserNotFoundError('The user to be followed could not be found')); return
         }
+
         if (followedUser.id === user.id) {
-            console.log('1')
             next(new UserNotFoundError('User cannot follow or un-follow themselves')); return
         }
 
         const followingArray = user.following as { _id: Types.ObjectId }[];
-
-        if (followedUser && followingArray.find(u => u._id.toString() === followedUser._id.toString())) {
+        if (followingArray.find(u => u._id.toString() === followedUser._id.toString())) {
             res.status(200).json({ message: 'User is already followed' }); return
         }
 
@@ -241,14 +240,20 @@ export const followUser = asyncErrorHandler(
 export const unfollowUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const followedUserId = req.params.userId
-        const followedUser = await UserModel.findOne({ _id: { $eq: followedUserId } }).exec()
         const user = req.user as IUser
 
+        const followedUser = await UserModel.findOne({ _id: { $eq: followedUserId } }).exec()
         if (!followedUser) {
             next(new UserNotFoundError('The user to be un-followed could not be found')); return
         }
-        if (followedUser._id === user.id) {
-            next(new UserNotFoundError('User cant follow or un-follow themselves')); return
+
+        if (followedUserId === user.id) {
+            next(new UserNotFoundError('User cannot un-follow themselves')); return
+        }
+
+        const followingArray = user.following as { _id: Types.ObjectId }[];
+        if (!followingArray.find(u => u._id.toString() === followedUser._id.toString())) {
+            res.status(400).json({ error: 'User is not followed' }); return
         }
 
         await Promise.all([
