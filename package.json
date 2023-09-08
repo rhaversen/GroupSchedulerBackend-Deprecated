@@ -57,7 +57,7 @@
   },
   "scripts": {
     "start": "ts-node-esm server.ts",
-    "test": "cross-env NODE_ENV=test mocha --reporter spec dist/test/**/*.spec.js",
+    "test": "cross-env NODE_ENV=test MOCHA_REPORTER_OPTIONS=toConsole=true mocha --reporter spec --recursive dist/test/**/*.spec.js",
     "build": "tsc"
   }
 }
