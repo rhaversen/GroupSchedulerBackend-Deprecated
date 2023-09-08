@@ -103,7 +103,7 @@ router.post('/new-code',
 )
 
 /**
-* @route PUT api/v1/users/following/:userId
+* @route PUT api/v1/users/unfollow/:userId
 * @desc Follow user. Add userId to users following array, add user to userId's followers array
 * @access AUTHENTICATED
 */
@@ -113,11 +113,11 @@ router.put('/following/:userId',
 )
 
 /**
-* @route DELETE api/v1/users/following/:userId
+* @route DELETE api/v1/users/unfollow/:userId
 * @desc Un-follow user. Remove userId from users following array, remove user from userId's followers array
 * @access AUTHENTICATED
 */
-router.delete('/following/:userId',
+router.delete('/unfollow/:userId',
     ensureAuthenticated,
     unfollowUser
 )
