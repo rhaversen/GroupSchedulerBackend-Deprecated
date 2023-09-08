@@ -96,27 +96,39 @@ userSchema.methods.generateNewUserCode = async function (this: IUser & { constru
     return userCode
 }
 
-userSchema.pre(/^find/, function(next) { // This will work for find, findOne, findOneAndDelete, etc.
-    const conditions = this as { _conditions?: { email?: string } };
-    
-    if (conditions._conditions?.email) { // Check if the query has an email field
-        conditions._conditions.email = conditions._conditions.email.toLowerCase(); // Convert the email to lowercase
+userSchema.pre(/^find/, function(next) {
+
+    const transformEmailToLowercase = (obj: any) => {
+        for (const key in obj) {
+            if (typeof obj[key] === 'object') {
+                transformEmailToLowercase(obj[key]);
+            } else if (key === 'email' && typeof obj[key] === 'string') {
+                obj[key] = obj[key].toLowerCase();
+            }
+        }
+    };
+
+    const conditions = this as { _conditions?: any };
+    if (conditions._conditions) {
+        transformEmailToLowercase(conditions._conditions);
     }
+
     next();
 });
 
 
-// Password hashing middleware
+
 userSchema.pre('save', async function (next) {
     if (this.isNew) {
         await this.generateNewUserCode()
-        this.email = this.email.toLowerCase();
+        this.email = this.email.toString().toLowerCase();
     }
 
     if (this.isModified('email')) {
-        this.email = this.email.toLowerCase();
+        this.email = this.email.toString().toLowerCase();
     }
 
+    // Password hashing middleware
     if (this.isModified('password')) {
         try {
             this.password = await hash(this.password, saltRounds) // Using a custom salt for each user
