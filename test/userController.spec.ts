@@ -530,6 +530,49 @@ describe('Get User Events Endpoint GET /api/v1/users/events', function() {
     });
 });
 
+describe('Generate New User Code Endpoint PUT /api/v1/users/new-code', function() {
+    let testUser: IUser;
+    let agent: ChaiHttp.Agent;
+
+    beforeEach(async function() {
+        // Create a test user
+        testUser = new UserModel({
+            username: 'CodeTestUser',
+            email: 'CodeTestUser@gmail.com',
+            password: 'TestPasswordForCode'
+        });
+        testUser.confirmUser()
+        await testUser.save();
+
+        agent = chai.request.agent(server.app);
+        await agent.post('/api/v1/users/login-local').send({
+            email: 'CodeTestUser@gmail.com',
+            password: 'TestPasswordForCode'
+        });
+    });
+
+    afterEach(async function() {
+        // Cleanup: remove test user
+        await UserModel.findOneAndDelete({ email: 'CodeTestUser@gmail.com' }).exec();
+        agent.close();
+    });
+
+    it('should generate a new user code successfully', async function() {
+        const userCodeBefore = testUser.userCode
+
+        const res = await agent.post('/api/v1/users/new-code');
+
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('userCode');
+
+        // Fetch the user from the database to verify userCode
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
+        expect(updatedTestUser.userCode).to.equal(res.body.userCode);
+        expect(updatedTestUser.userCode).to.not.equal(userCodeBefore)
+    });
+});
+
 describe('Follow User Endpoint PUT /api/v1/users/following/:userId', function() {
     let userA: IUser, userB: IUser;
     let agent: ChaiHttp.Agent;
