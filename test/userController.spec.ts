@@ -31,7 +31,7 @@ after(async function () {
 })
 
 describe('User Registration Endpoint POST /api/v1/users', function() {    
-    let testUser = { username: 'Test User', email: 'TestUser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' };
+    let testUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' };
     let agent: ChaiHttp.Agent;
 
     beforeEach(async function() {
@@ -124,7 +124,12 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
     });
 
     it('should fail due to email already exists', async function () {
-        const user = new UserModel({...testUser, confirmed: true });
+        const user = new UserModel({ 
+            username: testUser.username, 
+            email: testUser.email, 
+            password: testUser.password         
+        });
+        user.confirmUser()
         await user.save();
 
         const res = await agent.post('/api/v1/users').send(testUser);
@@ -135,10 +140,15 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
     });
 
     it('should fail due to email exists but not confirmed', async function () {
-        const unconfirmedUser = new UserModel({...testUser, confirmed: false });
+        const unconfirmedUser = new UserModel({
+            username: testUser.username, 
+            email: testUser.email, 
+            password: testUser.password 
+         });
+        // We don't call confirmUser
         await unconfirmedUser.save();
 
-        const res = await agent.post('/api/v1/users').send(testUser);
+        const res = await agent.post('/api/v1/users').send( testUser);
 
         expect(res).to.have.status(400);  // assuming 400 is the status code for email exists but not confirmed
         expect(res.body).to.have.property('error');
@@ -584,15 +594,19 @@ describe('Follow User Endpoint PUT /api/v1/users/following/:userId', function() 
         const invalidUserId = '5f5f5f5f5f5f5f5f5f5f5f5f';  // An example of a non-existent ObjectId
         const res = await agent.put(`/api/v1/users/following/${invalidUserId}`);
         
-        expect(res).to.have.status(404);  // Assuming you're returning a 404 for not found
-        // Add your expected error message
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('The user to be followed could not be found')
     });
 
     it('should not allow a user to follow themselves', async function() {
         const res = await agent.put(`/api/v1/users/following/${userA._id}`);
         
-        expect(res).to.have.status(400);  // Bad Request
-        expect(res.body.message).to.be.equal('User cannot follow themselves.');
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('User cannot follow or un-follow themselves');
     });
 
     it('should handle when a user tries to follow another user they are already following', async function() {
@@ -603,7 +617,169 @@ describe('Follow User Endpoint PUT /api/v1/users/following/:userId', function() 
         const res = await agent.put(`/api/v1/users/following/${userB._id}`);
         
         expect(res).to.have.status(200);  // Success
-        expect(res.body.message).to.be.equal('User is already followed.');  // Custom message
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('message');
+        expect(res.body.message).to.be.equal('User is already followed');  // Custom message
     });
 });
 
+describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function() {
+
+    let userA: IUser, userB: IUser;
+    let agent: ChaiHttp.Agent;
+
+    beforeEach(async function() {
+        // Create two test users
+        userA = new UserModel({
+            username: 'UserA',
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        });
+        userA.confirmUser()
+        await userA.save();
+
+        userB = new UserModel({
+            username: 'UserB',
+            email: 'userB@gmail.com',
+            password: 'passwordB'
+        });
+        userB.confirmUser()
+        await userB.save();
+
+        // Login as userA
+        agent = chai.request.agent(server.app);
+        await agent.post('/api/v1/users/login-local').send({
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        });
+    });
+
+    afterEach(async function() {
+        // Cleanup: remove test users
+        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec();
+        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec();
+        agent.close();
+    });
+
+    it('should allow userA to unfollow userB', async function () {
+        // First, make userA follow userB to set up the unfollow scenario
+        await agent.put(`/api/v1/users/following/${userB._id}`);
+        
+        const res = await agent.delete(`/api/v1/users/unfollow/${userB._id}`);
+        console.log(res.statusCode)
+        expect(res).to.have.status(200);
+
+        const updatedUserA = await UserModel.findById(userA._id).exec() as IUser;
+        const updatedUserB = await UserModel.findById(userB._id).exec() as IUser;
+
+        // Check that userA's following array does NOT contain userB's ID
+        expect(updatedUserA.following).to.not.include(userB._id);
+
+        // Check that userB's followers array does NOT contain userA's ID
+        expect(updatedUserB.followers).to.not.include(userA._id);
+    });
+
+    it('should not allow unfollowing if user is not authenticated', async function() {
+        const newAgent = chai.request.agent(server.app);
+        const res = await newAgent.delete(`/api/v1/users/unfollow/${userB._id}`);
+
+        expect(res).to.have.status(401);
+        expect(res.body.message).to.be.equal('Unauthorized');
+        
+        newAgent.close();
+    });
+
+    it('should not allow unfollowing a non-existent user', async function() {
+        const invalidUserId = '5f5f5f5f5f5f5f5f5f5f5f5f';
+        const res = await agent.delete(`/api/v1/users/unfollow/${invalidUserId}`);
+        
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('The user to be un-followed could not be found')
+    });
+
+    it('should not allow a user to unfollow themselves', async function() {
+        const res = await agent.delete(`/api/v1/users/unfollow/${userA._id}`);
+        
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('User cant follow or un-follow themselves');
+    });
+
+    it('should handle when a user tries to unfollow another user they are not following', async function() {
+        // Make sure userA does NOT follow userB
+        const res = await agent.delete(`/api/v1/users/unfollow/${userB._id}`);
+
+        expect(res).to.have.status(400);  // Error (This status and the message below is a suggestion)
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('message');
+        expect(res.body.message).to.be.equal('User is not followed, hence cannot be unfollowed');  
+    });
+
+    /* // 1. Database Errors
+    it('should handle database errors gracefully', async function() {
+        // Mock an error for the UserModel `findOne` method or any other DB method
+        sinon.stub(UserModel, 'findOne').throws(new Error('Database error'));
+
+        const res = await agent.delete(`/api/v1/users/unfollow/${userB._id}`);
+
+        expect(res).to.have.status(500);  // Internal Server Error
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('Internal server error');
+        
+        // Restore the stubbed method
+        (UserModel.findOne as any).restore();
+    });
+
+    // 2. Concurrency Issues
+    // This test is more conceptual; actual implementation would require more sophisticated setups.
+    it('should handle concurrent follow and unfollow requests', async function() {
+        // Fire two requests concurrently: one for follow and another for unfollow.
+        const [followRes, unfollowRes] = await Promise.all([
+            agent.put(`/api/v1/users/following/${userB._id}`),
+            agent.delete(`/api/v1/users/unfollow/${userB._id}`)
+        ]);
+
+        // One of them should return a specific error or behavior (up to you to decide)
+        // For instance, the unfollow request might fail because the follow hasn't been completed.
+    });
+
+    // 3. Response Content
+    it('should return the expected fields in the response', async function() {
+        // First, make userA follow userB to set up the unfollow scenario
+        await agent.put(`/api/v1/users/following/${userB._id}`);
+        
+        const res = await agent.delete(`/api/v1/users/unfollow/${userB._id}`);
+
+        expect(res.body).to.have.keys(['_id', 'username', 'email', 'following', 'followers']);  // And any other fields you expect.
+    });
+
+    // 4. Multiple Unfollows at Once
+    // This would require modifications to the middleware to handle arrays of userIds.
+    it('should allow unfollowing multiple users', async function() {
+        // Assuming middleware now accepts array of user IDs
+        const res = await agent.delete(`/api/v1/users/unfollow`).send({
+            userIds: [userB._id, ...otherUserIds]
+        });
+
+        expect(res).to.have.status(200);
+        // Additional checks to ensure all provided users have been unfollowed
+    });
+
+    // 5. Ensuring No Modification to Other Fields
+    it('should not modify fields other than following and followers', async function() {
+        const snapshotUserA = { ...userA.toObject() };
+        
+        await agent.delete(`/api/v1/users/unfollow/${userB._id}`);
+        const updatedUserA = await UserModel.findById(userA._id).exec() as IUser;
+
+        // Ensure all fields, except for `following` and `followers`, remain unchanged
+        for (let key in snapshotUserA) {
+            if (key !== 'following' && key !== 'followers') {
+                expect(updatedUserA[key]).to.deep.equal(snapshotUserA[key]);
+            }
+        }
+    }); */
+});
