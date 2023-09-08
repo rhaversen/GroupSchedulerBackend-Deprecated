@@ -40,6 +40,7 @@ const helmetHSTS = config.get('helmet.HSTS') as HstsOptions
 const confCorsOptions = config.get('corsOpts') as CorsOptions
 const confRelaxedApiLimiter = config.get('apiLimiter.nonSensitive') as RateLimitOptions
 const confSensitiveApiLimiter = config.get('apiLimiter.sensitive') as RateLimitOptions
+const confTestApiLimiter = config.get('apiLimiter.test') as RateLimitOptions
 const expressPort = config.get('ports.express')
 
 // Config warns
@@ -95,8 +96,15 @@ app.use(passport.session())
 app.use(cors(confCorsOptions))
 
 // Create rate limiters
-const relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
-const sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter)
+let relaxedApiLimiter
+let sensitiveApiLimiter
+if (process.env.NODE_ENV !== 'test') {
+    relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
+    sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter)
+} else {
+    relaxedApiLimiter = RateLimit(confTestApiLimiter)
+    sensitiveApiLimiter = RateLimit(confTestApiLimiter)
+}
 
 // Use all routes and with relaxed limiter
 app.use('/api/v1/users', relaxedApiLimiter, userRoutes)
