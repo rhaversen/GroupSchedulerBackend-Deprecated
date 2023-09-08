@@ -5,7 +5,7 @@ import config from 'config'
 import passport from 'passport'
 import validator from 'validator'
 import dotenv from 'dotenv'
-import { type Request, type Response, type NextFunction, type CookieOptions } from 'express'
+import { type Request, type Response, type NextFunction } from 'express'
 import { type Types } from 'mongoose'
 
 // Own modules
@@ -32,7 +32,6 @@ const sessionExpiry = Number(config.get('session.expiry'))
 const sessionPersistentExpiry = Number(config.get('session.persistentExpiry'))
 const nextJsPort = config.get('ports.nextJs')
 const frontendDomain = config.get('frontend.domain')
-const cookieOptions: CookieOptions = config.get('cookieOptions')
 
 // Setup
 dotenv.config()
