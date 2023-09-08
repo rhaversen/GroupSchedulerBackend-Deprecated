@@ -636,7 +636,7 @@ describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function()
             password: 'passwordA'
         });
         userA.confirmUser()
-        await userA.save();
+        const savedUserA = await userA.save();
 
         userB = new UserModel({
             username: 'UserB',
@@ -644,7 +644,13 @@ describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function()
             password: 'passwordB'
         });
         userB.confirmUser()
-        await userB.save();
+        const saveduserB = await userB.save();
+
+        // UserA follows UserB
+        await Promise.all([
+            UserModel.findByIdAndUpdate(savedUserA._id, { $push: { following: { $each: [saveduserB.id] } } }).exec(),
+            UserModel.findByIdAndUpdate(saveduserB.id, { $push: { followers: { $each: [savedUserA.id] } } }).exec(),
+        ])
 
         // Login as userA
         agent = chai.request.agent(server.app);
@@ -661,27 +667,20 @@ describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function()
         agent.close();
     });
 
-    it('should allow userA to unfollow userB', async function () {
-        // First, make userA follow userB to set up the unfollow scenario
-        await agent.put(`/api/v1/users/following/${userB._id}`);
-        
-        const res = await agent.delete(`/api/v1/users/unfollow/${userB._id}`);
-        console.log(res.statusCode)
+    it('should allow userA to unfollow userB', async function () {        
+        const res = await agent.delete(`/api/v1/users/unfollow/${userB.id}`);
         expect(res).to.have.status(200);
 
         const updatedUserA = await UserModel.findById(userA._id).exec() as IUser;
         const updatedUserB = await UserModel.findById(userB._id).exec() as IUser;
 
-        // Check that userA's following array does NOT contain userB's ID
-        expect(updatedUserA.following).to.not.include(userB._id);
-
-        // Check that userB's followers array does NOT contain userA's ID
-        expect(updatedUserB.followers).to.not.include(userA._id);
+        expect(updatedUserA.following.map(id => id)).to.not.include(userB.id);
+        expect(updatedUserB.following.map(id => id)).to.not.include(userA.id);
     });
 
     it('should not allow unfollowing if user is not authenticated', async function() {
         const newAgent = chai.request.agent(server.app);
-        const res = await newAgent.delete(`/api/v1/users/unfollow/${userB._id}`);
+        const res = await newAgent.delete(`/api/v1/users/unfollow/${userB.id}`);
 
         expect(res).to.have.status(401);
         expect(res.body.message).to.be.equal('Unauthorized');
@@ -700,22 +699,38 @@ describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function()
     });
 
     it('should not allow a user to unfollow themselves', async function() {
-        const res = await agent.delete(`/api/v1/users/unfollow/${userA._id}`);
-        
+        const res = await agent.delete(`/api/v1/users/unfollow/${userA.id}`);
+
         expect(res).to.have.status(400);
         expect(res.body).to.be.a('object');
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('User cant follow or un-follow themselves');
+        expect(res.body.error).to.be.equal('User cannot un-follow themselves');
     });
 
     it('should handle when a user tries to unfollow another user they are not following', async function() {
-        // Make sure userA does NOT follow userB
-        const res = await agent.delete(`/api/v1/users/unfollow/${userB._id}`);
+        // Introduce a new user
+        const userC = new UserModel({
+            username: 'UserC',
+            email: 'userC@gmail.com',
+            password: 'passwordC'
+        });
+        userC.confirmUser()
+        await userC.save();
+
+        const newAgent = chai.request.agent(server.app);
+        await newAgent.post('/api/v1/users/login-local').send({
+            email: 'userC@gmail.com',
+            password: 'passwordC'
+        });
+
+        const res = await newAgent.delete(`/api/v1/users/unfollow/${userB.id}`);
 
         expect(res).to.have.status(400);  // Error (This status and the message below is a suggestion)
         expect(res.body).to.be.a('object');
-        expect(res.body).to.have.property('message');
-        expect(res.body.message).to.be.equal('User is not followed, hence cannot be unfollowed');  
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('User is not followed');
+        
+        newAgent.close()
     });
 
     /* // 1. Database Errors
