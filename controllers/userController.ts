@@ -38,62 +38,62 @@ const cookieOptions: CookieOptions = config.get('cookieOptions')
 dotenv.config()
 
 export const ensureAuthenticated = 
-    (req: Request, res: Response, next: NextFunction): void => {
-        if (req.isAuthenticated()) {
-            next(); return
-        }
-        // If not authenticated, you can redirect or send an error response
-        res.status(401).json({ message: "Unauthorized" });
+(req: Request, res: Response, next: NextFunction): void => {
+    if (req.isAuthenticated()) {
+        next(); return
     }
+    // If not authenticated, you can redirect or send an error response
+    res.status(401).json({ message: "Unauthorized" });
+}
 
 export const registerUser = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        let { username, email, password, confirmPassword } = req.body
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    let { username, email, password, confirmPassword } = req.body
 
-        if (!username || !email || !password || !confirmPassword) {
-            next(new MissingFieldsError('Missing Username, Email, Password and/or Confirm Password')); return
-        }
+    if (!username || !email || !password || !confirmPassword) {
+        next(new MissingFieldsError('Missing Username, Email, Password and/or Confirm Password')); return
+    }
 
-        if (!validator.isEmail(email)) {
-            next(new InvalidEmailError('Invalid email format')); return
-        }
+    if (!validator.isEmail(email)) {
+        next(new InvalidEmailError('Invalid email format')); return
+    }
 
-        if (password !== confirmPassword) {
-            next(new InvalidCredentialsError("Password and Confirm Password doesn't match")); return
-        }
+    if (password !== confirmPassword) {
+        next(new InvalidCredentialsError("Password and Confirm Password doesn't match")); return
+    }
 
-        if (String(password).length < 4) {
-            next(new InvalidCredentialsError('Password must be at least 5 characters')); return
-        }
+    if (String(password).length < 4) {
+        next(new InvalidCredentialsError('Password must be at least 5 characters')); return
+    }
 
-        const existingUser = await UserModel.findOne({ email: { $eq: email } }).exec()
-        
-        if (!existingUser) {
-            // User doesn't exist, create a new user
-            const newUser = new UserModel({
-                username,
-                email,
-                password
-            })
-            const savedUser = await newUser.save()
-
-            const confirmationLink = generateConfirmationLink(savedUser.userCode)
-            sendConfirmationEmail(email, confirmationLink)
-        } else {
-            if (!existingUser.confirmed) {
-                // User exists, but is not confirmed. Send a new confirmation link
-                const confirmationLink = generateConfirmationLink(existingUser.userCode)
-                sendConfirmationEmail(email, confirmationLink)
-                
-                next(new UserNotConfirmedError('Email already exists but is not confirmed. Please follow the link sent to your email inbox')); return
-            }
-            next(new EmailAlreadyExistsError('Email already exists, please sign in instead')); return
-        }
-
-        res.status(201).json({
-            message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.'
+    const existingUser = await UserModel.findOne({ email: { $eq: email } }).exec()
+    
+    if (!existingUser) {
+        // User doesn't exist, create a new user
+        const newUser = new UserModel({
+            username,
+            email,
+            password
         })
+        const savedUser = await newUser.save()
+
+        const confirmationLink = generateConfirmationLink(savedUser.userCode)
+        sendConfirmationEmail(email, confirmationLink)
+    } else {
+        if (!existingUser.confirmed) {
+            // User exists, but is not confirmed. Send a new confirmation link
+            const confirmationLink = generateConfirmationLink(existingUser.userCode)
+            sendConfirmationEmail(email, confirmationLink)
+            
+            next(new UserNotConfirmedError('Email already exists but is not confirmed. Please follow the link sent to your email inbox')); return
+        }
+        next(new EmailAlreadyExistsError('Email already exists, please sign in instead')); return
+    }
+
+    res.status(201).json({
+        message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.'
     })
+})
 
 function generateConfirmationLink(userCode: string): string{
     let confirmationLink: string
@@ -110,182 +110,208 @@ function generateConfirmationLink(userCode: string): string{
 }
 
 export const confirmUser = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    // Extract the confirmation code from the query parameters
-        const { userCode } = req.params
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+// Extract the confirmation code from the query parameters
+    const { userCode } = req.params
 
-        if (!userCode) {
-            next(new MissingFieldsError('Confirmation code missing')); return
-        }
+    if (!userCode) {
+        next(new MissingFieldsError('Confirmation code missing')); return
+    }
 
-        // Find the user with the corresponding confirmation code
-        const user = await UserModel.findOne({ userCode: { $eq: userCode } }).exec()
+    // Find the user with the corresponding confirmation code
+    const user = await UserModel.findOne({ userCode: { $eq: userCode } }).exec()
 
-        if (!user) {
-            next(new InvalidConfirmationCodeError('Invalid confirmation code')); return
-        }
+    if (!user) {
+        next(new InvalidConfirmationCodeError('Invalid confirmation code')); return
+    }
 
-        if (user.confirmed) {
-            next(new UserAlreadyConfirmedError('User has already been confirmed')); return
-        }
+    if (user.confirmed) {
+        next(new UserAlreadyConfirmedError('User has already been confirmed')); return
+    }
 
-        // Update the user's status to 'confirmed'
-        await user.confirmUser()
-        await user.save()
+    // Update the user's status to 'confirmed'
+    await user.confirmUser()
+    await user.save()
 
-        // Redirect the user or send a success message
-        res.status(200).json({
-            message: 'Confirmation successful! Your account has been activated.'
-        })
+    // Redirect the user or send a success message
+    res.status(200).json({
+        message: 'Confirmation successful! Your account has been activated.'
     })
+})
 
 export const loginUserLocal = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        let { email, password } = req.body
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    let { email, password } = req.body
 
-        if (!email && !password) {
-            next(new MissingFieldsError('Missing Email and Password')); return
-        }
-        if (!email) {
-            next(new MissingFieldsError('Missing Email')); return
-        }
-        if (!password) {
-            next(new MissingFieldsError('Missing Password')); return
+    if (!email && !password) {
+        next(new MissingFieldsError('Missing Email and Password')); return
+    }
+    if (!email) {
+        next(new MissingFieldsError('Missing Email')); return
+    }
+    if (!password) {
+        next(new MissingFieldsError('Missing Password')); return
+    }
+
+    passport.authenticate('local', (err: Error, user: IUser, info: { message: string }) => {
+        if (err) {
+            next(err); return
         }
 
-        passport.authenticate('local', (err: Error, user: IUser, info: { message: string }) => {
+        if (!user) {
+            res.status(401).json({ auth: false, error: info.message }); return
+        }
+
+        req.login(user, err => {
             if (err) {
                 next(err); return
             }
-    
-            if (!user) {
-                res.status(401).json({ auth: false, error: info.message }); return
-            }
-    
-            req.login(user, err => {
-                if (err) {
-                    next(err); return
-                }
 
-                if (req.body.stayLoggedIn === 'true') {
-                    req.session.cookie.maxAge = sessionPersistentExpiry * 1000
-                } else {
-                    req.session.cookie.maxAge = sessionExpiry * 1000
-                }
-    
-                res.status(200).json({ auth: true })
-            });
-        })(req, res, next)
-    }
-) 
+            if (req.body.stayLoggedIn === 'true') {
+                req.session.cookie.maxAge = sessionPersistentExpiry * 1000
+            } else {
+                req.session.cookie.maxAge = sessionExpiry * 1000
+            }
+
+            res.status(200).json({ auth: true })
+        });
+    })(req, res, next)
+}) 
 
 export const logoutUser = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        req.logout(function(err) {
-            if (err) { return next(err); }
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    req.logout(function(err) {
+        if (err) { return next(err); }
 
-            req.session.destroy(function(sessionErr) {
-                if (sessionErr) {
-                    return next(sessionErr);
-                }
-                res.status(200).json({ message: "Logged out successfully" });
-            })
+        req.session.destroy(function(sessionErr) {
+            if (sessionErr) {
+                return next(sessionErr);
+            }
+            res.status(200).json({ message: "Logged out successfully" });
         })
-    }
-)
+    })
+})
 
 export const getEvents = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const user = req.user as IUser
-        const populatedUser = await user.populate('events')
-        res.status(200).json(populatedUser.events)
-    })
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const user = req.user as IUser
+    const populatedUser = await user.populate('events')
+    res.status(200).json(populatedUser.events)
+})
 
 export const newCode = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const user = req.user as IUser
-        // Generate a new userCode
-        const userCode = await user.generateNewUserCode()
-        await user.save()
-        res.status(200).json({ userCode })
-    })
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const user = req.user as IUser
+    // Generate a new userCode
+    const userCode = await user.generateNewUserCode()
+    await user.save()
+    res.status(200).json({ userCode })
+})
 
 export const followUser = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const followedUserId = req.params.userId
-        const followedUser = await UserModel.findOne({ _id: { $eq: followedUserId } }).exec()
-        const user = req.user as IUser
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const followedUserId = req.params.userId
+    const followedUser = await UserModel.findOne({ _id: { $eq: followedUserId } }).exec()
+    const user = req.user as IUser
 
-        if (!followedUser) {
-            next(new UserNotFoundError('The user to be followed could not be found')); return
-        }
+    if (!followedUser) {
+        next(new UserNotFoundError('The user to be followed could not be found')); return
+    }
 
-        if (followedUser.id === user.id) {
-            next(new UserNotFoundError('User cannot follow or un-follow themselves')); return
-        }
+    if (followedUser.id === user.id) {
+        next(new UserNotFoundError('User cannot follow or un-follow themselves')); return
+    }
 
-        const followingArray = user.following as { _id: Types.ObjectId }[];
-        if (followingArray.find(u => u._id.toString() === followedUser._id.toString())) {
-            res.status(200).json({ message: 'User is already followed' }); return
-        }
+    const followingArray = user.following as { _id: Types.ObjectId }[];
+    if (followingArray.find(u => u._id.toString() === followedUser._id.toString())) {
+        res.status(200).json({ message: 'User is already followed' }); return
+    }
 
-        await Promise.all([
-            UserModel.findByIdAndUpdate(user._id, { $push: { following: { $each: [followedUserId] } } }).exec(),
-            UserModel.findByIdAndUpdate(followedUserId, { $push: { followers: { $each: [user._id] } } }).exec()
-        ])        
+    await Promise.all([
+        UserModel.findByIdAndUpdate(user._id, { $push: { following: { $each: [followedUserId] } } }).exec(),
+        UserModel.findByIdAndUpdate(followedUserId, { $push: { followers: { $each: [user._id] } } }).exec()
+    ])        
 
-        res.status(200).json(followedUser)
-    })
+    res.status(200).json(followedUser)
+})
 
 export const unfollowUser = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const followedUserId = req.params.userId
-        const user = req.user as IUser
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const followedUserId = req.params.userId
+    const user = req.user as IUser
 
-        const followedUser = await UserModel.findOne({ _id: { $eq: followedUserId } }).exec()
-        if (!followedUser) {
-            next(new UserNotFoundError('The user to be un-followed could not be found')); return
-        }
+    const followedUser = await UserModel.findOne({ _id: { $eq: followedUserId } }).exec()
+    if (!followedUser) {
+        next(new UserNotFoundError('The user to be un-followed could not be found')); return
+    }
 
-        if (followedUserId === user.id) {
-            next(new UserNotFoundError('User cannot un-follow themselves')); return
-        }
+    if (followedUserId === user.id) {
+        next(new UserNotFoundError('User cannot un-follow themselves')); return
+    }
 
-        const followingArray = user.following as { _id: Types.ObjectId }[];
-        if (!followingArray.find(u => u._id.toString() === followedUser._id.toString())) {
-            res.status(400).json({ error: 'User is not followed' }); return
-        }
+    const followingArray = user.following as { _id: Types.ObjectId }[];
+    if (!followingArray.find(u => u._id.toString() === followedUser._id.toString())) {
+        res.status(400).json({ error: 'User is not followed' }); return
+    }
 
-        await Promise.all([
-            UserModel.findByIdAndUpdate(user._id, { $pull: { following: followedUserId } }).exec(),
-            UserModel.findByIdAndUpdate(followedUserId, { $pull: { following: user._id } }).exec()
-        ])
+    await Promise.all([
+        UserModel.findByIdAndUpdate(user._id, { $pull: { following: followedUserId } }).exec(),
+        UserModel.findByIdAndUpdate(followedUserId, { $pull: { following: user._id } }).exec()
+    ])
 
-        res.status(200).json(followedUser)
-    })
+    res.status(200).json(followedUser)
+})
 
 export const getUser = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const user = req.user as IUser
-        res.status(200).json(user)
-    })
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const user = req.user as IUser
+    res.status(200).json(user)
+})
 
 export const updateUser = asyncErrorHandler(
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const user = req.user as IUser
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const user = req.user as IUser
 
-        const {
-            newUsername,
-            newPassword,
-            oldPassword
-        } = req.body
+    const {
+        newUsername,
+        newPassword,
+        confirmNewPassword,
+        oldPassword
+    } = req.body
 
-        if (newUsername) { user.username = newUsername }
-        if (newPassword && oldPassword) {
-            await user.comparePassword(oldPassword) // Throws error if password doesn't match
-            user.password = newPassword
+    if (!newUsername && !newPassword && !confirmNewPassword && !oldPassword) {
+        next(new MissingFieldsError('No fields submitted')); return;
+    }
+
+    // Check if any password fields are provided
+    const passwordFieldsProvided = newPassword || confirmNewPassword || oldPassword
+
+    // If any password fields are present, ensure all are present
+    if (passwordFieldsProvided) {
+        const allPasswordFieldsProvided = newPassword && confirmNewPassword && oldPassword
+        
+        if (!allPasswordFieldsProvided) {
+            next(new MissingFieldsError('When setting a new password, you must provide the old password, new password, and confirm new password')); return;
         }
 
-        await user.save()
-        res.status(200).json(user)
-    })
+        if (newPassword !== confirmNewPassword) {
+            next(new InvalidCredentialsError('New password and Confirm New Password does not match'))
+        }
+
+        const passwordsMatch = await user.comparePassword(oldPassword)
+        if (passwordsMatch) {
+            user.password = newPassword;
+        } else {
+            next(new InvalidCredentialsError('Old password does not match with user password')); return;
+        }
+    }
+
+    // If a new username is provided, update the username
+    if (newUsername) {
+        user.username = newUsername;
+    }
+
+    await user.save();
+
+    res.status(200).json(user);
+});
