@@ -13,6 +13,7 @@ import UserModel, { type IUser } from '../models/User.js'
 import EventModel, { type IEvent } from '../models/Event.js'
 import error from '../utils/errors.js'
 import { AppType, ShutDownType } from '../server.js'
+import { test } from 'mocha';
 
 dotenv.config()
 
@@ -540,6 +541,7 @@ describe('Follow User Endpoint PUT /api/v1/users/following/:userId', function() 
             email: 'userA@gmail.com',
             password: 'passwordA'
         });
+        userA.confirmUser()
         await userA.save();
 
         userB = new UserModel({
@@ -547,6 +549,7 @@ describe('Follow User Endpoint PUT /api/v1/users/following/:userId', function() 
             email: 'userB@gmail.com',
             password: 'passwordB'
         });
+        userB.confirmUser()
         await userB.save();
 
         // Login as userA
@@ -644,12 +647,12 @@ describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function()
             password: 'passwordB'
         });
         userB.confirmUser()
-        const saveduserB = await userB.save();
+        const savedUserB = await userB.save();
 
         // UserA follows UserB
         await Promise.all([
-            UserModel.findByIdAndUpdate(savedUserA._id, { $push: { following: { $each: [saveduserB.id] } } }).exec(),
-            UserModel.findByIdAndUpdate(saveduserB.id, { $push: { followers: { $each: [savedUserA.id] } } }).exec(),
+            UserModel.findByIdAndUpdate(savedUserA._id, { $push: { following: { $each: [savedUserB.id] } } }).exec(),
+            UserModel.findByIdAndUpdate(savedUserB.id, { $push: { followers: { $each: [savedUserA.id] } } }).exec(),
         ])
 
         // Login as userA
@@ -732,69 +735,139 @@ describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function()
         
         newAgent.close()
     });
+});
 
-    /* // 1. Database Errors
-    it('should handle database errors gracefully', async function() {
-        // Mock an error for the UserModel `findOne` method or any other DB method
-        sinon.stub(UserModel, 'findOne').throws(new Error('Database error'));
+describe('Update User Endpoint PATCH /update-user', function() {
+    let testUser: IUser;
+    let agent: ChaiHttp.Agent;
 
-        const res = await agent.delete(`/api/v1/users/unfollow/${userB._id}`);
-
-        expect(res).to.have.status(500);  // Internal Server Error
-        expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('Internal server error');
-        
-        // Restore the stubbed method
-        (UserModel.findOne as any).restore();
-    });
-
-    // 2. Concurrency Issues
-    // This test is more conceptual; actual implementation would require more sophisticated setups.
-    it('should handle concurrent follow and unfollow requests', async function() {
-        // Fire two requests concurrently: one for follow and another for unfollow.
-        const [followRes, unfollowRes] = await Promise.all([
-            agent.put(`/api/v1/users/following/${userB._id}`),
-            agent.delete(`/api/v1/users/unfollow/${userB._id}`)
-        ]);
-
-        // One of them should return a specific error or behavior (up to you to decide)
-        // For instance, the unfollow request might fail because the follow hasn't been completed.
-    });
-
-    // 3. Response Content
-    it('should return the expected fields in the response', async function() {
-        // First, make userA follow userB to set up the unfollow scenario
-        await agent.put(`/api/v1/users/following/${userB._id}`);
-        
-        const res = await agent.delete(`/api/v1/users/unfollow/${userB._id}`);
-
-        expect(res.body).to.have.keys(['_id', 'username', 'email', 'following', 'followers']);  // And any other fields you expect.
-    });
-
-    // 4. Multiple Unfollows at Once
-    // This would require modifications to the middleware to handle arrays of userIds.
-    it('should allow unfollowing multiple users', async function() {
-        // Assuming middleware now accepts array of user IDs
-        const res = await agent.delete(`/api/v1/users/unfollow`).send({
-            userIds: [userB._id, ...otherUserIds]
+    beforeEach(async function() {
+        // Create a test user
+        testUser = new UserModel({
+            username: 'TestUser',
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
         });
+        testUser.confirmUser()
+        await testUser.save();
+
+        agent = chai.request.agent(server.app);
+        await agent.post('/api/v1/users/login-local').send({
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
+        });
+    });
+
+    afterEach(async function() {
+        // Cleanup: remove test user
+        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec();
+        agent.close();
+    });
+
+    it('should update TestUser details successfully', async function () {
+        const updatedDetails = { 
+            newUsername: 'UpdatedTestUser',
+            newPassword: 'UpdatedPassword',
+            confirmNewPassword: 'UpdatedPassword',
+            oldPassword: 'TestPassword'
+        };
+        const res = await agent.patch('/api/v1/users/update-user').send(updatedDetails);
 
         expect(res).to.have.status(200);
-        // Additional checks to ensure all provided users have been unfollowed
+
+        // Fetch the updated user from the database
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
+        
+        expect(updatedTestUser.username).to.equal('UpdatedTestUser');
+        expect(await updatedTestUser.comparePassword('UpdatedPassword')).to.be.true;
+
+        expect(updatedTestUser.confirmed).to.be.true
+        expect(updatedTestUser.toObject()).to.not.have.property('expirationDate');
+
+        // Ensure password is hashed and not the plain-text password
+        expect(updatedTestUser.password).to.not.equal('UpdatedPassword');
     });
 
-    // 5. Ensuring No Modification to Other Fields
-    it('should not modify fields other than following and followers', async function() {
-        const snapshotUserA = { ...userA.toObject() };
-        
-        await agent.delete(`/api/v1/users/unfollow/${userB._id}`);
-        const updatedUserA = await UserModel.findById(userA._id).exec() as IUser;
+    it('should not allow updating without authentication', async function() {
+        const newAgent = chai.request.agent(server.app);
+        const res = await newAgent.patch('/api/v1/users/update-user').send({ newUsername: 'newTestUser' });
 
-        // Ensure all fields, except for `following` and `followers`, remain unchanged
-        for (let key in snapshotUserA) {
-            if (key !== 'following' && key !== 'followers') {
-                expect(updatedUserA[key]).to.deep.equal(snapshotUserA[key]);
-            }
-        }
-    }); */
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
+
+        expect(updatedTestUser.confirmed).to.be.true
+        expect(updatedTestUser.toObject()).to.not.have.property('expirationDate');
+
+        expect(res).to.have.status(401);
+        expect(res.body.message).to.be.equal('Unauthorized');
+
+        newAgent.close();
+    });
+
+    it('should handle invalid or malformed data', async function() {
+        const res = await agent.patch('/api/v1/users/update-user').send({ newUsername: '' });  // Empty username
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
+
+        expect(updatedTestUser.confirmed).to.be.true
+        expect(updatedTestUser.toObject()).to.not.have.property('expirationDate');
+
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('No fields submitted')
+    });
+
+    it('should not allow password update with incorrect old password', async function() {
+        const incorrectOldPasswordDetails = {
+            newUsername: 'UpdatedTestUser',
+            newPassword: 'UpdatedPassword2',
+            confirmNewPassword: 'UpdatedPassword2',
+            oldPassword: 'WrongOldPassword'
+        };
+        const res = await agent.patch('/api/v1/users/update-user').send(incorrectOldPasswordDetails);
+        
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('Old password does not match with user password');
+    });
+    
+    it('should not allow password update with mismatching password and confirm password', async function() {
+        const mismatchingPasswords = {
+            newUsername: 'UpdatedTestUser2',
+            newPassword: 'UpdatedPassword2',
+            confirmNewPassword: 'WrongConfirmPassword',
+            oldPassword: 'TestPassword'
+        };
+        const res = await agent.patch('/api/v1/users/update-user').send(mismatchingPasswords);
+        
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('New password and Confirm New Password does not match');
+    });
+
+    it('should return an error if not all password fields are provided', async function() {
+        const partialPasswordDetails = {
+            newPassword: 'PartialUpdatePassword',
+            confirmNewPassword: 'PartialUpdatePassword'
+        };
+        const res = await agent.patch('/api/v1/users/update-user').send(partialPasswordDetails);
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('When setting a new password, you must provide the old password, new password, and confirm new password');
+    });
+    
+    it('should allow username update without password fields', async function() {
+        const usernameUpdateDetails = {
+            newUsername: 'JustUsernameUpdate'
+        };
+        const res = await agent.patch('/api/v1/users/update-user').send(usernameUpdateDetails);
+        expect(res).to.have.status(200);
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
+        expect(updatedTestUser.username).to.equal('JustUsernameUpdate');
+    });    
+    
 });
+
