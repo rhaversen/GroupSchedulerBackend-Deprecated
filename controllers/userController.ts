@@ -6,6 +6,7 @@ import passport from 'passport'
 import validator from 'validator'
 import dotenv from 'dotenv'
 import { type Request, type Response, type NextFunction, type CookieOptions } from 'express'
+import { type Types } from 'mongoose'
 
 // Own modules
 import errors from '../utils/errors.js'
@@ -218,13 +219,20 @@ export const followUser = asyncErrorHandler(
         if (!followedUser) {
             next(new UserNotFoundError('The user to be followed could not be found')); return
         }
-        if (followedUser._id === user.id) {
-            next(new UserNotFoundError('User cant follow or un-follow themselves')); return
+        if (followedUser.id === user.id) {
+            console.log('1')
+            next(new UserNotFoundError('User cannot follow or un-follow themselves')); return
+        }
+
+        const followingArray = user.following as { _id: Types.ObjectId }[];
+
+        if (followedUser && followingArray.find(u => u._id.toString() === followedUser._id.toString())) {
+            res.status(200).json({ message: 'User is already followed' }); return
         }
 
         await Promise.all([
             UserModel.findByIdAndUpdate(user._id, { $push: { following: { $each: [followedUserId] } } }).exec(),
-            UserModel.findByIdAndUpdate(followedUserId, { $push: { following: { $each: [user._id] } } }).exec()
+            UserModel.findByIdAndUpdate(followedUserId, { $push: { followers: { $each: [user._id] } } }).exec()
         ])        
 
         res.status(200).json(followedUser)
