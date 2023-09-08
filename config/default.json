@@ -7,7 +7,7 @@
         "unconfirmedUserExpiry": 86400
     },
     "bcrypt": {
-        "saltRounds": 10
+        "saltRounds": 0
     },
     "nanoid": {
         "alphabet": "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
