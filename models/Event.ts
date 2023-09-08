@@ -52,7 +52,7 @@ const eventSchema = new Schema<IEvent>({
     participants: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     admins: [{ type: Schema.Types.ObjectId, ref: 'User' }], // If admins is empty, the event is considered to be editable by all participants
     //owner: { type: Schema.Types.ObjectId, ref: 'User' },
-    eventCode: { type: String, unique: true, required: true }
+    eventCode: { type: String, unique: true }
 })
 // TODO: Events should have general availabilities set by admins. Event availability takes precedence over users availabilities, which means an admin can add when a
 // summerhouse is available (free), when tickets are cheapest (preferred), when transportation isn't available (busy) and so on. users might prefer one week, but if the
