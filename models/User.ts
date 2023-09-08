@@ -68,14 +68,14 @@ const userSchema = new Schema<IUser>({
     userCode: { type: String, unique: true },
     confirmed: { type: Boolean, default: false },
     registrationDate: { type: Date, default: new Date() }, // Keep track of registration date
-    expirationDate: { type: Date, default: new Date(Date.now() + userExpiry * 1000) } // TTL index, document will expire in process.env.UNCONFIRMED_USER_EXPIRY seconds if not confirmed
+    expirationDate: { type: Date }
 })
 
 userSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
 
 userSchema.methods.confirmUser = async function () {
     this.confirmed = true // Update the user's status to confirmed
-    this.expirationDate = undefined // Remove the expiration date to cancel auto-deletion
+    delete this.expirationDate // Remove the expiration date to cancel auto-deletion
 }
 
 // Method for comparing parameter to this users password. Returns true if passwords match
@@ -116,12 +116,14 @@ userSchema.pre(/^find/, function(next) {
     next();
 });
 
-
-
 userSchema.pre('save', async function (next) {
     if (this.isNew) {
         await this.generateNewUserCode()
         this.email = this.email.toString().toLowerCase();
+    }
+
+    if (this.confirmed) {
+        delete this.expirationDate;
     }
 
     if (this.isModified('email')) {
