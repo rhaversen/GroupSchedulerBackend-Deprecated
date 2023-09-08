@@ -146,11 +146,11 @@ router.get('/following',
 )
 
 /**
-* @route GET api/v1/users/common-events/:userId
+* @route GET api/v1/users/:userId/common-events
 * @desc Get the events in common with a user
 * @access AUTHENTICATED
 */
-router.get('/following/:userId',
+router.get('/:userId/common-events',
     ensureAuthenticated,
     getCommonEvents
 )

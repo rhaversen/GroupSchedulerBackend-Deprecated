@@ -6,12 +6,12 @@ import passport from 'passport'
 import validator from 'validator'
 import dotenv from 'dotenv'
 import { type Request, type Response, type NextFunction } from 'express'
-import { type Types } from 'mongoose'
+import mongoose, { type Types } from 'mongoose'
 
 // Own modules
 import errors from '../utils/errors.js'
 import { sendConfirmationEmail } from '../utils/mailer.js'
-import UserModel, { type IUser } from '../models/User.js'
+import UserModel, { IUserPopulated, type IUser } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import logger from '../utils/logger.js'
 
@@ -36,6 +36,7 @@ const frontendDomain = config.get('frontend.domain')
 // Setup
 dotenv.config()
 
+// Helper function
 function generateConfirmationLink(userCode: string): string{
     let confirmationLink: string
     // Generate confirmation link
@@ -101,7 +102,7 @@ async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 
 export const confirmUser = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-// Extract the confirmation code from the query parameters
+    // Extract the confirmation code from the query parameters
     const { userCode } = req.params
 
     if (!userCode) {
@@ -230,7 +231,7 @@ async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const followedUserId = req.params.userId
     const user = req.user as IUser
 
-    const followedUser = await UserModel.findOne({ _id: { $eq: followedUserId } }).exec()
+    const followedUser = await UserModel.findById(followedUserId).exec();
     if (!followedUser) {
         next(new UserNotFoundError('The user to be un-followed could not be found')); return
     }
@@ -252,10 +253,45 @@ async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     res.status(200).json(followedUser)
 })
 
-export const getUser = asyncErrorHandler(
+export const getFollowers = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
-    res.status(200).json(user)
+    const populatedUser = await user.populate('followers') as IUserPopulated
+    const followerNames = populatedUser.followers.map(follower => follower.username);
+    
+    res.status(200).json(followerNames)
+})
+
+export const getFollowing = asyncErrorHandler(
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const user = req.user as IUser
+    const populatedUser = await user.populate('following') as IUserPopulated
+    const followingNames = populatedUser.following.map(following => following.username);
+    
+    res.status(200).json(followingNames)
+})
+
+export const getCommonEvents = asyncErrorHandler(
+async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const user = req.user as IUser
+    const candidateUserId = req.params.userId
+
+    if (!mongoose.Types.ObjectId.isValid(candidateUserId)) {
+        res.status(400).json({ error: 'Invalid user ID format'}); return
+    }
+
+    const candidateUser = await UserModel.findById(candidateUserId).exec();
+
+    if (!candidateUser) {
+        next(new UserNotFoundError('The user to be found events in common with could not be found')); return
+    }
+
+    const userEvents = user.events as Types.ObjectId[]
+    const candidateUserEvents = candidateUser.events as Types.ObjectId[]
+
+    const commonEvents = userEvents.filter(userEvent => candidateUserEvents.includes(userEvent));
+    
+    res.status(200).json(commonEvents)
 })
 
 export const updateUser = asyncErrorHandler(

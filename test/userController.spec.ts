@@ -11,9 +11,7 @@ import { parse } from 'cookie';
 import logger from '../utils/logger.js'
 import UserModel, { type IUser } from '../models/User.js'
 import EventModel, { type IEvent } from '../models/Event.js'
-import error from '../utils/errors.js'
-import { AppType, ShutDownType } from '../server.js'
-import { test } from 'mocha';
+import mongoose from 'mongoose'
 
 dotenv.config()
 
@@ -495,6 +493,7 @@ describe('Get User Events Endpoint GET /api/v1/users/events', function() {
             startDate: new Date('2023-01-01'),
             endDate: new Date('2023-01-02'),
         });
+        await testEvent.save()
 
         await UserModel.findByIdAndUpdate(testUser._id, { $push: { events: testEvent._id } }).exec();
         
@@ -508,6 +507,7 @@ describe('Get User Events Endpoint GET /api/v1/users/events', function() {
     afterEach(async function() {
         // Cleanup: remove test user
         await UserModel.findOneAndDelete({email: 'TestUser@gmail.com'}).exec();
+        await EventModel.findByIdAndDelete(testEvent._id).exec();
         agent.close();
     });
 
@@ -710,6 +710,7 @@ describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function()
         // Cleanup: remove test users
         await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec();
         await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec();
+        await UserModel.findOneAndDelete({ email: 'userC@gmail.com' }).exec();
         agent.close();
     });
 
@@ -910,7 +911,299 @@ describe('Update User Endpoint PATCH /update-user', function() {
         expect(res).to.have.status(200);
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
         expect(updatedTestUser.username).to.equal('JustUsernameUpdate');
-    });    
-    
+    });
 });
 
+describe('Get Followers Endpoint GET /api/v1/users/followers', function() {
+    let userA: IUser, userB: IUser, userC: IUser;
+    let agent: ChaiHttp.Agent;
+
+    beforeEach(async function() {
+        agent = chai.request.agent(server.app);
+
+        // Create three test users: A, B, and C
+        userA = new UserModel({
+            username: 'UserA',
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        });
+        userA.confirmUser()
+        await userA.save();
+
+        userB = new UserModel({
+            username: 'UserB',
+            email: 'userB@gmail.com',
+            password: 'passwordB'
+        });
+        userB.confirmUser()
+        await userB.save();
+
+        userC = new UserModel({
+            username: 'UserC',
+            email: 'userC@gmail.com',
+            password: 'passwordC'
+        });
+        userC.confirmUser()
+        await userC.save();
+
+        // Make userB and userC follow userA
+        await Promise.all([
+            // UserB follows userA
+            UserModel.findByIdAndUpdate(userB._id, { $push: { following: { $each: [userA._id] } } }).exec(),
+            UserModel.findByIdAndUpdate(userA._id, { $push: { followers: { $each: [userB._id] } } }).exec(),
+            
+            // UserC follows userA
+            UserModel.findByIdAndUpdate(userC._id, { $push: { following: { $each: [userA._id] } } }).exec(),
+            UserModel.findByIdAndUpdate(userA._id, { $push: { followers: { $each: [userC._id] } } }).exec()
+        ])   
+
+        // Login as userA
+        await agent.post('/api/v1/users/login-local').send({
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        });
+    });
+
+    afterEach(async function() {
+        // Clean up by removing test users
+        await UserModel.findOneAndDelete({email: 'userA@gmail.com'}).exec();
+        await UserModel.findOneAndDelete({email: 'userB@gmail.com'}).exec();
+        await UserModel.findOneAndDelete({email: 'userC@gmail.com'}).exec();
+        agent.close();
+    });
+
+    it('should successfully get the followers of userA', async function() {
+        const res = await agent.get('/api/v1/users/followers');
+        
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('array');
+        expect(res.body.length).to.be.equal(2);
+        expect(res.body).to.include.members(['UserB', 'UserC']);
+    });
+
+    it('should return an empty array if the user has no followers', async function() {
+        // Assuming userC has no followers
+        const newAgent = chai.request.agent(server.app)
+
+        await newAgent.post('/api/v1/users/login-local').send({
+            email: 'userC@gmail.com',
+            password: 'passwordC'
+        })
+
+        const res = await newAgent.get('/api/v1/users/followers')
+        
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('array');
+        expect(res.body.length).to.be.equal(0);
+    });
+});
+
+describe('Get Following Endpoint GET /api/v1/users/following', function() {
+    let userA: IUser, userB: IUser, userC: IUser;
+    let agent: ChaiHttp.Agent;
+
+    beforeEach(async function() {
+        agent = chai.request.agent(server.app);
+
+        // Create three test users: A, B, and C
+        userA = new UserModel({
+            username: 'UserA',
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        });
+        userA.confirmUser()
+        await userA.save();
+
+        userB = new UserModel({
+            username: 'UserB',
+            email: 'userB@gmail.com',
+            password: 'passwordB'
+        });
+        userB.confirmUser()
+        await userB.save();
+
+        userC = new UserModel({
+            username: 'UserC',
+            email: 'userC@gmail.com',
+            password: 'passwordC'
+        });
+        userC.confirmUser()
+        await userC.save();
+
+        // Make userA follow userB and userC
+        await Promise.all([
+            // UserA follows userB
+            UserModel.findByIdAndUpdate(userA._id, { $push: { following: { $each: [userB._id] } } }).exec(),
+            UserModel.findByIdAndUpdate(userB._id, { $push: { followers: { $each: [userA._id] } } }).exec(),
+            
+            // UserA follows userC
+            UserModel.findByIdAndUpdate(userA._id, { $push: { following: { $each: [userC._id] } } }).exec(),
+            UserModel.findByIdAndUpdate(userC._id, { $push: { followers: { $each: [userA._id] } } }).exec()
+        ])   
+
+        // Login as userA
+        await agent.post('/api/v1/users/login-local').send({
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        });
+    });
+
+    afterEach(async function() {
+        // Clean up by removing test users
+        await UserModel.findOneAndDelete({email: 'userA@gmail.com'}).exec();
+        await UserModel.findOneAndDelete({email: 'userB@gmail.com'}).exec();
+        await UserModel.findOneAndDelete({email: 'userC@gmail.com'}).exec();
+        agent.close();
+    });
+
+    it('should successfully get the users that userA is following', async function() {
+        const res = await agent.get('/api/v1/users/following');
+        
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('array');
+        expect(res.body.length).to.be.equal(2);
+        expect(res.body).to.include.members(['UserB', 'UserC']);
+    });
+
+    it('should return an empty array if the user is not following anyone', async function() {
+        // Assuming userC is not following anyone
+        const newAgent = chai.request.agent(server.app)
+
+        await newAgent.post('/api/v1/users/login-local').send({
+            email: 'userC@gmail.com',
+            password: 'passwordC'
+        })
+
+        const res = await newAgent.get('/api/v1/users/following')
+        
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('array');
+        expect(res.body.length).to.be.equal(0);
+    });
+});
+
+describe('Get Common Events Endpoint GET /api/v1/users/:userId/common-events', function() {
+    let userA: IUser, userB: IUser, userC: IUser;
+    let event1: IEvent, event2: IEvent, event3: IEvent;
+    let agent: ChaiHttp.Agent;
+
+    beforeEach(async function() {
+        agent = chai.request.agent(server.app);
+
+        // Create two test users: A and B
+        userA = new UserModel({
+            username: 'UserA',
+            email: 'userA@gmail.com',
+            password: 'passwordA',
+        });
+        userA.confirmUser()
+        await userA.save();
+
+        userB = new UserModel({
+            username: 'UserB',
+            email: 'userB@gmail.com',
+            password: 'passwordB',
+        });
+        userB.confirmUser()
+        await userB.save();
+
+        userC = new UserModel({
+            username: 'UserC',
+            email: 'userC@gmail.com',
+            password: 'passwordC',
+        });
+        userC.confirmUser()
+        await userC.save();
+
+        // Create three test events
+        event1 = new EventModel({
+            eventName: 'Event 1',
+            startDate: new Date('2023-01-01'),
+            endDate: new Date('2023-01-02'),
+        });
+        await event1.save();
+
+        event2 = new EventModel({
+            eventName: 'Event 2',
+            startDate: new Date('2023-01-01'),
+            endDate: new Date('2023-01-02'),
+        });
+        await event2.save();
+
+        event3 = new EventModel({
+            eventName: 'Event 3',
+            startDate: new Date('2023-01-01'),
+            endDate: new Date('2023-01-02'),
+        });
+        await event3.save();
+
+        // Assign events to users
+        await Promise.all([
+            // UserA attends Event 1 and Event 2
+            UserModel.findByIdAndUpdate(userA._id, { $push: { events: { $each: [event1._id] } } }).exec(),
+            UserModel.findByIdAndUpdate(userA._id, { $push: { events: { $each: [event2._id] } } }).exec(),
+            EventModel.findByIdAndUpdate(event1._id, { $push: { participants: { $each: [userA._id] } } }).exec(),
+            EventModel.findByIdAndUpdate(event2._id, { $push: { participants: { $each: [userA._id] } } }).exec(),
+            
+            // UserB attends Event 2 and Event 3
+            UserModel.findByIdAndUpdate(userB._id, { $push: { events: { $each: [event2._id] } } }).exec(),
+            UserModel.findByIdAndUpdate(userB._id, { $push: { events: { $each: [event3._id] } } }).exec(),
+            EventModel.findByIdAndUpdate(event2._id, { $push: { participants: { $each: [userB._id] } } }).exec(),
+            EventModel.findByIdAndUpdate(event3._id, { $push: { participants: { $each: [userB._id] } } }).exec()
+        ])
+
+        // Login as userA
+        await agent.post('/api/v1/users/login-local').send({
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        });
+    });
+
+    afterEach(async function() {
+        // Clean up by removing test users and events
+        await UserModel.findOneAndDelete({email: 'userA@gmail.com'}).exec();
+        await UserModel.findOneAndDelete({email: 'userB@gmail.com'}).exec();
+        await UserModel.findOneAndDelete({email: 'userC@gmail.com'}).exec();
+        await EventModel.findByIdAndDelete(event1._id).exec();
+        await EventModel.findByIdAndDelete(event2._id).exec();
+        await EventModel.findByIdAndDelete(event3._id).exec();
+        agent.close();
+    });
+
+    it('should successfully get the common events between userA and userB', async function() {
+        const res = await agent.get(`/api/v1/users/${userB._id}/common-events`);
+        
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('array');
+        expect(res.body.length).to.be.equal(1);
+        expect(res.body[0]).to.be.equal(event2._id.toString());
+    });
+
+    it('should return an empty array for common events between userA and userC', async function() {
+        const res = await agent.get(`/api/v1/users/${userC._id}/common-events`);
+        
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.an('array');
+        expect(res.body.length).to.be.equal(0);
+    });
+
+    it('should return a 400 error if the candidate user is not found', async function() {
+        const nonExistentUserId = new mongoose.Types.ObjectId();
+        const res = await agent.get(`/api/v1/users/${nonExistentUserId}/common-events`);
+        
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.equal('The user to be found events in common with could not be found');
+    });
+
+    it('should return a 400 error if the userId is invalid', async function() {
+        const invalidUserId = 'invalidId';
+        const res = await agent.get(`/api/v1/users/${invalidUserId}/common-events`);
+        
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.equal('Invalid user ID format');
+    });
+});
