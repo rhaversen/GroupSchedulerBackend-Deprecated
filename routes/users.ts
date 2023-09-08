@@ -18,7 +18,9 @@ import {
     newCode,
     followUser,
     unfollowUser,
-    getUser,
+    getFollowers,
+    getFollowing,
+    getCommonEvents,
     updateUser
 } from '../controllers/userController.js'
 
@@ -124,13 +126,33 @@ router.delete('/unfollow/:userId',
 )
 
 /**
-* @route GET api/v1/users
-* @desc Get signed in user
+* @route GET api/v1/users/followers
+* @desc Get the users following the logged in user (An array of names)
 * @access AUTHENTICATED
 */
-router.get('/',
+router.get('/followers',
     ensureAuthenticated,
-    getUser
+    getFollowers
+)
+
+/**
+* @route GET api/v1/users/following
+* @desc Get the users being followed by the logged in user (An array of names)
+* @access AUTHENTICATED
+*/
+router.get('/following',
+    ensureAuthenticated,
+    getFollowing
+)
+
+/**
+* @route GET api/v1/users/common-events/:userId
+* @desc Get the events in common with a user
+* @access AUTHENTICATED
+*/
+router.get('/following/:userId',
+    ensureAuthenticated,
+    getCommonEvents
 )
 
 /**
