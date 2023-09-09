@@ -34,6 +34,54 @@ after(async function () {
     await server.shutDown()
 })
 
+describe('Get Current User Endpoint GET /api/v1/users/current-user', function() {
+    let agent: ChaiHttp.Agent;
+    let testUser: IUser;
+
+    beforeEach(async function() {
+        testUser = new UserModel({
+            username: 'TestUser',
+            email: 'TestUser@gmail.com',
+            password: 'testpassword',
+        });
+        testUser.confirmUser()
+        await testUser.save();
+        
+        const user = { email: testUser.email, password: 'testpassword', stayLoggedIn: true };
+        agent = chai.request.agent(server.app);  // Create an agent instance
+
+        // Log the user in to get a token
+        await agent.post('/api/v1/users/login-local').send(user);
+    });
+
+    afterEach(async function() {
+        // Cleanup: remove test user
+        await UserModel.findOneAndDelete({email: 'TestUser@gmail.com'}).exec();
+        agent.close();
+    });
+
+    it('should fetch current user details successfully', async function () {
+        const res = await agent.get('/api/v1/users/current-user');
+
+        expect(res).to.have.status(200);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('username');
+        expect(res.body.username).to.be.equal(testUser.username);
+        expect(res.body).to.have.property('email');
+        expect(res.body.email).to.be.equal(testUser.email);
+    });
+
+    it('should fail due to lack of authentication', async function () {
+        const newAgent = chai.request.agent(server.app);
+        const res = await newAgent.get('/api/v1/users/current-user');
+
+        expect(res).to.have.status(401);
+        expect(res.body.message).to.be.equal('Unauthorized');
+
+        newAgent.close();
+    });
+});
+
 describe('User Registration Endpoint POST /api/v1/users', function() {    
     let testUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' };
     let agent: ChaiHttp.Agent;
