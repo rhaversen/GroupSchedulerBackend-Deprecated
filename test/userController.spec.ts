@@ -505,6 +505,7 @@ describe('Get User Events Endpoint GET /api/v1/users/events', function() {
         await testEvent.save()
 
         await UserModel.findByIdAndUpdate(testUser._id, { $push: { events: testEvent._id } }).exec();
+        await EventModel.findByIdAndUpdate(testEvent._id, { $push: { participants: testUser._id } }).exec();
         
         const user = { email: testUser.email, password: 'testpassword', stayLoggedIn: true };
         agent = chai.request.agent(server.app);  // Create an agent instance
@@ -525,7 +526,12 @@ describe('Get User Events Endpoint GET /api/v1/users/events', function() {
 
         expect(res).to.have.status(200);
         expect(res.body).to.be.a('array');
-        // Add more specific checks depending on your event data structure
+        expect(res.body[0]).to.have.property('eventName')
+        expect(res.body[0]).to.have.property('startDate')
+        expect(res.body[0]).to.have.property('endDate')
+        expect(res.body[0]).to.have.property('participants')
+        expect(res.body[0].eventName).to.be.equal('TestEvent')
+        expect(res.body[0].participants[0]).to.be.equal(testUser.id)
     });
 
     it('should fail due to lack of authentication', async function () {
