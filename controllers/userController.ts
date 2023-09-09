@@ -366,12 +366,9 @@ export const updateUsername = asyncErrorHandler(
             return
         }
     
-        console.log(newUsername)
         user.username = newUsername
-        console.log('a')
 
         await user.save();
-        console.log('b')
 
         res.status(200).json(user);
     });
