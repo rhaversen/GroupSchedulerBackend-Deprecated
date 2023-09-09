@@ -51,6 +51,25 @@ function generateConfirmationLink(userId: string): string{
     return confirmationLink
 }
 
+export const getCurrentUser =
+(req: Request, res: Response, next: NextFunction): void => {
+    const user = req.user as IUser
+
+    const userToSendToFrontend = {
+        username: user.username,
+        email: user.email,
+        events: user.events,
+        availabilities: user.availabilities,
+        following: user.following,
+        followers: user.followers,
+        userCode: user.userCode,
+        confirmed: user.confirmed,
+        registrationDate: user.registrationDate,
+        expirationDate: user.expirationDate
+    };
+    res.send(userToSendToFrontend);
+}
+
 export const registerUser = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let { username, email, password, confirmPassword } = req.body

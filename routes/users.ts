@@ -10,6 +10,7 @@ import {
 
 // Controller functions
 import {
+    getCurrentUser,
     registerUser,
     confirmUser,
     loginUserLocal,
@@ -29,6 +30,15 @@ import { ensureAuthenticated } from '../utils/passportConfig.js'
 // Destructuring and global variables
 const router = Router()
 
+/**
+ * @route GET api/v1/users/current-user
+ * @desc Validate session
+ * @access Public
+ */
+router.get('/current-user',
+    ensureAuthenticated,
+    getCurrentUser
+);
 
 /**
  * @route POST api/v1/users
