@@ -8,5 +8,8 @@
     "ports": {
         "nextJs": 3000,
         "express": 5000
+    },
+    "bcrypt": {
+        "saltRounds": 0
     }
 }
