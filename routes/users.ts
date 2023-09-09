@@ -29,20 +29,6 @@ import { ensureAuthenticated } from '../utils/passportConfig.js'
 // Destructuring and global variables
 const router = Router()
 
-/**
- * @route GET api/v1/users/ensureAuthenticated
- * @desc Validate session
- * @access Public
- */
-router.get('/ensureAuthenticated',
-    ensureAuthenticated,
-    // If we get here, the session is valid, so we just respond with a success message
-    function (req, res) {
-        res.status(200).json({
-            message: 'User has valid session.'
-        })
-    }
-)
 
 /**
  * @route POST api/v1/users
