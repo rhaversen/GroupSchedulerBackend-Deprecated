@@ -114,7 +114,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
         
         const res = await agent.post('/api/v1/users').send(incompleteUser);
 
-        expect(res).to.have.status(400);  // assuming 400 is the status code for missing fields
+        expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
         expect(res.body.error).to.be.equal('Missing Username, Email, Password and/or Confirm Password');
     });
@@ -124,7 +124,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
         
         const res = await agent.post('/api/v1/users').send(incompleteUser);
 
-        expect(res).to.have.status(400);  // assuming 400 is the status code for missing fields
+        expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
         expect(res.body.error).to.be.equal('Missing Username, Email, Password and/or Confirm Password');
     });
@@ -134,7 +134,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
         
         const res = await agent.post('/api/v1/users').send(incompleteUser);
 
-        expect(res).to.have.status(400);  // assuming 400 is the status code for missing fields'
+        expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
         expect(res.body.error).to.be.equal('Missing Username, Email, Password and/or Confirm Password');
     });
@@ -144,7 +144,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
         
         const res = await agent.post('/api/v1/users').send(incompleteUser);
 
-        expect(res).to.have.status(400);  // assuming 400 is the status code for missing fields
+        expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
         expect(res.body.error).to.be.equal('Missing Username, Email, Password and/or Confirm Password');
     });
@@ -154,7 +154,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
         
         const res = await agent.post('/api/v1/users').send(invalidEmailUser);
 
-        expect(res).to.have.status(400);  // assuming 400 is the status code for invalid email
+        expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
         expect(res.body.error).to.be.equal('Invalid email format');
     });
@@ -164,7 +164,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
         
         const res = await agent.post('/api/v1/users').send(passwordMismatchUser);
 
-        expect(res).to.have.status(400);  // assuming 400 is the status code for password mismatch
+        expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
         expect(res.body.error).to.be.equal("Password and Confirm Password doesn't match");
     });
@@ -174,7 +174,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
         
         const res = await agent.post('/api/v1/users').send(shortPasswordUser);
 
-        expect(res).to.have.status(400);  // assuming 400 is the status code for short password
+        expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
         expect(res.body.error).to.be.equal('Password must be at least 5 characters');
     });
@@ -190,7 +190,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
 
         const res = await agent.post('/api/v1/users').send(testUser);
 
-        expect(res).to.have.status(400);  // assuming 400 is the status code for email already exists
+        expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
         expect(res.body.error).to.be.equal('Email already exists, please sign in instead');
     });
@@ -206,7 +206,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
 
         const res = await agent.post('/api/v1/users').send( testUser);
 
-        expect(res).to.have.status(400);  // assuming 400 is the status code for email exists but not confirmed
+        expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
         expect(res.body.error).to.be.equal('Email already exists but is not confirmed. Please follow the link sent to your email inbox');
     });
@@ -500,7 +500,7 @@ describe('User Logout Endpoint DELETE /api/v1/users/logout', function() {
 
         // Test that the session is indeed invalidated:
         const protectedRes = await agent.get('/api/v1/users/events');
-        expect(protectedRes).to.have.status(401);  // Assuming 401 is your status for unauthorized
+        expect(protectedRes).to.have.status(401);
     });
 
     it('should not allow logout without logging in', async function() {
@@ -508,10 +508,10 @@ describe('User Logout Endpoint DELETE /api/v1/users/logout', function() {
         const newAgent = chai.request.agent(server.app);
         const res = await newAgent.delete('/api/v1/users/logout');
 
-        expect(res).to.have.status(401);  // Assuming 401 is your status for unauthorized
+        expect(res).to.have.status(401);
         expect(res.body).to.be.a('object');
         expect(res.body).to.have.property('message');
-        expect(res.body.message).to.be.equal('Unauthorized');  // Adjust this based on your actual message
+        expect(res.body.message).to.be.equal('Unauthorized');
 
         newAgent.close();
     });
@@ -523,10 +523,10 @@ describe('User Logout Endpoint DELETE /api/v1/users/logout', function() {
 
         const res = await newAgent.delete('/api/v1/users/logout');
 
-        expect(res).to.have.status(401);  // Assuming 401 is your status for unauthorized
+        expect(res).to.have.status(401);
         expect(res.body).to.be.a('object');
         expect(res.body).to.have.property('message');
-        expect(res.body.message).to.be.equal('Unauthorized');  // Adjust this based on your actual message
+        expect(res.body.message).to.be.equal('Unauthorized');  
         
         newAgent.close()
     });
@@ -589,7 +589,7 @@ describe('Get User Events Endpoint GET /api/v1/users/events', function() {
         const res = await newAgent.get('/api/v1/users/events');
 
         expect(res).to.have.status(401);
-        expect(res.body.message).to.be.equal('Unauthorized');  // Assuming that's your error message for unauthorized
+        expect(res.body.message).to.be.equal('Unauthorized');
         
         newAgent.close()
     });
@@ -1047,7 +1047,6 @@ describe('Get Followers Endpoint GET /api/v1/users/followers', function() {
     });
 
     it('should return an empty array if the user has no followers', async function() {
-        // Assuming userC has no followers
         const newAgent = chai.request.agent(server.app)
 
         await newAgent.post('/api/v1/users/login-local').send({
@@ -1131,7 +1130,6 @@ describe('Get Following Endpoint GET /api/v1/users/following', function() {
     });
 
     it('should return an empty array if the user is not following anyone', async function() {
-        // Assuming userC is not following anyone
         const newAgent = chai.request.agent(server.app)
 
         await newAgent.post('/api/v1/users/login-local').send({
