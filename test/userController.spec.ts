@@ -269,6 +269,8 @@ describe('User Login Endpoint POST /api/v1/users/login-local', function() {
         expect(res.body).to.have.property('auth');
         expect(res).to.have.cookie('connect.sid'); // Expecting the default session cookie name.
         expect(res.body.auth).to.be.true;
+
+        await UserModel.findOneAndDelete({email: 'UnconfirmedUser@gmail.com'}).exec();
     });
 
     it('should successfully login a user even though the email is capitalized', async function () {
