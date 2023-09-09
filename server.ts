@@ -20,6 +20,7 @@ import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { connectToDatabase, disconnectFromDatabase, mongoose } from './utils/database.js'
+import csrfProtection from './utils/csrfProtection.js';
 
 // Import routes
 import userRoutes from './routes/users.js'
@@ -93,7 +94,11 @@ app.use(mongoSanitize())
 app.use(sessionMiddleware)
 app.use(passport.initialize())
 app.use(passport.session())
-app.use(cors(confCorsOptions))
+app.use(cors({
+    ...confCorsOptions,
+    credentials: true
+}));
+//app.use(csrfProtection);
 
 // Create rate limiters
 let relaxedApiLimiter
@@ -105,6 +110,11 @@ if (process.env.NODE_ENV !== 'test') {
     relaxedApiLimiter = RateLimit(confTestApiLimiter)
     sensitiveApiLimiter = RateLimit(confTestApiLimiter)
 }
+
+// Endpoint to fetch the csrf token
+/* app.get('/api/csrf-token', sensitiveApiLimiter, (req, res) => {
+    res.json({ csrfToken: req.session.csrfToken });
+}); */
 
 // Use all routes and with relaxed limiter
 app.use('/api/v1/users', relaxedApiLimiter, userRoutes)

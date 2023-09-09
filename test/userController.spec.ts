@@ -23,6 +23,11 @@ const sessionPersistentExpiry = Number(config.get('session.persistentExpiry'))
 const server = await import('../server.js')
 const expressPort = config.get('ports.express')
 
+async function getCSRFToken(agent: ChaiHttp.Agent) {
+    const res = await agent.get('/api/csrf-token');
+ //   console.log(res.body.csrfToken)
+    return res.body.csrfToken;
+}
 
 after(async function () {
     this.timeout(10000) // Set the timeout to 10 seconds.
@@ -43,8 +48,12 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
         agent.close();
     });
 
-    it('should successfully register a new user', async function () {     
-        const res = await agent.post('/api/v1/users').send(testUser);
+    it('should successfully register a new user', async function () {
+//        const csrfToken = await getCSRFToken(agent); 
+        const res = await agent
+            .post('/api/v1/users')
+//            .set('csrf-token', csrfToken)
+            .send(testUser);
         
         expect(res).to.have.status(201);
         expect(res.body).to.be.a('object');
