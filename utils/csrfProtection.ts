@@ -1,4 +1,4 @@
-import csrf from 'csrf';
+/* import csrf from 'csrf';
 import { type Request, type Response, type NextFunction } from 'express'
 
 const tokens = new csrf();
@@ -17,4 +17,4 @@ const csrfProtection = (req: Request, res: Response, next: NextFunction) => {
     next();
 };
 
-export default csrfProtection;
+export default csrfProtection; */
