@@ -37,6 +37,7 @@ after(async function () {
 describe('Get Current User Endpoint GET /api/v1/users/current-user', function() {
     let agent: ChaiHttp.Agent;
     let testUser: IUser;
+    let testEvent: IEvent;
 
     beforeEach(async function() {
         testUser = new UserModel({
@@ -46,6 +47,15 @@ describe('Get Current User Endpoint GET /api/v1/users/current-user', function() 
         });
         testUser.confirmUser()
         await testUser.save();
+
+        testEvent = new EventModel({
+            eventName: 'TestEvent',
+            startDate: new Date('2023-01-01'),
+            endDate: new Date('2023-01-02'),
+        });
+        await testEvent.save()
+
+        await UserModel.findByIdAndUpdate(testUser._id, { $push: { events: testEvent._id } }).exec();
         
         const user = { email: testUser.email, password: 'testpassword', stayLoggedIn: true };
         agent = chai.request.agent(server.app);  // Create an agent instance
@@ -55,7 +65,7 @@ describe('Get Current User Endpoint GET /api/v1/users/current-user', function() 
     });
 
     afterEach(async function() {
-        // Cleanup: remove test user
+        await EventModel.findByIdAndDelete(testEvent.id).exec();
         await UserModel.findOneAndDelete({email: 'TestUser@gmail.com'}).exec();
         agent.close();
     });
@@ -69,6 +79,14 @@ describe('Get Current User Endpoint GET /api/v1/users/current-user', function() 
         expect(res.body.username).to.be.equal(testUser.username);
         expect(res.body).to.have.property('email');
         expect(res.body.email).to.be.equal(testUser.email);
+        expect(res.body).to.have.property('events');
+        expect(res.body.events).to.be.a('array');
+        expect(res.body.events[0]).to.be.equal(testEvent.id);
+        expect(res.body).to.have.property('availabilities');
+        expect(res.body.availabilities).to.be.a('array');
+        expect(res.body.availabilities).to.be.empty;
+        expect(res.body.confirmed).to.be.true;
+        expect(res.body).to.not.have.property('expirationDate');
     });
 
     it('should fail due to lack of authentication', async function () {
