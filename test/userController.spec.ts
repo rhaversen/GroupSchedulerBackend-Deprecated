@@ -134,7 +134,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('Missing Username, Email, Password and/or Confirm Password');
+        expect(res.body.error).to.be.equal('Missing email');
     });
 
     it('should fail due to missing fields (username)', async function () {
@@ -144,7 +144,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('Missing Username, Email, Password and/or Confirm Password');
+        expect(res.body.error).to.be.equal('Missing username');
     });
 
     it('should fail due to missing fields (password)', async function () {
@@ -154,7 +154,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('Missing Username, Email, Password and/or Confirm Password');
+        expect(res.body.error).to.be.equal('Missing password');
     });
 
     it('should fail due to missing fields (confirmPassword)', async function () {
@@ -164,7 +164,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('Missing Username, Email, Password and/or Confirm Password');
+        expect(res.body.error).to.be.equal('Missing confirmPassword');
     });
 
     it('should fail due to invalid email', async function () {
@@ -184,7 +184,7 @@ describe('User Registration Endpoint POST /api/v1/users', function() {
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal("Password and Confirm Password doesn't match");
+        expect(res.body.error).to.be.equal('Password and Confirm Password does not match');
     });
 
     it('should fail due to short password', async function () {
@@ -424,7 +424,7 @@ describe('User Login Endpoint POST /api/v1/users/login-local', function() {
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('Missing Email');
+        expect(res.body.error).to.be.equal('Missing email');
     });
 
     it('should fail due to missing password', async function () {
@@ -434,7 +434,7 @@ describe('User Login Endpoint POST /api/v1/users/login-local', function() {
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('Missing Password');
+        expect(res.body.error).to.be.equal('Missing password');
     });
 
         it('should fail due to missing email and password', async function () {
@@ -444,7 +444,7 @@ describe('User Login Endpoint POST /api/v1/users/login-local', function() {
 
         expect(res).to.have.status(400);
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('Missing Email and Password');
+        expect(res.body.error).to.be.equal('Missing email, password');
     });
 
     it('should fail due to invalid email format', async function () {
@@ -864,7 +864,7 @@ describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function()
     });
 });
 
-describe('Update User Endpoint PATCH /update-user', function() {
+describe('Update Password Endpoint PATCH /update-password', function() {
     let testUser: IUser;
     let agent: ChaiHttp.Agent;
 
@@ -891,21 +891,19 @@ describe('Update User Endpoint PATCH /update-user', function() {
         agent.close();
     });
 
-    it('should update TestUser details successfully', async function () {
+    it('should update TestUser password successfully', async function () {
         const updatedDetails = { 
-            newUsername: 'UpdatedTestUser',
             newPassword: 'UpdatedPassword',
             confirmNewPassword: 'UpdatedPassword',
-            oldPassword: 'TestPassword'
+            currentPassword: 'TestPassword'
         };
-        const res = await agent.patch('/api/v1/users/update-user').send(updatedDetails);
+        const res = await agent.patch('/api/v1/users/update-password').send(updatedDetails);
 
         expect(res).to.have.status(200);
 
         // Fetch the updated user from the database
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
         
-        expect(updatedTestUser.username).to.equal('UpdatedTestUser');
         expect(await updatedTestUser.comparePassword('UpdatedPassword')).to.be.true;
 
         expect(updatedTestUser.confirmed).to.be.true
@@ -917,7 +915,7 @@ describe('Update User Endpoint PATCH /update-user', function() {
 
     it('should not allow updating without authentication', async function() {
         const newAgent = chai.request.agent(server.app);
-        const res = await newAgent.patch('/api/v1/users/update-user').send({ newUsername: 'newTestUser' });
+        const res = await newAgent.patch('/api/v1/users/update-password').send({ newUsername: 'newTestUser' });
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
 
@@ -931,7 +929,7 @@ describe('Update User Endpoint PATCH /update-user', function() {
     });
 
     it('should handle invalid or malformed data', async function() {
-        const res = await agent.patch('/api/v1/users/update-user').send({ newUsername: '' });  // Empty username
+        const res = await agent.patch('/api/v1/users/update-password').send({ newUsername: '' });  // Empty username
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
 
@@ -941,59 +939,120 @@ describe('Update User Endpoint PATCH /update-user', function() {
         expect(res).to.have.status(400);
         expect(res.body).to.be.a('object');
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('No fields submitted')
+        expect(res.body.error).to.be.equal('Missing newPassword, confirmNewPassword, currentPassword')
     });
 
-    it('should not allow password update with incorrect old password', async function() {
-        const incorrectOldPasswordDetails = {
-            newUsername: 'UpdatedTestUser',
+    it('should not allow password update with incorrect current password', async function() {
+        const incorrectCurrentPasswordDetails = {
             newPassword: 'UpdatedPassword2',
             confirmNewPassword: 'UpdatedPassword2',
-            oldPassword: 'WrongOldPassword'
+            currentPassword: 'WrongCurrentPassword'
         };
-        const res = await agent.patch('/api/v1/users/update-user').send(incorrectOldPasswordDetails);
+        const res = await agent.patch('/api/v1/users/update-password').send(incorrectCurrentPasswordDetails);
         
         expect(res).to.have.status(400);
         expect(res.body).to.be.a('object');
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('Old password does not match with user password');
+        expect(res.body.error).to.be.equal('currentPassword does not match with user password');
     });
     
     it('should not allow password update with mismatching password and confirm password', async function() {
         const mismatchingPasswords = {
-            newUsername: 'UpdatedTestUser2',
             newPassword: 'UpdatedPassword2',
             confirmNewPassword: 'WrongConfirmPassword',
-            oldPassword: 'TestPassword'
+            currentPassword: 'TestPassword'
         };
-        const res = await agent.patch('/api/v1/users/update-user').send(mismatchingPasswords);
+        const res = await agent.patch('/api/v1/users/update-password').send(mismatchingPasswords);
         
         expect(res).to.have.status(400);
         expect(res.body).to.be.a('object');
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('New password and Confirm New Password does not match');
+        expect(res.body.error).to.be.equal('newPassword and confirmNewPassword does not match');
     });
 
-    it('should return an error if not all password fields are provided', async function() {
+    it('should return an error if not all fields are provided', async function() {
         const partialPasswordDetails = {
             newPassword: 'PartialUpdatePassword',
             confirmNewPassword: 'PartialUpdatePassword'
         };
-        const res = await agent.patch('/api/v1/users/update-user').send(partialPasswordDetails);
+        const res = await agent.patch('/api/v1/users/update-password').send(partialPasswordDetails);
         expect(res).to.have.status(400);
         expect(res.body).to.be.a('object');
         expect(res.body).to.have.property('error');
-        expect(res.body.error).to.be.equal('When setting a new password, you must provide the old password, new password, and confirm new password');
+        expect(res.body.error).to.be.equal('Missing currentPassword');
     });
-    
-    it('should allow username update without password fields', async function() {
-        const usernameUpdateDetails = {
-            newUsername: 'JustUsernameUpdate'
+});
+
+describe('Update Username Endpoint PATCH /update-username', function() {
+    let testUser: IUser;
+    let agent: ChaiHttp.Agent;
+
+    beforeEach(async function() {
+        // Create a test user
+        testUser = new UserModel({
+            username: 'TestUser',
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
+        });
+        testUser.confirmUser()
+        await testUser.save();
+
+        agent = chai.request.agent(server.app);
+        await agent.post('/api/v1/users/login-local').send({
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
+        });
+    });
+
+    afterEach(async function() {
+        // Cleanup: remove test user
+        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec();
+        agent.close();
+    });
+
+    it('should update TestUser username successfully', async function () {
+        const updatedDetails = { 
+            newUsername: 'UpdatedTestUser',
         };
-        const res = await agent.patch('/api/v1/users/update-user').send(usernameUpdateDetails);
+        const res = await agent.patch('/api/v1/users/update-username').send(updatedDetails);
+
         expect(res).to.have.status(200);
+
+        // Fetch the updated user from the database
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
-        expect(updatedTestUser.username).to.equal('JustUsernameUpdate');
+        
+        expect(updatedTestUser.username).to.equal('UpdatedTestUser');
+
+        expect(updatedTestUser.confirmed).to.be.true
+        expect(updatedTestUser.toObject()).to.not.have.property('expirationDate');
+    });
+
+    it('should not allow updating without authentication', async function() {
+        const newAgent = chai.request.agent(server.app);
+        const res = await newAgent.patch('/api/v1/users/update-username').send({ newUsername: 'newTestUser' });
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
+
+        expect(updatedTestUser.confirmed).to.be.true
+        expect(updatedTestUser.toObject()).to.not.have.property('expirationDate');
+
+        expect(res).to.have.status(401);
+        expect(res.body.message).to.be.equal('Unauthorized');
+
+        newAgent.close();
+    });
+
+    it('should handle invalid or malformed data', async function() {
+        const res = await agent.patch('/api/v1/users/update-username').send({ newUsername: '' });  // Empty username
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser;
+        expect(updatedTestUser.confirmed).to.be.true
+        expect(updatedTestUser.toObject()).to.not.have.property('expirationDate');
+
+        expect(res).to.have.status(400);
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.property('error');
+        expect(res.body.error).to.be.equal('Missing newUsername')
     });
 });
 

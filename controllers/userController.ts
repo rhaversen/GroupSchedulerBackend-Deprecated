@@ -36,7 +36,7 @@ const frontendDomain = config.get('frontend.domain')
 // Setup
 dotenv.config()
 
-// Helper function
+// Helper functions
 function generateConfirmationLink(userId: string): string{
     let confirmationLink: string
     // Generate confirmation link
@@ -50,6 +50,30 @@ function generateConfirmationLink(userId: string): string{
 
     return confirmationLink
 }
+
+async function updateFollowArrays(userId: string, targetUserId: string, action: 'follow' | 'unfollow'): Promise<void> {
+    if (action === 'follow') {
+        await Promise.all([
+            UserModel.findByIdAndUpdate(userId, { $push: { following: { $each: [targetUserId] } } }).exec(),
+            UserModel.findByIdAndUpdate(targetUserId, { $push: { followers: { $each: [userId] } } }).exec()
+        ]);
+    } else if (action === 'unfollow') {
+        await Promise.all([
+            UserModel.findByIdAndUpdate(userId, { $pull: { following: targetUserId } }).exec(),
+            UserModel.findByIdAndUpdate(targetUserId, { $pull: { followers: userId } }).exec()
+        ]);
+    }
+}
+
+function ensureFieldsPresent(body: { [x: string]: string }, requiredFields: string[], next: NextFunction): boolean {
+    const missingFields = requiredFields.filter(reqField => !body[reqField]);
+    if (missingFields.length > 0) {
+        next(new MissingFieldsError(`Missing ${missingFields.join(', ')}`));
+        return true;
+    }
+    return false;
+}
+
 
 export const getCurrentUser =
 (req: Request, res: Response, next: NextFunction): void => {
@@ -74,8 +98,9 @@ export const registerUser = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let { username, email, password, confirmPassword } = req.body
 
-    if (!username || !email || !password || !confirmPassword) {
-        next(new MissingFieldsError('Missing Username, Email, Password and/or Confirm Password')); return
+    const requiredFields = ['username', 'email', 'password', 'confirmPassword'];
+    if(ensureFieldsPresent(req.body, requiredFields, next)) {
+        return
     }
 
     if (!validator.isEmail(email)) {
@@ -83,7 +108,7 @@ async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     }
 
     if (password !== confirmPassword) {
-        next(new InvalidCredentialsError("Password and Confirm Password doesn't match")); return
+        next(new InvalidCredentialsError('Password and Confirm Password does not match')); return
     }
 
     if (String(password).length < 4) {
@@ -151,17 +176,11 @@ async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 
 export const loginUserLocal = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    let { email, password } = req.body
 
-    if (!email && !password) {
-        next(new MissingFieldsError('Missing Email and Password')); return
-    }
-    if (!email) {
-        next(new MissingFieldsError('Missing Email')); return
-    }
-    if (!password) {
-        next(new MissingFieldsError('Missing Password')); return
-    }
+    const requiredFieldsForLogin = ['email', 'password'];
+    if (ensureFieldsPresent(req.body, requiredFieldsForLogin, next)) {
+        return
+    }   
 
     passport.authenticate('local', (err: Error, user: IUser, info: { message: string }) => {
         if (err) {
@@ -197,7 +216,7 @@ async (req: Request, res: Response, next: NextFunction): Promise<void> => {
             if (sessionErr) {
                 return next(sessionErr);
             }
-            res.status(200).json({ message: "Logged out successfully" });
+            res.status(200).json({ message: 'Logged out successfully' });
         })
     })
 })
@@ -237,13 +256,9 @@ async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         res.status(200).json({ message: 'User is already followed' }); return
     }
 
-    await Promise.all([
-        UserModel.findByIdAndUpdate(user._id, { $push: { following: { $each: [followedUserId] } } }).exec(),
-        UserModel.findByIdAndUpdate(followedUserId, { $push: { followers: { $each: [user._id] } } }).exec()
-    ])        
-
+    await updateFollowArrays(user.id, followedUser.id, 'follow'); 
     res.status(200).json(followedUser)
-})
+})    
 
 export const unfollowUser = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -264,13 +279,9 @@ async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         res.status(400).json({ error: 'User is not followed' }); return
     }
 
-    await Promise.all([
-        UserModel.findByIdAndUpdate(user._id, { $pull: { following: followedUserId } }).exec(),
-        UserModel.findByIdAndUpdate(followedUserId, { $pull: { following: user._id } }).exec()
-    ])
-
+    await updateFollowArrays(user.id, followedUser.id, 'unfollow');
     res.status(200).json(followedUser)
-})
+})        
 
 export const getFollowers = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -313,50 +324,54 @@ async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     res.status(200).json(commonEvents)
 })
 
-export const updateUser = asyncErrorHandler(
+export const updatePassword = asyncErrorHandler(
 async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
 
     const {
-        newUsername,
         newPassword,
         confirmNewPassword,
-        oldPassword
+        currentPassword
     } = req.body
 
-    if (!newUsername && !newPassword && !confirmNewPassword && !oldPassword) {
-        next(new MissingFieldsError('No fields submitted')); return;
+    const requiredFields = ['newPassword', 'confirmNewPassword', 'currentPassword'];
+    if (ensureFieldsPresent(req.body, requiredFields, next)) {
+        return
     }
 
-    // Check if any password fields are provided
-    const passwordFieldsProvided = newPassword || confirmNewPassword || oldPassword
-
-    // If any password fields are present, ensure all are present
-    if (passwordFieldsProvided) {
-        const allPasswordFieldsProvided = newPassword && confirmNewPassword && oldPassword
-        
-        if (!allPasswordFieldsProvided) {
-            next(new MissingFieldsError('When setting a new password, you must provide the old password, new password, and confirm new password')); return;
-        }
-
-        if (newPassword !== confirmNewPassword) {
-            next(new InvalidCredentialsError('New password and Confirm New Password does not match'))
-        }
-
-        const passwordsMatch = await user.comparePassword(oldPassword)
-        if (passwordsMatch) {
-            user.password = newPassword;
-        } else {
-            next(new InvalidCredentialsError('Old password does not match with user password')); return;
-        }
+    if(newPassword !== confirmNewPassword){
+        next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match')); return;
     }
 
-    // If a new username is provided, update the username
-    if (newUsername) {
-        user.username = newUsername;
+    const passwordsMatch = await user.comparePassword(currentPassword)
+    if (passwordsMatch) {
+        user.password = newPassword;
+    } else {
+        next(new InvalidCredentialsError('currentPassword does not match with user password')); return;
     }
 
     await user.save();
 
     res.status(200).json(user);
 });
+
+export const updateUsername = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        const user = req.user as IUser
+    
+        const newUsername = req.body.newUsername
+
+        const requiredFields = ['newUsername'];
+        if (ensureFieldsPresent(req.body, requiredFields, next)) {
+            return
+        }
+    
+        console.log(newUsername)
+        user.username = newUsername
+        console.log('a')
+
+        await user.save();
+        console.log('b')
+
+        res.status(200).json(user);
+    });

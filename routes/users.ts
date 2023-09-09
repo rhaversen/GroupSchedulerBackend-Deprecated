@@ -22,7 +22,8 @@ import {
     getFollowers,
     getFollowing,
     getCommonEvents,
-    updateUser
+    updatePassword,
+    updateUsername
 } from '../controllers/userController.js'
 
 import { ensureAuthenticated } from '../utils/passportConfig.js'
@@ -153,12 +154,22 @@ router.get('/:userId/common-events',
 
 /**
 * @route PATCH api/v1/users/update-password
-* @desc Update users name and/or password
+* @desc Update users password
 * @access AUTHENTICATED
 */
-router.patch('/update-user',
+router.patch('/update-password',
     ensureAuthenticated,
-    updateUser
+    updatePassword
+)
+
+/**
+* @route PATCH api/v1/users/update-username
+* @desc Update users name
+* @access AUTHENTICATED
+*/
+router.patch('/update-username',
+    ensureAuthenticated,
+    updateUsername
 )
 
 export default router
