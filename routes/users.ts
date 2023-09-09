@@ -55,11 +55,11 @@ router.post('/',
 )
 
 /**
- * @route POST api/v1/users/confirm/:code
+ * @route POST api/v1/users/confirm/:userId
  * @desc Confirm user
  * @access Public
  */
-router.post('/confirm/:userCode',
+router.post('/confirm/:userId',
     sanitizeInput,
     confirmUser
 )
