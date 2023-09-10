@@ -52,7 +52,7 @@ export interface IUser extends Document {
     registrationDate: Date
     expirationDate?: Date
 
-    confirmUser: () => Promise<void>
+    confirmUser: () => void
     comparePassword: (candidatePassword: string) => Promise<boolean>
     generateNewUserCode: () => Promise<string>
 }
@@ -73,7 +73,7 @@ const userSchema = new Schema<IUser>({
 
 userSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
 
-userSchema.methods.confirmUser = async function () {
+userSchema.methods.confirmUser = function () {
     this.confirmed = true // Update the user's status to confirmed
     delete this.expirationDate // Remove the expiration date to cancel auto-deletion
 }
