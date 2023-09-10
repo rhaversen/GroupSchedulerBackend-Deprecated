@@ -12,6 +12,7 @@ import {
 import {
     getCurrentUser,
     registerUser,
+    sendPasswordResetEmail,
     confirmUser,
     loginUserLocal,
     logoutUser,
@@ -49,6 +50,16 @@ router.get('/current-user',
 router.post('/',
     sanitizeInput,
     registerUser
+)
+
+/**
+* @route POST api/v1/users/send-password-reset-email
+* @desc Send a password reset email
+* @access Public
+*/
+router.post('/send-reset-password-email',
+    sanitizeInput,
+    sendPasswordResetEmail
 )
 
 /**
