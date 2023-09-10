@@ -51,3 +51,12 @@ export const sendConfirmationEmail = async (email: string, confirmationLink: str
 
     await sendEmail(email, subject, text, html)
 }
+
+// Function to send password reset email
+export const sendPasswordResetEmail = async (email: string, passwordResetLink: string): Promise<void> => {
+    const subject = 'Password reset requested'
+    const text = `Please reset your password by pasting this link into your browser: ${passwordResetLink} \n (Your email inbox does not support HTML)`
+    const html = `<a href="${passwordResetLink}">${passwordResetLink}</a> <br> <p>Please reset your password by clicking the link above.</p>`
+
+    await sendEmail(email, subject, text, html)
+}
