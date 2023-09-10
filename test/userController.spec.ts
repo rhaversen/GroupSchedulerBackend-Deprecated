@@ -238,7 +238,7 @@ describe('User Registration Endpoint POST /api/v1/users', function () {
 
 describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', function () {
     let savedUser: IUser
-    let userId: string
+    let userCode: string
     let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
@@ -249,7 +249,7 @@ describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', func
             password: 'ToBeConfirmedPassword'
         })
         savedUser = await newUser.save()
-        userId = savedUser.id
+        userCode = savedUser.userCode
 
         agent = chai.request.agent(server.app) // Create an agent instance
     })
@@ -261,13 +261,13 @@ describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', func
     })
 
     it('should confirm a user', async function () {
-        const res = await agent.post(`/api/v1/users/confirm/${userId}`).send()
+        const res = await agent.post(`/api/v1/users/confirm/${userCode}`).send()
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('message')
         expect(res.body.message).to.be.equal('Confirmation successful! Your account has been activated.')
 
-        const confirmedUser = await UserModel.findById(userId).exec() as IUser
+        const confirmedUser = await UserModel.findById(savedUser._id).exec() as IUser
         expect(confirmedUser.confirmed).to.be.true
     })
 
@@ -280,8 +280,8 @@ describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', func
     })
 
     it('should fail if user already confirmed', async function () {
-        await agent.post(`/api/v1/users/confirm/${userId}`).send()
-        const res = await agent.post(`/api/v1/users/confirm/${userId}`).send()
+        await agent.post(`/api/v1/users/confirm/${userCode}`).send()
+        const res = await agent.post(`/api/v1/users/confirm/${userCode}`).send()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
