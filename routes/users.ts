@@ -4,9 +4,9 @@
 import Router from 'express'
 
 // Own modules
-import {
-    sanitizeInput
-} from '../middleware/sanitizer.js'
+import { sanitizeInput } from '../middleware/sanitizer.js'
+import { ensureAuthenticated } from '../utils/passportConfig.js'
+
 
 // Controller functions
 import {
@@ -27,17 +27,16 @@ import {
     updateUsername
 } from '../controllers/userController.js'
 
-import { ensureAuthenticated } from '../utils/passportConfig.js'
-
 // Destructuring and global variables
 const router = Router()
 
 /**
  * @route GET api/v1/users/current-user
- * @desc Validate session
+ * @desc Get user document
  * @access Public
  */
 router.get('/current-user',
+    sanitizeInput,
     ensureAuthenticated,
     getCurrentUser
 )
@@ -85,20 +84,21 @@ router.post('/login-local',
 /**
 * @route DELETE api/v1/users/logout
 * @desc Logout user and delete session from store
-* @access AUTHENTICATED
+* @access Authenticated
 */
 router.delete('/logout',
-    ensureAuthenticated,
     sanitizeInput,
+    ensureAuthenticated,
     logoutUser
 )
 
 /**
 * @route GET api/v1/users/events
 * @desc Get the users events
-* @access AUTHENTICATED
+* @access Authenticated
 */
 router.get('/events',
+    sanitizeInput,
     ensureAuthenticated,
     getEvents
 )
@@ -106,9 +106,10 @@ router.get('/events',
 /**
  * @route POST api/v1/users/new-code
  * @desc Update user with a random user code
- * @access AUTHENTICATED
+ * @access Authenticated
 */
 router.post('/new-code',
+    sanitizeInput,
     ensureAuthenticated,
     newCode
 )
@@ -116,9 +117,10 @@ router.post('/new-code',
 /**
 * @route PUT api/v1/users/unfollow/:userId
 * @desc Follow user. Add userId to users following array, add user to userId's followers array
-* @access AUTHENTICATED
+* @access Authenticated
 */
 router.put('/following/:userId',
+    sanitizeInput,
     ensureAuthenticated,
     followUser
 )
@@ -126,9 +128,10 @@ router.put('/following/:userId',
 /**
 * @route DELETE api/v1/users/unfollow/:userId
 * @desc Un-follow user. Remove userId from users following array, remove user from userId's followers array
-* @access AUTHENTICATED
+* @access Authenticated
 */
 router.delete('/unfollow/:userId',
+    sanitizeInput,
     ensureAuthenticated,
     unfollowUser
 )
@@ -136,9 +139,10 @@ router.delete('/unfollow/:userId',
 /**
 * @route GET api/v1/users/followers
 * @desc Get the users following the logged in user (An array of names)
-* @access AUTHENTICATED
+* @access Authenticated
 */
 router.get('/followers',
+    sanitizeInput,
     ensureAuthenticated,
     getFollowers
 )
@@ -146,9 +150,10 @@ router.get('/followers',
 /**
 * @route GET api/v1/users/following
 * @desc Get the users being followed by the logged in user (An array of names)
-* @access AUTHENTICATED
+* @access Authenticated
 */
 router.get('/following',
+    sanitizeInput,
     ensureAuthenticated,
     getFollowing
 )
@@ -156,9 +161,10 @@ router.get('/following',
 /**
 * @route GET api/v1/users/:userId/common-events
 * @desc Get the events in common with a user
-* @access AUTHENTICATED
+* @access Authenticated
 */
 router.get('/:userId/common-events',
+    sanitizeInput,
     ensureAuthenticated,
     getCommonEvents
 )
@@ -166,9 +172,10 @@ router.get('/:userId/common-events',
 /**
 * @route PATCH api/v1/users/update-password
 * @desc Update users password
-* @access AUTHENTICATED
+* @access Authenticated
 */
 router.patch('/update-password',
+    sanitizeInput,
     ensureAuthenticated,
     updatePassword
 )
@@ -176,9 +183,10 @@ router.patch('/update-password',
 /**
 * @route PATCH api/v1/users/update-username
 * @desc Update users name
-* @access AUTHENTICATED
+* @access Authenticated
 */
 router.patch('/update-username',
+    sanitizeInput,
     ensureAuthenticated,
     updateUsername
 )
