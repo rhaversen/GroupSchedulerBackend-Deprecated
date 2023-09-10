@@ -54,7 +54,8 @@
     "typescript": "^5.2.2"
   },
   "scripts": {
-    "start": "ts-node-esm server.ts",
+    "start": "node dist/server.js",
+    "build-and-start": "npm run build && npm run start",
     "test": "cross-env NODE_ENV=test MOCHA_REPORTER_OPTIONS=toConsole=true mocha --reporter spec --recursive dist/test/**/*.spec.js",
     "build": "tsc",
     "build-and-test": "npm run build && npm run test",
