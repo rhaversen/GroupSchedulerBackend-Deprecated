@@ -43,13 +43,13 @@ const frontendDomain = getFrontendDomain()
 dotenv.config()
 
 // Helper functions
-function generateConfirmationLink (userId: string): string {
+function generateConfirmationLink (userCode: string): string {
     let confirmationLink: string
     // Generate confirmation link
     if (process.env.NODE_ENV === 'production') {
-        confirmationLink = `http://${frontendDomain}/confirm?userId=${userId}`
+        confirmationLink = `http://${frontendDomain}/confirm?userCode=${userCode}`
     } else {
-        confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userId=${userId}`
+        confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${userCode}`
     }
 
     logger.info(confirmationLink)
@@ -123,7 +123,7 @@ export const registerUser = asyncErrorHandler(
         const existingUser = await UserModel.findOne({ email: { $eq: email } }).exec()
 
         if (!existingUser) {
-        // User doesn't exist, create a new user
+            // User doesn't exist, create a new user
             const newUser = new UserModel({
                 username,
                 email,
@@ -135,7 +135,7 @@ export const registerUser = asyncErrorHandler(
             await sendConfirmationEmail(email, confirmationLink)
         } else {
             if (!existingUser.confirmed) {
-            // User exists, but is not confirmed. Send a new confirmation link
+                // User exists, but is not confirmed. Send a new confirmation link
                 const confirmationLink = generateConfirmationLink(existingUser.id)
                 await sendConfirmationEmail(email, confirmationLink)
 
@@ -152,14 +152,14 @@ export const registerUser = asyncErrorHandler(
 export const confirmUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // Extract the confirmation code from the query parameters
-        const { userId } = req.params
+        const { userCode } = req.params
 
-        if (!userId) {
+        if (!userCode) {
             next(new MissingFieldsError('Confirmation code missing')); return
         }
 
         // Find the user with the corresponding confirmation code
-        const user = await UserModel.findById(userId).exec()
+        const user = await UserModel.findOne({ userCode: { $eq: userCode } }).exec()
 
         if (!user) {
             next(new InvalidConfirmationCodeError('Invalid confirmation code')); return

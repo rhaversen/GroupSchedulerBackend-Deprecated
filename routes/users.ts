@@ -52,17 +52,17 @@ router.post('/',
 )
 
 /**
- * @route POST api/v1/users/confirm/:userId
+ * @route POST api/v1/users/confirm/:userCode
  * @desc Confirm user
  * @access Public
  */
-router.post('/confirm/:userId',
+router.post('/confirm/:userCode',
     sanitizeInput,
     confirmUser
 )
 
 /**
-* @route POST api/v1/users/login
+* @route POST api/v1/users/login-local
 * @desc Login user and return session cookie
 * @access Public
 */
