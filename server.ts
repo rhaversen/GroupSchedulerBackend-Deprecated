@@ -7,10 +7,10 @@ import 'dotenv/config'
 import express from 'express'
 import 'express-async-errors'
 import mongoSanitize from 'express-mongo-sanitize'
-import RateLimit, { type Options as RateLimitOptions } from 'express-rate-limit'
+import RateLimit from 'express-rate-limit'
 import passport from 'passport'
-import helmet, { type HelmetOptions } from 'helmet'
-import cors, { type CorsOptions } from 'cors'
+import helmet from 'helmet'
+import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import MongoStore from 'connect-mongo'
@@ -21,6 +21,15 @@ import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { connectToDatabase, disconnectFromDatabase, mongoose } from './utils/database.js'
 // import csrfProtection from './utils/csrfProtection.js';
+import {
+    getHelmetCSP,
+    getHelmetHSTS,
+    getCorsOptions,
+    getRelaxedApiLimiterConfig,
+    getSensitiveApiLimiterConfig,
+    getTestApiLimiterConfig,
+    getExpressPort
+} from './utils/setupConfig.js'
 
 // Import routes
 import userRoutes from './routes/users.js'
@@ -31,40 +40,7 @@ import availabilityRoutes from './routes/availabilities.js'
 const app = express()
 const server = http.createServer(app)
 
-// Types
-type ContentSecurityPolicyOptions = HelmetOptions['contentSecurityPolicy']
-type HstsOptions = HelmetOptions['hsts']
-
 // Configs
-function getHelmetCSP (): ContentSecurityPolicyOptions {
-    return config.get('helmet.CSP')
-}
-
-function getHelmetHSTS (): HstsOptions {
-    return config.get('helmet.HSTS')
-}
-
-function getCorsOptions (): CorsOptions {
-    return config.get('corsOpts')
-}
-
-function getRelaxedApiLimiterConfig (): RateLimitOptions {
-    return config.get('apiLimiter.nonSensitive')
-}
-
-function getSensitiveApiLimiterConfig (): RateLimitOptions {
-    return config.get('apiLimiter.sensitive')
-}
-
-function getTestApiLimiterConfig (): RateLimitOptions {
-    return config.get('apiLimiter.test')
-}
-
-function getExpressPort (): number {
-    return config.get('ports.express')
-}
-
-// Setting configs
 const helmetCSP = getHelmetCSP()
 const helmetHSTS = getHelmetHSTS()
 const confCorsOptions = getCorsOptions()

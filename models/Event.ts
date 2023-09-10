@@ -9,6 +9,10 @@ import { customAlphabet } from 'nanoid'
 import UserModel, { type IUser } from './User.js'
 import logger from '../utils/logger.js'
 import errors from '../utils/errors.js'
+import {
+    getNanoidAlphabet,
+    getNanoidLength
+} from '../utils/setupConfig.js'
 
 // Destructuring and global variables
 const { Schema } = mongoose
@@ -17,8 +21,8 @@ const {
 } = errors
 
 // Config
-const nanoidAlphabet = String(config.get('nanoid.alphabet'))
-const nanoidLength = Number(config.get('nanoid.length'))
+const nanoidAlphabet = getNanoidAlphabet()
+const nanoidLength = getNanoidLength()
 
 // Constants
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)

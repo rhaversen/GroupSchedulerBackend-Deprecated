@@ -1,12 +1,19 @@
 // Node.js built-in modules
 import config from 'config'
 
+// Third-party libraries
 import nodemailer from 'nodemailer'
 import dotenv from 'dotenv'
 
+// Own modules
+import {
+    getTransporterPort,
+    getEmailFrom
+} from '../utils/setupConfig.js'
+
 // Config
-const transporterPort = Number(config.get('email.port'))
-const emailFrom = String(config.get('email.from'))
+const transporterPort = getTransporterPort()
+const emailFrom = getEmailFrom()
 
 dotenv.config()
 

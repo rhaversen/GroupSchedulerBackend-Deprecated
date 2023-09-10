@@ -14,6 +14,12 @@ import { sendConfirmationEmail } from '../utils/mailer.js'
 import UserModel, { type IUserPopulated, type IUser } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import logger from '../utils/logger.js'
+import {
+    getSessionExpiry,
+    getSessionPersistentExpiry,
+    getNextJsPort,
+    getFrontendDomain
+} from '../utils/setupConfig.js'
 
 // Destructuring and global variables
 const {
@@ -28,23 +34,6 @@ const {
 } = errors
 
 // Config
-function getSessionExpiry (): number {
-    return config.get('session.expiry')
-}
-
-function getSessionPersistentExpiry (): number {
-    return config.get('session.persistentExpiry')
-}
-
-function getNextJsPort (): number {
-    return config.get('ports.nextJs')
-}
-
-function getFrontendDomain (): string {
-    return config.get('frontend.domain')
-}
-
-// Using the functions
 const sessionExpiry = getSessionExpiry()
 const sessionPersistentExpiry = getSessionPersistentExpiry()
 const nextJsPort = getNextJsPort()

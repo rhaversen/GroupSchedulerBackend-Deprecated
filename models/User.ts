@@ -1,5 +1,4 @@
 // Node.js built-in modules
-import config from 'config'
 
 // Third-party libraries
 import dotenv from 'dotenv'
@@ -12,6 +11,12 @@ import errors from '../utils/errors.js'
 import logger from '../utils/logger.js'
 import { type IAvailability } from './Availability.js'
 import EventModel, { type IEvent } from './Event.js'
+import {
+    getSaltRounds,
+    getNanoidAlphabet,
+    getNanoidLength,
+    getUserExpiry
+} from '../utils/setupConfig.js'
 
 // Setup
 dotenv.config()
@@ -24,10 +29,10 @@ const {
 } = errors
 
 // Config
-const saltRounds = Number(config.get('bcrypt.saltRounds'))
-const nanoidAlphabet = String(config.get('nanoid.alphabet'))
-const nanoidLength = Number(config.get('nanoid.length'))
-const userExpiry = Number(config.get('userSettings.unconfirmedUserExpiry'))
+const saltRounds = getSaltRounds()
+const nanoidAlphabet = getNanoidAlphabet()
+const nanoidLength = getNanoidLength()
+const userExpiry = getUserExpiry()
 
 // Constants
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)

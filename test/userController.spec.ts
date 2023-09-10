@@ -11,17 +11,23 @@ import { parse } from 'cookie'
 import logger from '../utils/logger.js'
 import UserModel, { type IUser } from '../models/User.js'
 import EventModel, { type IEvent } from '../models/Event.js'
-import mongoose from 'mongoose'
+import {
+    getSessionExpiry,
+    getSessionPersistentExpiry,
+    getExpressPort
+} from '../utils/setupConfig.js'
 
 dotenv.config()
 
 chai.use(chaiHttp)
 const { expect } = chai
 
-const sessionExpiry = Number(config.get('session.expiry'))
-const sessionPersistentExpiry = Number(config.get('session.persistentExpiry'))
 const server = await import('../server.js')
-const expressPort = config.get('ports.express')
+
+// Using the functions
+const sessionExpiry = getSessionExpiry()
+const sessionPersistentExpiry = getSessionPersistentExpiry()
+const expressPort = getExpressPort()
 
 async function getCSRFToken (agent: ChaiHttp.Agent) {
     const res = await agent.get('/api/csrf-token')

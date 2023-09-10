@@ -3,26 +3,18 @@ import config from 'config'
 
 // Third-party libraries
 import 'dotenv/config'
-import mongoose, { type ConnectOptions } from 'mongoose'
+import mongoose from 'mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 // Own modules
 import logger from './logger.js'
+import {
+    getMongooseOptions,
+    getMaxRetryAttempts,
+    getRetryInterval
+} from '../utils/setupConfig.js'
 
 // Config
-function getMongooseOptions (): ConnectOptions {
-    return config.get('mongoose.options')
-}
-
-function getMaxRetryAttempts (): number {
-    return config.get('mongoose.retrySettings.maxAttempts')
-}
-
-function getRetryInterval (): number { // in milliseconds
-    return config.get('mongoose.retrySettings.interval')
-}
-
-// Using the functions
 const mongooseOpts = getMongooseOptions()
 const maxRetryAttempts = getMaxRetryAttempts()
 const retryInterval = getRetryInterval()
