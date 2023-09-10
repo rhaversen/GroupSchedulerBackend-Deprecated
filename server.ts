@@ -20,7 +20,7 @@ import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { connectToDatabase, disconnectFromDatabase, mongoose } from './utils/database.js'
-import csrfProtection from './utils/csrfProtection.js';
+//import csrfProtection from './utils/csrfProtection.js';
 
 // Import routes
 import userRoutes from './routes/users.js'
