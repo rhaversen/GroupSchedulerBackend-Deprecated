@@ -29,10 +29,10 @@ export interface IRequestWithEvent extends Request {
 }
 
 // helper functions
-function isMongoId (str: string) {
+function isMongoId (str: string): boolean {
     return /^[0-9a-fA-F]{24}$/.test(str)
 }
-function isNanoid (str: string) {
+function isNanoid (str: string): boolean {
     const regex = new RegExp(`^[${nanoidAlphabet}]{${nanoidLength}}$`)
     return regex.test(str)
 }
@@ -51,7 +51,7 @@ export async function getEventByIdOrCode (eventIdOrCode: string): Promise<IEvent
     const event = await EventModel.findOne(query).exec()
 
     // Check if event exists
-    if (!event) throw new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong')
+    if (event === null) throw new EventNotFoundError('Event not found, it might have been deleted or the Event Code (if provided) is wrong')
 
     return event
 }
@@ -62,7 +62,7 @@ export const newCode = asyncErrorHandler(
         const event = await getEventByIdOrCode(eventIdOrCode)
 
         // Generate a new eventCode
-        event.generateNewEventCode()
+        await event.generateNewEventCode()
         res.status(200).json(event.eventCode)
     })
 
@@ -99,7 +99,7 @@ export const createEvent = asyncErrorHandler(
         const participants = req.user
 
         let admins
-        if (isLocked) {
+        if (isLocked === 'true') {
             admins = participants
         }
 
@@ -151,7 +151,6 @@ export const joinEvent = asyncErrorHandler(
             UserModel.findByIdAndUpdate(user._id, { $pull: { events: { $in: [event._id] } } }).exec(),
             EventModel.findByIdAndUpdate(event._id, { $pull: { participants: { $in: [user._id] } } }).exec()
         ])
-        
 
         res.status(200).json(event)
     })
@@ -181,7 +180,7 @@ export const leaveEventOrKick = asyncErrorHandler(
         await Promise.all([
             UserModel.findByIdAndUpdate(user._id, { $pull: { events: { $in: [event._id] } } }).exec(),
             EventModel.findByIdAndUpdate(event._id, { $pull: { participants: { $in: [user._id] } } }).exec()
-        ])        
+        ])
 
         // Remove user from admins if user is admin
         if (event.isAdmin(user.id)) {

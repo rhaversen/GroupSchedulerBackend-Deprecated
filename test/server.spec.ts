@@ -116,7 +116,7 @@ describe('Server Tests', () => {
             } catch (err) {
                 logger.error('Error occurred:', err)
                 throw err // Re-throwing the error to fail the test
-            }            
+            }
         }
 
         // Follow users according to spreadsheet https://docs.google.com/spreadsheets/d/141samGt6TACfhqiGgxYQHJvSCWAKOiOF8dTemNfQrkk/edit
@@ -199,7 +199,7 @@ describe('Server Tests', () => {
         this.timeout(10000) // Set the timeout to 10 seconds.
 
         const newUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword', stayLoggedIn: false }
-        
+
         const res = await chai.request(server.app).post('/api/v1/users').send(newUser)
 
         expect(res).to.have.status(201)

@@ -3,7 +3,7 @@ import { type Request, type Response, type NextFunction } from 'express'
 import validator from 'validator'
 
 // Helper function to recursively sanitize the objects
-function sanitizeObject (obj: Record<string, any>) {
+function sanitizeObject (obj: Record<string, any>): void {
     for (const key in obj) {
         // Ensure that the key is a property of the object itself and not from the prototype chain
         if (obj.hasOwnProperty(key)) {

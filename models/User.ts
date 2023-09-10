@@ -96,38 +96,40 @@ userSchema.methods.generateNewUserCode = async function (this: IUser & { constru
     return userCode
 }
 
-userSchema.pre(/^find/, function(next) {
-
+userSchema.pre(/^find/, function (next) {
     const transformEmailToLowercase = (obj: any) => {
         for (const key in obj) {
             if (typeof obj[key] === 'object') {
-                transformEmailToLowercase(obj[key]);
+                transformEmailToLowercase(obj[key])
             } else if (key === 'email' && typeof obj[key] === 'string') {
-                obj[key] = obj[key].toLowerCase();
+                obj[key] = obj[key].toLowerCase()
             }
         }
-    };
-
-    const conditions = this as { _conditions?: any };
-    if (conditions._conditions) {
-        transformEmailToLowercase(conditions._conditions);
     }
 
-    next();
-});
+    const conditions = this as { _conditions?: any }
+    if (conditions._conditions) {
+        transformEmailToLowercase(conditions._conditions)
+    }
+
+    next()
+})
 
 userSchema.pre('save', async function (next) {
     if (this.isNew) {
         await this.generateNewUserCode()
-        this.email = this.email.toString().toLowerCase();
+        this.email = this.email.toString().toLowerCase()
+        if (!this.confirmed) {
+            this.expirationDate = new Date(Date.now() + userExpiry * 1000) // TTL index, document will expire in process.env.UNCONFIRMED_USER_EXPIRY seconds if not confirmed
+        }
     }
 
     if (this.confirmed) {
-        delete this.expirationDate;
+        delete this.expirationDate
     }
 
     if (this.isModified('email')) {
-        this.email = this.email.toString().toLowerCase();
+        this.email = this.email.toString().toLowerCase()
     }
 
     // Password hashing middleware

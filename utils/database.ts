@@ -10,13 +10,26 @@ import { MongoMemoryServer } from 'mongodb-memory-server'
 import logger from './logger.js'
 
 // Config
-const mongooseOpts = config.get('mongoose.options') as ConnectOptions
-const maxRetryAttempts = Number(config.get('mongoose.retrySettings.maxAttempts'))
-const retryInterval = Number(config.get('mongoose.retrySettings.interval')) // ms
+function getMongooseOptions (): ConnectOptions {
+    return config.get('mongoose.options')
+}
+
+function getMaxRetryAttempts (): number {
+    return config.get('mongoose.retrySettings.maxAttempts')
+}
+
+function getRetryInterval (): number { // in milliseconds
+    return config.get('mongoose.retrySettings.interval')
+}
+
+// Using the functions
+const mongooseOpts = getMongooseOptions()
+const maxRetryAttempts = getMaxRetryAttempts()
+const retryInterval = getRetryInterval()
 
 let memoryServer: MongoMemoryServer
 
-const connectToDatabase = async () => {
+const connectToDatabase = async (): Promise<void> => {
     if (process.env.NODE_ENV === 'test') {
         memoryServer = await MongoMemoryServer.create()
         const mongoUri = memoryServer.getUri()
@@ -47,7 +60,7 @@ const connectToDatabase = async () => {
     }
 }
 
-const disconnectFromDatabase = async () => {
+const disconnectFromDatabase = async (): Promise<void> => {
     if (process.env.NODE_ENV === 'test' && memoryServer) {
         try {
             await mongoose.disconnect()

@@ -5,13 +5,13 @@ import { type Request, type Response, type NextFunction } from 'express'
 
 // Own modules
 import AvailabilityModel, { type IAvailability } from '../models/Availability.js'
-import UserModel, { IUserPopulated, type IUser } from '../models/User.js'
+import UserModel, { type IUserPopulated, type IUser } from '../models/User.js'
 import errors from '../utils/errors.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Destructuring and global variables
 const {
-    MissingFieldsError,
+    MissingFieldsError
 } = errors
 
 export const newOrUpdateAvailability = asyncErrorHandler(
@@ -57,7 +57,7 @@ export const newOrUpdateAvailability = asyncErrorHandler(
 
         const savedAvailability = await newAvailability.save()
 
-        await UserModel.findByIdAndUpdate(user._id, { $push: { availabilities: { $each: [savedAvailability._id] } } }).exec();
+        await UserModel.findByIdAndUpdate(user._id, { $push: { availabilities: { $each: [savedAvailability._id] } } }).exec()
 
         res.status(201).json(savedAvailability)
     })
@@ -66,13 +66,9 @@ export const getAvailabilities = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const user = req.user as IUser
 
-        if (!user) {
-            next(new MissingFieldsError('Date must be specified')); return
-        }
-
         const populatedUser = await user.populate('availabilities') as IUserPopulated
 
-        const availabilities = populatedUser.availabilities as IAvailability[]
+        const availabilities = populatedUser.availabilities
 
         res.status(201).json(availabilities)
     })

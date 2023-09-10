@@ -39,7 +39,7 @@ const router = Router()
 router.get('/current-user',
     ensureAuthenticated,
     getCurrentUser
-);
+)
 
 /**
  * @route POST api/v1/users

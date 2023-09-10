@@ -23,8 +23,8 @@ const transporter = nodemailer.createTransport({
 
 // Generic function to send email
 export const sendEmail = async (to: string, subject: string, text: string, html = ''): Promise<void> => {
-    if (process.env.NODE_ENV === 'test') return 
-    
+    if (process.env.NODE_ENV === 'test') return
+
     const mailOptions = {
         from: emailFrom,
         to,

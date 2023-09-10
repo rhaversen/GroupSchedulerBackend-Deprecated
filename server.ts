@@ -11,16 +11,16 @@ import RateLimit, { type Options as RateLimitOptions } from 'express-rate-limit'
 import passport from 'passport'
 import helmet, { type HelmetOptions } from 'helmet'
 import cors, { type CorsOptions } from 'cors'
-import cookieParser from 'cookie-parser';
-import session from 'express-session';
-import MongoStore from 'connect-mongo';
+import cookieParser from 'cookie-parser'
+import session from 'express-session'
+import MongoStore from 'connect-mongo'
 
 // Own modules
 import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { connectToDatabase, disconnectFromDatabase, mongoose } from './utils/database.js'
-//import csrfProtection from './utils/csrfProtection.js';
+// import csrfProtection from './utils/csrfProtection.js';
 
 // Import routes
 import userRoutes from './routes/users.js'
@@ -36,13 +36,42 @@ type ContentSecurityPolicyOptions = HelmetOptions['contentSecurityPolicy']
 type HstsOptions = HelmetOptions['hsts']
 
 // Configs
-const helmetCSP = config.get('helmet.CSP') as ContentSecurityPolicyOptions
-const helmetHSTS = config.get('helmet.HSTS') as HstsOptions
-const confCorsOptions = config.get('corsOpts') as CorsOptions
-const confRelaxedApiLimiter = config.get('apiLimiter.nonSensitive') as RateLimitOptions
-const confSensitiveApiLimiter = config.get('apiLimiter.sensitive') as RateLimitOptions
-const confTestApiLimiter = config.get('apiLimiter.test') as RateLimitOptions
-const expressPort = config.get('ports.express')
+function getHelmetCSP (): ContentSecurityPolicyOptions {
+    return config.get('helmet.CSP')
+}
+
+function getHelmetHSTS (): HstsOptions {
+    return config.get('helmet.HSTS')
+}
+
+function getCorsOptions (): CorsOptions {
+    return config.get('corsOpts')
+}
+
+function getRelaxedApiLimiterConfig (): RateLimitOptions {
+    return config.get('apiLimiter.nonSensitive')
+}
+
+function getSensitiveApiLimiterConfig (): RateLimitOptions {
+    return config.get('apiLimiter.sensitive')
+}
+
+function getTestApiLimiterConfig (): RateLimitOptions {
+    return config.get('apiLimiter.test')
+}
+
+function getExpressPort (): number {
+    return config.get('ports.express')
+}
+
+// Setting configs
+const helmetCSP = getHelmetCSP()
+const helmetHSTS = getHelmetHSTS()
+const confCorsOptions = getCorsOptions()
+const confRelaxedApiLimiter = getRelaxedApiLimiterConfig()
+const confSensitiveApiLimiter = getSensitiveApiLimiterConfig()
+const confTestApiLimiter = getTestApiLimiterConfig()
+const expressPort = getExpressPort()
 
 // Config warns
 helmetCSP ?? logger.warn('Config helmet.CSP missing')
@@ -72,18 +101,18 @@ if (typeof helmetHSTS === 'object' && helmetHSTS !== null) {
 await connectToDatabase()
 
 // Configuration for session
-const sessionMiddleware  = session({
+const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET || 'default_secret_key', // Ideally from an environment variable
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', 
+        secure: process.env.NODE_ENV === 'production',
         httpOnly: true
     },
     store: new MongoStore({
         client: mongoose.connection.getClient()
     })
-});
+})
 
 // Global middleware
 app.use(helmet())
@@ -97,8 +126,8 @@ app.use(passport.session())
 app.use(cors({
     ...confCorsOptions,
     credentials: true
-}));
-//app.use(csrfProtection);
+}))
+// app.use(csrfProtection);
 
 // Create rate limiters
 let relaxedApiLimiter
@@ -174,6 +203,6 @@ async function shutDown () {
     }
 }
 
-export type AppType = typeof app;
-export type ShutDownType = typeof shutDown;
+export type AppType = typeof app
+export type ShutDownType = typeof shutDown
 export { app, shutDown }
