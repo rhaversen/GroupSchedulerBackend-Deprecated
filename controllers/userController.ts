@@ -57,20 +57,6 @@ function generateConfirmationLink (userCode: string): string {
     return confirmationLink
 }
 
-async function updateFollowArrays (userId: string, targetUserId: string, action: 'follow' | 'unfollow'): Promise<void> {
-    if (action === 'follow') {
-        await Promise.all([
-            UserModel.findByIdAndUpdate(userId, { $push: { following: { $each: [targetUserId] } } }).exec(),
-            UserModel.findByIdAndUpdate(targetUserId, { $push: { followers: { $each: [userId] } } }).exec()
-        ])
-    } else if (action === 'unfollow') {
-        await Promise.all([
-            UserModel.findByIdAndUpdate(userId, { $pull: { following: targetUserId } }).exec(),
-            UserModel.findByIdAndUpdate(targetUserId, { $pull: { followers: userId } }).exec()
-        ])
-    }
-}
-
 function ensureFieldsPresent (body: Record<string, string>, requiredFields: string[], next: NextFunction): boolean {
     const missingFields = requiredFields.filter(reqField => !body[reqField])
     if (missingFields.length > 0) {
@@ -252,48 +238,50 @@ export const newCode = asyncErrorHandler(
 
 export const followUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const followedUserId = req.params.userId
-        const followedUser = await UserModel.findOne({ _id: { $eq: followedUserId } }).exec()
+        const candidateUserId = req.params.userId
+        const candidateUser = await UserModel.findById(candidateUserId).exec()
         const user = req.user as IUser
 
-        if (!followedUser) {
+        if (!candidateUser) {
             next(new UserNotFoundError('The user to be followed could not be found')); return
         }
 
-        if (followedUser.id === user.id) {
+        if (candidateUser.id === user.id) {
             next(new UserNotFoundError('User cannot follow or un-follow themselves')); return
         }
 
         const followingArray = user.following as Array<{ _id: Types.ObjectId }>
-        if (followingArray.find(u => u._id.toString() === followedUser._id.toString())) {
+        if (followingArray.find(u => u._id.toString() === candidateUser._id.toString())) {
             res.status(200).json({ message: 'User is already followed' }); return
         }
 
-        await updateFollowArrays(user.id, followedUser.id, 'follow')
-        res.status(200).json(followedUser)
+        await user.follows(candidateUser)
+
+        res.status(200).json(candidateUser)
     })
 
 export const unfollowUser = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const followedUserId = req.params.userId
+        const candidateUserId = req.params.userId
         const user = req.user as IUser
 
-        const followedUser = await UserModel.findById(followedUserId).exec()
-        if (!followedUser) {
+        const candidateUser = await UserModel.findById(candidateUserId).exec()
+        if (!candidateUser) {
             next(new UserNotFoundError('The user to be un-followed could not be found')); return
         }
 
-        if (followedUserId === user.id) {
+        if (candidateUserId === user.id) {
             next(new UserNotFoundError('User cannot un-follow themselves')); return
         }
 
         const followingArray = user.following as Array<{ _id: Types.ObjectId }>
-        if (!followingArray.find(u => u._id.toString() === followedUser._id.toString())) {
+        if (!followingArray.find(u => u._id.toString() === candidateUser._id.toString())) {
             res.status(400).json({ error: 'User is not followed' }); return
         }
 
-        await updateFollowArrays(user.id, followedUser.id, 'unfollow')
-        res.status(200).json(followedUser)
+        await user.unFollows(candidateUser)
+
+        res.status(200).json(candidateUser)
     })
 
 export const getFollowers = asyncErrorHandler(

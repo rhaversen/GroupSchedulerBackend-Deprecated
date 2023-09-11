@@ -60,6 +60,8 @@ export interface IUser extends Document {
     confirmUser: () => void
     comparePassword: (candidatePassword: string) => Promise<boolean>
     generateNewUserCode: () => Promise<string>
+    follows: (candidateUser: IUser) => Promise<void>
+    unFollows: (candidateUser: IUser) => Promise<void>
 }
 
 const userSchema = new Schema<IUser>({
@@ -86,6 +88,22 @@ userSchema.methods.confirmUser = function () {
 // Method for comparing parameter to this users password. Returns true if passwords match
 userSchema.methods.comparePassword = async function (this: IUser, candidatePassword: string): Promise<boolean> {
     return await compare(candidatePassword, this.password)
+}
+
+// Method for having this user follow parameter user
+userSchema.methods.follows = async function (candidateUser: IUser): Promise<void> {
+    await Promise.all([
+        UserModel.findByIdAndUpdate(this._id, { $push: { following: candidateUser._id } }).exec(),
+        UserModel.findByIdAndUpdate(candidateUser._id, { $push: { followers: this._id } }).exec()
+    ])
+}
+
+// Method for having this user unfollow parameter user
+userSchema.methods.unFollows = async function (candidateUser: IUser): Promise<void> {
+    await Promise.all([
+        UserModel.findByIdAndUpdate(this._id, { $pull: { following: candidateUser._id } }).exec(),
+        UserModel.findByIdAndUpdate(candidateUser._id, { $pull: { followers: this._id } }).exec()
+    ])
 }
 
 userSchema.methods.generateNewUserCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
