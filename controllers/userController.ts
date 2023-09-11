@@ -138,7 +138,6 @@ export const registerUser = asyncErrorHandler(
 
 export const sendPasswordResetEmail = asyncErrorHandler(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-
         res.status(200).json({
             message: 'If the email address exists, a password reset email has been sent.'
         })

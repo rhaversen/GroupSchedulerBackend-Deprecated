@@ -7,7 +7,6 @@ import Router from 'express'
 import { sanitizeInput } from '../middleware/sanitizer.js'
 import { ensureAuthenticated } from '../utils/passportConfig.js'
 
-
 // Controller functions
 import {
     getCurrentUser,
