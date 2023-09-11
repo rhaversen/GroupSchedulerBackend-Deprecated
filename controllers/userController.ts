@@ -74,6 +74,7 @@ async function updateFollowArrays (userId: string, targetUserId: string, action:
 function ensureFieldsPresent (body: Record<string, string>, requiredFields: string[], next: NextFunction): boolean {
     const missingFields = requiredFields.filter(reqField => !body[reqField])
     if (missingFields.length > 0) {
+        missingFields.sort((a, b) => a.localeCompare(b))
         next(new MissingFieldsError(`Missing ${missingFields.join(', ')}`))
         return true
     }
