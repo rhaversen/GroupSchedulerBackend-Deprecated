@@ -942,7 +942,7 @@ describe('Update Password Endpoint PATCH /update-password', function () {
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('Missing newPassword, confirmNewPassword, currentPassword')
+        expect(res.body.error).to.be.equal('Missing confirmNewPassword, currentPassword, newPassword')
     })
 
     it('should not allow password update with incorrect current password', async function () {
