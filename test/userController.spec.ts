@@ -24,14 +24,14 @@ const { expect } = chai
 
 const server = await import('../server.js')
 
-// Using the functions
+// Configs
 const sessionExpiry = getSessionExpiry()
 const sessionPersistentExpiry = getSessionPersistentExpiry()
 const expressPort = getExpressPort()
 
 async function getCSRFToken (agent: ChaiHttp.Agent) {
     const res = await agent.get('/api/csrf-token')
-    //   console.log(res.body.csrfToken)
+    logger.info(res.body.csrfToken)
     return res.body.csrfToken
 }
 
@@ -739,7 +739,7 @@ describe('Follow User Endpoint PUT /api/v1/users/following/:userId', function ()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('User cannot follow or un-follow themselves')
+        expect(res.body.error).to.be.equal('User cannot follow themselves')
     })
 
     it('should handle when a user tries to follow another user they are already following', async function () {

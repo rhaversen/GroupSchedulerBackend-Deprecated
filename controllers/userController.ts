@@ -246,7 +246,7 @@ export const followUser = asyncErrorHandler(
         }
 
         if (candidateUser.id === user.id) {
-            next(new UserNotFoundError('User cannot follow or un-follow themselves')); return
+            next(new UserNotFoundError('User cannot follow themselves')); return
         }
 
         const followingArray = user.following as Array<{ _id: Types.ObjectId }>
