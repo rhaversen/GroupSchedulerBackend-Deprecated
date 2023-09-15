@@ -9,7 +9,7 @@ import mongoose, { type Document, type Types, model, type Model } from 'mongoose
 // Own modules
 import errors from '../utils/errors.js'
 import logger from '../utils/logger.js'
-import { type IAvailability } from './Availability.js'
+import AvailabilityModel, { type IAvailability } from './Availability.js'
 import EventModel, { type IEvent } from './Event.js'
 import {
     getSaltRounds,
