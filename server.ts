@@ -78,7 +78,7 @@ const sessionMiddleware = session({
         httpOnly: true
     },
     store: new MongoStore({
-        client: mongoose.connection.getClient()
+        client: mongoose.connection.getClient() // Extract MongoClient from Mongoose connection
     })
 })
 
