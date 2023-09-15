@@ -4,7 +4,7 @@ import config from 'config'
 // Third-party libraries
 import 'dotenv/config'
 import mongoose, { type Mongoose } from 'mongoose'
-import { MongoMemoryServer } from 'mongodb-memory-server'
+import { MongoMemoryReplSet } from 'mongodb-memory-server'
 
 // Own modules
 import logger from './logger.js'
@@ -15,70 +15,72 @@ import {
 } from '../utils/setupConfig.js'
 
 // Config
-let memoryServer: MongoMemoryServer
 let mongooseConnection: Mongoose
+let replSet: MongoMemoryReplSet | undefined
 
 const connectToDatabase = async (): Promise<void> => {
-    const mongooseOpts = getMongooseOptions()
-    const maxRetryAttempts = getMaxRetryAttempts()
-    let currentRetryAttempt = 0
+    const mongooseOpts = getMongooseOptions();
+    const maxRetryAttempts = getMaxRetryAttempts();
+    let currentRetryAttempt = 0;
 
     while (currentRetryAttempt < maxRetryAttempts) {
         if (process.env.NODE_ENV === 'test') {
-            logger.info('Attempting connection to in-memory MongoDB')
+            logger.info('Attempting connection to in-memory MongoDB');
 
             try {
-                memoryServer = await MongoMemoryServer.create()
-                const mongoUri = memoryServer.getUri()
+                replSet = new MongoMemoryReplSet({
+                    replSet: { storageEngine: 'wiredTiger' },
+                });
 
-                mongooseConnection = await mongoose.connect(mongoUri, mongooseOpts)
-
-                logger.info('Connected to in-memory MongoDB')
-                return
+                await replSet.start();
+                await replSet.waitUntilRunning();
+                const mongoUri = replSet.getUri();
+                mongooseConnection = await mongoose.connect(mongoUri, mongooseOpts);
+                logger.info('Connected to in-memory MongoDB');
+                return;
             } catch (error: any) {
-                logger.error(`Error connecting to in-memory MongoDB: ${error.message || error}`)
+                logger.error(`Error connecting to in-memory MongoDB: ${error.message || error}`);
             }
         } else {
-            logger.info('Attempting connection to MongoDB')
+            logger.info('Attempting connection to MongoDB');
 
             try {
-                const mongoUri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`
+                const mongoUri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`;
                 // Use Mongoose to connect for production database
-                mongooseConnection = await mongoose.connect(mongoUri, mongooseOpts)
+                mongooseConnection = await mongoose.connect(mongoUri, mongooseOpts);
 
-                logger.info('Connected to MongoDB')
-                return
+                logger.info('Connected to MongoDB');
+                return;
             } catch (error: any) {
-                logger.error(`Error connecting to MongoDB: ${error.message || error}`)
+                logger.error(`Error connecting to MongoDB: ${error.message || error}`);
             }
         }
-        currentRetryAttempt++
-        const retryInterval = getRetryInterval()
-        await new Promise((resolve) => setTimeout(resolve, retryInterval))
+        currentRetryAttempt++;
+        const retryInterval = getRetryInterval();
+        await new Promise((resolve) => setTimeout(resolve, retryInterval));
     }
-    logger.error(`Failed to connect to MongoDB after ${maxRetryAttempts} attempts.`)
+    logger.error(`Failed to connect to MongoDB after ${maxRetryAttempts} attempts.`);
 }
 
 const disconnectFromDatabase = async (): Promise<void> => {
     try {
-        // If in test mode, stop the in-memory MongoDB server
-        if (process.env.NODE_ENV === 'test' && memoryServer) {
-            await memoryServer.stop()
-            logger.info('In-memory MongoDB server stopped')
+        if (process.env.NODE_ENV === 'test' && replSet) {
+            await replSet.stop();
+            logger.info('In-memory MongoDB replica set stopped');
         }
-
+        
         // Disconnect Mongoose for both test and production
         if (mongooseConnection) {
-            await mongooseConnection.disconnect()
-            logger.info('Disconnected specific Mongoose connection')
+            await mongooseConnection.disconnect();
+            logger.info('Disconnected specific Mongoose connection');
         }
 
         if (mongoose.connection.readyState !== 0) { // 0: disconnected
-            await mongoose.disconnect()
-            logger.info('Disconnected default Mongoose connection')
+            await mongoose.disconnect();
+            logger.info('Disconnected default Mongoose connection');
         }
     } catch (error: any) {
-        logger.error(`Error disconnecting from MongoDB: ${error.message || error}`)
+        logger.error(`Error disconnecting from MongoDB: ${error.message || error}`);
     }
 }
 
