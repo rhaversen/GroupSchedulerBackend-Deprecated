@@ -1,6 +1,5 @@
 // Node.js built-in modules
 import http from 'http'
-import config from 'config'
 
 // Third-party libraries
 import 'dotenv/config'
@@ -70,7 +69,7 @@ await connectToDatabase()
 
 // Configuration for session
 const sessionMiddleware = session({
-    secret: process.env.SESSION_SECRET || 'default_secret_key', // Ideally from an environment variable
+    secret: process.env.SESSION_SECRET ?? 'default_secret_key', // Ideally from an environment variable
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -100,12 +99,12 @@ app.use(cors({
 // Create rate limiters
 let relaxedApiLimiter
 let sensitiveApiLimiter
-if (process.env.NODE_ENV !== 'test') {
-    relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
-    sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter)
-} else {
+if (process.env.NODE_ENV !== 'production') {
     relaxedApiLimiter = RateLimit(confTestApiLimiter)
     sensitiveApiLimiter = RateLimit(confTestApiLimiter)
+} else {
+    relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
+    sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter)
 }
 
 // Endpoint to fetch the csrf token
