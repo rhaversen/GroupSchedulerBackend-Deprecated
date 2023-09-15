@@ -15,10 +15,10 @@ const {
 export default (function (err: any, req: Request, res: Response, next: NextFunction): void {
     if (err instanceof ValidationError) {
     // These are client-safe errors that can be directly sent to the client.
-        logger.info(err.message)
+        logger.silly(err.message)
         res.status(400).json({ error: err.message })
     } else if (err instanceof EventError) {
-        logger.info(err.message)
+        logger.silly(err.message)
         res.status(400).json({ error: err.message })
     } else if (err instanceof ServerError) {
     // For server-side errors, send a generic error message

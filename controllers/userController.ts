@@ -52,7 +52,7 @@ function generateConfirmationLink (userCode: string): string {
         confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${userCode}`
     }
 
-    logger.info(confirmationLink)
+    logger.silly(confirmationLink)
 
     return confirmationLink
 }

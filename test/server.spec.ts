@@ -41,7 +41,7 @@ async function establishFollowing (followingUser: IUser, followedUser: IUser) {
         UserModel.findByIdAndUpdate(followingUser._id, { $push: { following: followedUser._id } }).exec(),
         UserModel.findByIdAndUpdate(followedUser._id, { $push: { followers: followingUser._id._id } }).exec()
     ])
-    logger.info('User followed')
+    logger.silly('User followed')
 }
 
 let server: ServerType
@@ -97,7 +97,7 @@ describe('Server Tests', () => {
             'a123bc'
         ]
 
-        logger.info('Creating users')
+        logger.silly('Creating users')
 
         // Create users
         const savedUserArray = []
@@ -112,7 +112,7 @@ describe('Server Tests', () => {
                     throw new ServerError('Error saving user')
                 }
                 savedUserArray[i] = savedUser
-                logger.info('User created')
+                logger.silly('User created')
             } catch (err) {
                 logger.error('Error occurred:', err)
                 throw err // Re-throwing the error to fail the test

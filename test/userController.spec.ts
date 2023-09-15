@@ -31,7 +31,7 @@ const expressPort = getExpressPort()
 
 async function getCSRFToken (agent: ChaiHttp.Agent) {
     const res = await agent.get('/api/csrf-token')
-    logger.info(res.body.csrfToken)
+    logger.silly(res.body.csrfToken)
     return res.body.csrfToken
 }
 

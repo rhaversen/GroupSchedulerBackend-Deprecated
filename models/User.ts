@@ -170,7 +170,7 @@ userSchema.pre('save', async function (next) {
             }
         }
     }
-    logger.info('User saved')
+    logger.silly('User saved')
 })
 
 // Remove event from users
@@ -203,7 +203,7 @@ const deleteLogic = async function (this: IUser & { constructor: Model<IUser> },
             await AvailabilityModel.deleteMany({ id: this.availabilities })
         }
 
-        logger.info('User removed')
+        logger.silly('User removed')
         next()
     } catch (error: any) {
         next(error)

@@ -98,7 +98,7 @@ eventSchema.pre('save', async function (this: IEvent & { constructor: Model<IEve
         this.eventCode = eventCode
     }
 
-    logger.info('Event saved')
+    logger.silly('Event saved')
     next()
 })
 
@@ -117,7 +117,7 @@ const deleteLogic = async function (this: IEvent & { constructor: Model<IEvent> 
             // Remove the event from the user's events array
             await EventModel.findOneAndDelete({ _id: this._id }).exec()
 
-            logger.info('Event removed')
+            logger.silly('Event removed')
         }
 
         next()
