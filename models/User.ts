@@ -1,7 +1,6 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import dotenv from 'dotenv'
 import bcryptjsPkg from 'bcryptjs'
 import { customAlphabet } from 'nanoid'
 import mongoose, { type Document, type Types, model, type Model } from 'mongoose'
@@ -17,9 +16,6 @@ import {
     getNanoidLength,
     getUserExpiry
 } from '../utils/setupConfig.js'
-
-// Setup
-dotenv.config()
 
 // Destructuring and global variables
 const { compare, hash } = bcryptjsPkg

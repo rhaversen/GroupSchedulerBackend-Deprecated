@@ -3,7 +3,6 @@ import config from 'config'
 
 // Third-party libraries
 import nodemailer from 'nodemailer'
-import dotenv from 'dotenv'
 
 // Own modules
 import {
@@ -14,8 +13,6 @@ import {
 // Config
 const transporterPort = getTransporterPort()
 const emailFrom = getEmailFrom()
-
-dotenv.config()
 
 // Configure transporter
 const transporter = nodemailer.createTransport({

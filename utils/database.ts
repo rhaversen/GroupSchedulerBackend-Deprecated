@@ -1,8 +1,6 @@
 // Node.js built-in modules
-import config from 'config'
 
 // Third-party libraries
-import 'dotenv/config'
 import mongoose, { type Mongoose } from 'mongoose'
 import { MongoMemoryReplSet } from 'mongodb-memory-server'
 

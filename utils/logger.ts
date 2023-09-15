@@ -3,11 +3,7 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 // Third-party libraries
-import dotenv from 'dotenv'
 import { createLogger, format as _format, transports as _transports } from 'winston'
-
-// Setup
-dotenv.config()
 
 // Global variables
 const __filename = fileURLToPath(import.meta.url)

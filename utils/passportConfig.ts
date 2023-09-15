@@ -1,7 +1,6 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import dotenv from 'dotenv'
 import validator from 'validator'
 import { Strategy as LocalStrategy } from 'passport-local'
 // import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
@@ -19,9 +18,6 @@ const {
     InvalidCredentialsError,
     UserNotFoundError
 } = errors
-
-// Setup
-dotenv.config()
 
 export const ensureAuthenticated =
 (req: Request, res: Response, next: NextFunction): void => {

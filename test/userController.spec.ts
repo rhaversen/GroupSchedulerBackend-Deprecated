@@ -1,8 +1,6 @@
 // Node.js built-in modules
-import config from 'config'
 
 // Third-party libraries
-import dotenv from 'dotenv'
 import chai from 'chai'
 import chaiHttp from 'chai-http'
 import { parse } from 'cookie'
@@ -16,8 +14,6 @@ import {
     getSessionPersistentExpiry,
     getExpressPort
 } from '../utils/setupConfig.js'
-
-dotenv.config()
 
 chai.use(chaiHttp)
 const { expect } = chai

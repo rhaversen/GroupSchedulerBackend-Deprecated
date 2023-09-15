@@ -4,7 +4,6 @@ import config from 'config'
 // Third-party libraries
 import passport from 'passport'
 import validator from 'validator'
-import dotenv from 'dotenv'
 import { type Request, type Response, type NextFunction } from 'express'
 import mongoose, { type Types } from 'mongoose'
 
@@ -38,9 +37,6 @@ const sessionExpiry = getSessionExpiry()
 const sessionPersistentExpiry = getSessionPersistentExpiry()
 const nextJsPort = getNextJsPort()
 const frontendDomain = getFrontendDomain()
-
-// Setup
-dotenv.config()
 
 // Helper functions
 function generateConfirmationLink (userCode: string): string {
