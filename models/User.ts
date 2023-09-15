@@ -179,7 +179,7 @@ const deleteLogic = async function (this: IUser & { constructor: Model<IUser> },
         // Remove user from followers following array
         for (const followerId of this.followers) {
             // Get the user
-            const user = await this.constructor.findById(followerId).exec()
+            const user = await UserModel.findById(followerId).exec()
 
             if (!user) {
                 next(new UserNotFoundError('User not found')); return
@@ -189,10 +189,6 @@ const deleteLogic = async function (this: IUser & { constructor: Model<IUser> },
             await UserModel.findByIdAndUpdate(followerId, {
                 $pull: { following: this._id }
             }).exec()
-
-            // Save the user
-            await user.save()
-            logger.info('User removed')
         }
 
         // Remove user from events
@@ -200,19 +196,17 @@ const deleteLogic = async function (this: IUser & { constructor: Model<IUser> },
             await EventModel.findByIdAndUpdate(eventId, {
                 $pull: { participants: this._id }
             }).exec()
-
-            logger.info('User removed')
         }
 
+        // Remove the users availabilities
+        for (const availabilityId of this.availabilities) {
+            await AvailabilityModel.deleteMany({ id: this.availabilities })
+        }
+
+        logger.info('User removed')
         next()
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            next(error)
-        } else {
-            // Log or handle the error as it's not of type Error
-            logger.error('An unexpected error occurred:', error)
-            next() // You can call next without an argument, as the error is optional
-        }
+    } catch (error: any) {
+        next(error)
     }
 }
 

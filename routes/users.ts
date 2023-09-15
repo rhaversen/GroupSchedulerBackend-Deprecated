@@ -190,4 +190,15 @@ router.patch('/update-username',
     updateUsername
 )
 
+/**
+* @route DELETE api/v1/users/
+* @desc Delete a user,
+* @access Authenticated
+*/
+router.delete('/',
+    sanitizeInput,
+    ensureAuthenticated,
+    updateUsername
+)
+
 export default router

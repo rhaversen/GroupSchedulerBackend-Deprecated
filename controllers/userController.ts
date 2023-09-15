@@ -372,3 +372,14 @@ export const updateUsername = asyncErrorHandler(
 
         res.status(200).json(user)
     })
+
+export const deleteUser = asyncErrorHandler(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        const user = req.user as IUser
+
+        UserModel.findOneAndDelete(user._id)
+
+        await user.save()
+
+        res.status(200).json(user)
+    })
