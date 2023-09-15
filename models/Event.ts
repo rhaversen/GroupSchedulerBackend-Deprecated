@@ -70,7 +70,7 @@ eventSchema.methods.generateNewEventCode = async function (this: IEvent & { cons
 
     do {
         eventCode = nanoid()
-        existingEvent = await this.constructor.findOne({ eventCode }).exec()
+        existingEvent = await EventModel.findOne({ eventCode }).exec()
     } while (existingEvent)
 
     this.eventCode = eventCode
@@ -92,7 +92,7 @@ eventSchema.pre('save', async function (this: IEvent & { constructor: Model<IEve
 
         do {
             eventCode = nanoid()
-            existingEvent = await this.constructor.findOne({ eventCode }).exec()
+            existingEvent = await EventModel.findOne({ eventCode }).exec()
         } while (existingEvent)
 
         this.eventCode = eventCode

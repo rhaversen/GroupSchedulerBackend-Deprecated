@@ -112,7 +112,7 @@ userSchema.methods.generateNewUserCode = async function (this: IUser & { constru
 
     do {
         userCode = nanoid()
-        existingUser = await this.constructor.findOne({ userCode }).exec()
+        existingUser = await UserModel.findOne({ userCode }).exec()
     } while (existingUser)
 
     this.userCode = userCode
