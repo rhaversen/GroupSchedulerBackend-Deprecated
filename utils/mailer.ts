@@ -1,5 +1,4 @@
 // Node.js built-in modules
-import config from 'config'
 
 // Third-party libraries
 import nodemailer from 'nodemailer'

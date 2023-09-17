@@ -1,5 +1,4 @@
 // Node.js built-in modules
-import config from 'config'
 
 // Third-party libraries
 import { type Request, type Response, type NextFunction } from 'express'

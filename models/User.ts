@@ -15,7 +15,6 @@ import {
     getNanoidLength,
     getUserExpiry
 } from '../utils/setupConfig.js'
-import { NextFunction } from 'express'
 import {
     UserNotFoundError
 }from '../utils/errors.js'

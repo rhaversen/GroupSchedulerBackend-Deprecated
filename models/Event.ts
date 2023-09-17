@@ -1,5 +1,4 @@
 // Node.js built-in modules
-import config from 'config'
 
 // Third-party libraries
 import mongoose, { type Document, type Types, model, type Model } from 'mongoose'
