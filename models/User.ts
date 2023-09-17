@@ -17,7 +17,7 @@ import {
 } from '../utils/setupConfig.js'
 import {
     UserNotFoundError
-}from '../utils/errors.js'
+} from '../utils/errors.js'
 
 // Destructuring and global variables
 const { compare, hash } = bcryptjsPkg

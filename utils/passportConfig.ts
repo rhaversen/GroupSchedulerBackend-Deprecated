@@ -13,7 +13,8 @@ import { type Request, type Response, type NextFunction } from 'express'
 import {
     InvalidEmailError,
     InvalidCredentialsError,
-    UserNotFoundError } from './errors.js'
+    UserNotFoundError
+} from './errors.js'
 
 // Destructuring and global variables
 
