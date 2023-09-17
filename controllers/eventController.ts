@@ -6,7 +6,12 @@ import { type Request, type Response, type NextFunction } from 'express'
 
 // Own modules
 import logger from '../utils/logger.js'
-import errors from '../utils/errors.js'
+import {
+    MissingFieldsError,
+    UserNotAdminError,
+    EventNotFoundError,
+    InvalidEventIdOrCode
+} from '../utils/errors.js'
 import EventModel, { type IEvent } from '../models/Event.js'
 import UserModel, { type IUser } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
@@ -16,12 +21,6 @@ import {
 } from '../utils/setupConfig.js'
 
 // Destructuring and global variables
-const {
-    MissingFieldsError,
-    UserNotAdminError,
-    EventNotFoundError,
-    InvalidEventIdOrCode
-} = errors
 
 // Config
 const nanoidAlphabet = getNanoidAlphabet()

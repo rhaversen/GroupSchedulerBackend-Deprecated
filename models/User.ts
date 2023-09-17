@@ -6,7 +6,6 @@ import { customAlphabet } from 'nanoid'
 import mongoose, { type Document, type Types, model, type Model } from 'mongoose'
 
 // Own modules
-import errors from '../utils/errors.js'
 import logger from '../utils/logger.js'
 import AvailabilityModel, { type IAvailability } from './Availability.js'
 import EventModel, { type IEvent } from './Event.js'
@@ -16,13 +15,14 @@ import {
     getNanoidLength,
     getUserExpiry
 } from '../utils/setupConfig.js'
+import { NextFunction } from 'express'
+import {
+    UserNotFoundError
+}from '../utils/errors.js'
 
 // Destructuring and global variables
 const { compare, hash } = bcryptjsPkg
 const { Schema } = mongoose
-const {
-    UserNotFoundError
-} = errors
 
 // Config
 const saltRounds = getSaltRounds()

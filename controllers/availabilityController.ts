@@ -6,13 +6,12 @@ import { type Request, type Response, type NextFunction } from 'express'
 // Own modules
 import AvailabilityModel, { type IAvailability } from '../models/Availability.js'
 import UserModel, { type IUserPopulated, type IUser } from '../models/User.js'
-import errors from '../utils/errors.js'
+import {
+    MissingFieldsError
+} from '../utils/errors.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Destructuring and global variables
-const {
-    MissingFieldsError
-} = errors
 
 export const newOrUpdateAvailability = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const {

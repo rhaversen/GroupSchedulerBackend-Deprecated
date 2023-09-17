@@ -2,15 +2,12 @@
 import { type Request, type Response, type NextFunction } from 'express'
 
 // Own modules
-import errors from '../utils/errors.js'
-import logger from '../utils/logger.js'
-
-// Destructuring and global variables
-const {
+import {
     ValidationError,
     EventError,
     ServerError
-} = errors
+} from '../utils/errors.js'
+import logger from '../utils/logger.js'
 
 export default (function (err: any, req: Request, res: Response, next: NextFunction): void {
     if (err instanceof ValidationError) {

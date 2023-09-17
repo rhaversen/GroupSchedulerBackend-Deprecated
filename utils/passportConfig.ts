@@ -6,18 +6,16 @@ import { Strategy as LocalStrategy } from 'passport-local'
 // import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 
 // Own modules
-import errors from './errors.js'
 import UserModel, { type IUser } from '../models/User.js'
 import { type PassportStatic } from 'passport'
 import logger from './logger.js'
 import { type Request, type Response, type NextFunction } from 'express'
-
-// Destructuring and global variables
-const {
+import {
     InvalidEmailError,
     InvalidCredentialsError,
-    UserNotFoundError
-} = errors
+    UserNotFoundError } from './errors.js'
+
+// Destructuring and global variables
 
 export const ensureAuthenticated =
 (req: Request, res: Response, next: NextFunction): void => {

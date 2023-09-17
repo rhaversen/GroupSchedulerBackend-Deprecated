@@ -2,14 +2,12 @@
 import { type Request, type Response, type NextFunction } from 'express'
 
 // Own modules
-import errors from '../utils/errors.js'
-import { type IRequestWithEvent } from '../controllers/eventController.js'
-import { type IUser } from '../models/User.js'
-
-const {
+import {
     UserNotInEventError,
     UserNotAdminError
-} = errors
+} from '../utils/errors.js'
+import { type IRequestWithEvent } from '../controllers/eventController.js'
+import { type IUser } from '../models/User.js'
 
 // Check if the user is a participant of the event
 export function checkUserInEvent (req: Request, res: Response, next: NextFunction): void {

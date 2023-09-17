@@ -8,65 +8,45 @@ class CustomError extends Error {
 }
 
 // Validation errors
-class ValidationError extends CustomError {}
+export class ValidationError extends CustomError {}
 
-class UserNotFoundError extends ValidationError {
+export class UserNotFoundError extends ValidationError {
     constructor (message: string) {
         super(message, 404)
     }
 }
 
-class InvalidEmailError extends ValidationError {}
-class InvalidCredentialsError extends ValidationError {}
-class EmailAlreadyExistsError extends ValidationError {}
-class PasswordIncorrectError extends ValidationError {}
-class MissingFieldsError extends ValidationError {}
-class InvalidConfirmationCodeError extends ValidationError {}
-class UserAlreadyConfirmedError extends ValidationError {}
-class UserNotConfirmedError extends ValidationError {}
+export class InvalidEmailError extends ValidationError {}
+export class InvalidCredentialsError extends ValidationError {}
+export class EmailAlreadyExistsError extends ValidationError {}
+export class PasswordIncorrectError extends ValidationError {}
+export class MissingFieldsError extends ValidationError {}
+export class InvalidConfirmationCodeError extends ValidationError {}
+export class UserAlreadyConfirmedError extends ValidationError {}
+export class UserNotConfirmedError extends ValidationError {}
 
-class UserNotInEventError extends ValidationError {
+export class UserNotInEventError extends ValidationError {
     constructor (message: string) {
         super(message, 403)
     }
 }
 
-class UserNotAdminError extends ValidationError {
+export class UserNotAdminError extends ValidationError {
     constructor (message: string) {
         super(message, 403)
     }
 }
 
-class InvalidEventIdOrCode extends ValidationError {}
+export class InvalidEventIdOrCode extends ValidationError {}
 
 // Event errors
-class EventError extends CustomError {}
-class EventCodeError extends EventError {}
-class EventNotFoundError extends EventError {}
+export class EventError extends CustomError {}
+export class EventCodeError extends EventError {}
+export class EventNotFoundError extends EventError {}
 
 // Server errors
-class ServerError extends CustomError {
+export class ServerError extends CustomError {
     constructor (message: string) {
         super(message, 500)
     }
-}
-
-export default {
-    ValidationError,
-    UserNotFoundError,
-    InvalidEmailError,
-    InvalidCredentialsError,
-    EmailAlreadyExistsError,
-    PasswordIncorrectError,
-    InvalidConfirmationCodeError,
-    UserAlreadyConfirmedError,
-    UserNotConfirmedError,
-    UserNotInEventError,
-    UserNotAdminError,
-    InvalidEventIdOrCode,
-    MissingFieldsError,
-    EventError,
-    EventCodeError,
-    EventNotFoundError,
-    ServerError
 }

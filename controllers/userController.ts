@@ -8,7 +8,16 @@ import { type Request, type Response, type NextFunction } from 'express'
 import mongoose, { type Types } from 'mongoose'
 
 // Own modules
-import errors from '../utils/errors.js'
+import {
+    InvalidEmailError,
+    InvalidCredentialsError,
+    UserNotFoundError,
+    EmailAlreadyExistsError,
+    MissingFieldsError,
+    InvalidConfirmationCodeError,
+    UserAlreadyConfirmedError,
+    UserNotConfirmedError
+} from '../utils/errors.js'
 import { sendConfirmationEmail } from '../utils/mailer.js'
 import UserModel, { type IUserPopulated, type IUser } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
@@ -21,16 +30,6 @@ import {
 } from '../utils/setupConfig.js'
 
 // Destructuring and global variables
-const {
-    InvalidEmailError,
-    InvalidCredentialsError,
-    UserNotFoundError,
-    EmailAlreadyExistsError,
-    MissingFieldsError,
-    InvalidConfirmationCodeError,
-    UserAlreadyConfirmedError,
-    UserNotConfirmedError
-} = errors
 
 // Config
 const sessionExpiry = getSessionExpiry()
