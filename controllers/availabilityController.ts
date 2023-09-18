@@ -55,7 +55,7 @@ export const newOrUpdateAvailability = asyncErrorHandler(async (req: Request, re
 
     const savedAvailability = await newAvailability.save()
 
-    await UserModel.findByIdAndUpdate(user._id, { $push: { availabilities: { $each: [savedAvailability._id] } } }).exec()
+    await UserModel.findByIdAndUpdate(user._id, { $addToSet: { availabilities: savedAvailability._id } }).exec()
 
     res.status(201).json(savedAvailability)
 })
