@@ -102,7 +102,7 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
 
     const existingUser = await UserModel.findOne({ email }).exec()
 
-    if(existingUser){
+    if (existingUser) {
         next(new EmailAlreadyExistsError('Email already exists, please sign in instead')); return
     }
 
@@ -113,7 +113,7 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
         password
     })
     const savedUser = await newUser.save()
-    
+
     const registrationCode = await savedUser.generateNewRegistrationCode()
     const confirmationLink = generateConfirmationLink(registrationCode)
     await sendConfirmationEmail(email, confirmationLink)

@@ -168,7 +168,7 @@ userSchema.methods.generateNewRegistrationCode = async function (this: IUser & {
     do {
         registrationCode = nanoid()
         existingUser = await UserModel.findOne({ registrationCode }).exec()
-    } while (existingUser || this.registrationCode === registrationCode) // Generate a new and unique registration code 
+    } while (existingUser || this.registrationCode === registrationCode) // Generate a new and unique registration code
 
     this.registrationCode = registrationCode
     return registrationCode
