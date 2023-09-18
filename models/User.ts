@@ -87,18 +87,61 @@ userSchema.methods.comparePassword = async function (this: IUser, candidatePassw
 
 // Method for having this user follow parameter user
 userSchema.methods.follows = async function (candidateUser: IUser): Promise<void> {
-    await Promise.all([
-        UserModel.findByIdAndUpdate(this._id, { $push: { following: candidateUser._id } }).exec(),
-        UserModel.findByIdAndUpdate(candidateUser._id, { $push: { followers: this._id } }).exec()
-    ])
+    const session = await mongoose.startSession() // Start a session
+    session.startTransaction() // Start a transaction
+
+    try {
+        // Update the following array for this user
+        await UserModel.findByIdAndUpdate(
+            this._id,
+            { $addToSet: { following: candidateUser._id } },
+            { session } // Add the session option
+        ).exec()
+
+        // Update the followers array for the candidate user
+        await UserModel.findByIdAndUpdate(
+            candidateUser._id,
+            { $addToSet: { followers: this._id } },
+            { session } // Add the session option
+        ).exec()
+
+        await session.commitTransaction() // Commit the transaction
+    } catch (error) {
+        await session.abortTransaction() // If there's an error, abort the transaction
+        throw error // Propagate the error
+    } finally {
+        session.endSession() // End the session
+    }
 }
 
 // Method for having this user unfollow parameter user
 userSchema.methods.unFollows = async function (candidateUser: IUser): Promise<void> {
-    await Promise.all([
-        UserModel.findByIdAndUpdate(this._id, { $pull: { following: candidateUser._id } }).exec(),
-        UserModel.findByIdAndUpdate(candidateUser._id, { $pull: { followers: this._id } }).exec()
-    ])
+    const session = await mongoose.startSession() // Start a session
+
+    session.startTransaction() // Start a transaction
+
+    try {
+        // Remove the user from the following array for this user
+        await UserModel.findByIdAndUpdate(
+            this._id,
+            { $pull: { following: candidateUser._id } },
+            { session } // Add the session option
+        ).exec()
+
+        // Remove this user from the followers array for the candidate user
+        await UserModel.findByIdAndUpdate(
+            candidateUser._id,
+            { $pull: { followers: this._id } },
+            { session } // Add the session option
+        ).exec()
+
+        await session.commitTransaction() // Commit the transaction
+    } catch (error) {
+        await session.abortTransaction() // If there's an error, abort the transaction
+        throw error // Propagate the error
+    } finally {
+        session.endSession() // End the session
+    }
 }
 
 userSchema.methods.generateNewUserCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
@@ -168,8 +211,10 @@ userSchema.pre('save', async function (next) {
     logger.silly('User saved')
 })
 
-// Remove event from users
 const deleteLogic = async function (this: IUser & { constructor: Model<IUser> }, next: mongoose.CallbackWithoutResultAndOptionalError): Promise<void> {
+    const session = await mongoose.startSession()
+    session.startTransaction()
+
     try {
         // Remove user from followers following array
         for (const followerId of this.followers) {
@@ -177,31 +222,35 @@ const deleteLogic = async function (this: IUser & { constructor: Model<IUser> },
             const user = await UserModel.findById(followerId).exec()
 
             if (!user) {
-                next(new UserNotFoundError('User not found')); return
+                throw new UserNotFoundError('User not found')
             }
 
             // Remove this user from the followers's following array
             await UserModel.findByIdAndUpdate(followerId, {
                 $pull: { following: this._id }
-            }).exec()
+            }, { session }).exec() // Use the session
         }
 
         // Remove user from events
         for (const eventId of this.events) {
             await EventModel.findByIdAndUpdate(eventId, {
                 $pull: { participants: this._id }
-            }).exec()
+            }, { session }).exec() // Use the session
         }
 
         // Remove the users availabilities
         for (const availabilityId of this.availabilities) {
-            await AvailabilityModel.deleteMany({ id: this.availabilities })
+            await AvailabilityModel.deleteMany({ _id: availabilityId }, { session }).exec() // Use the session
         }
 
         logger.silly('User removed')
+        await session.commitTransaction()
         next()
     } catch (error: any) {
+        await session.abortTransaction() // Abort the transaction
         next(error)
+    } finally {
+        session.endSession() // Close the session
     }
 }
 

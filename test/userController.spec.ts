@@ -773,6 +773,20 @@ describe('Follow User Endpoint PUT /api/v1/users/following/:userId', function ()
         expect(res.body).to.have.property('message')
         expect(res.body.message).to.be.equal('User is already followed') // Custom message
     })
+
+    it('should not update UserA if UserB is not found', async function () {
+        // Delete user B
+        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
+
+        // Try to make userA follow userB, which should fail
+        const res = await agent.put(`/api/v1/users/following/${userB._id}`)
+
+        expect(res).to.have.status(400) // Expect validation error
+
+        // Check that userA's following array does NOT contain userB's ID
+        const updatedUserA = await UserModel.findById(userA._id).exec() as IUser
+        expect(updatedUserA.following).to.not.include(userB._id)
+    })
 })
 
 describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function () {
