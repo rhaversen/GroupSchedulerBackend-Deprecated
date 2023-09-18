@@ -49,7 +49,7 @@ export interface IUser extends Document {
     followers: Types.ObjectId[] | IUser[]
     userCode: string
     confirmed: boolean
-    registrationCode?: String
+    registrationCode?: string
     registrationDate: Date
     expirationDate?: Date
 
