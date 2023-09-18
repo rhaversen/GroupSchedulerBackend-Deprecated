@@ -37,13 +37,13 @@ const nextJsPort = getNextJsPort()
 const frontendDomain = getFrontendDomain()
 
 // Helper functions
-function generateConfirmationLink (userCode: string): string {
+function generateConfirmationLink (registrationCode: string): string {
     let confirmationLink: string
     // Generate confirmation link
     if (process.env.NODE_ENV === 'production') {
-        confirmationLink = `http://${frontendDomain}/confirm?userCode=${userCode}`
+        confirmationLink = `http://${frontendDomain}/confirm?userCode=${registrationCode}`
     } else {
-        confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${userCode}`
+        confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${registrationCode}`
     }
 
     logger.silly(confirmationLink)
@@ -102,27 +102,21 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
 
     const existingUser = await UserModel.findOne({ email }).exec()
 
-    if (!existingUser) {
-        // User doesn't exist, create a new user
-        const newUser = new UserModel({
-            username,
-            email,
-            password
-        })
-        const savedUser = await newUser.save()
-
-        const confirmationLink = generateConfirmationLink(savedUser.id)
-        await sendConfirmationEmail(email, confirmationLink)
-    } else {
-        if (!existingUser.confirmed) {
-            // User exists, but is not confirmed. Send a new confirmation link
-            const confirmationLink = generateConfirmationLink(existingUser.id)
-            await sendConfirmationEmail(email, confirmationLink)
-
-            next(new UserNotConfirmedError('Email already exists but is not confirmed. Please follow the link sent to your email inbox')); return
-        }
+    if(existingUser){
         next(new EmailAlreadyExistsError('Email already exists, please sign in instead')); return
     }
+
+    // User doesn't exist, create a new user
+    const newUser = new UserModel({
+        username,
+        email,
+        password
+    })
+    const savedUser = await newUser.save()
+    
+    const registrationCode = await savedUser.generateNewRegistrationCode()
+    const confirmationLink = generateConfirmationLink(registrationCode)
+    await sendConfirmationEmail(email, confirmationLink)
 
     res.status(201).json({
         message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.'

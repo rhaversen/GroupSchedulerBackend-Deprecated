@@ -238,7 +238,7 @@ describe('User Registration Endpoint POST /api/v1/users', function () {
         expect(res.body.error).to.be.equal('Email already exists, please sign in instead')
     })
 
-    it('should fail due to email exists but not confirmed', async function () {
+    it('should fail due to email already exists if user is unconfirmed', async function () {
         const unconfirmedUser = new UserModel({
             username: testUser.username,
             email: testUser.email,
@@ -251,8 +251,9 @@ describe('User Registration Endpoint POST /api/v1/users', function () {
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('Email already exists but is not confirmed. Please follow the link sent to your email inbox')
+        expect(res.body.error).to.be.equal('Email already exists, please sign in instead')
     })
+    // TODO: It should not send the registration code in the response
 })
 
 describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', function () {
