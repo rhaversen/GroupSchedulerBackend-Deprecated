@@ -14,6 +14,7 @@ import {
     getSessionPersistentExpiry,
     getExpressPort
 } from '../utils/setupConfig.js'
+import { isMemoryServer } from '../utils/database.js'
 
 chai.use(chaiHttp)
 const { expect } = chai
@@ -30,6 +31,28 @@ async function getCSRFToken (agent: ChaiHttp.Agent) {
     logger.silly(res.body.csrfToken)
     return res.body.csrfToken
 }
+
+async function cleanDatabase() {
+    //////////////////////////////////////////////
+    //////////////////////////////////////////////
+    if ( !isMemoryServer() ) { return }
+    //////////////////////////////////////////////
+    //////////////////////////////////////////////
+    try {
+        await UserModel.collection.dropIndexes();
+        await EventModel.collection.dropIndexes();
+        logger.silly('Indexes dropped successfully');
+    } catch (error: any) {
+        logger.error('Error dropping indexes:', error ? error.message || error : "Unknown error");
+    }
+}
+
+beforeEach(async function () {
+})
+
+afterEach(async function () {
+    await cleanDatabase()
+})
 
 after(async function () {
     this.timeout(10000) // Set the timeout to 10 seconds.

@@ -60,43 +60,30 @@ const connectToDatabase = async (): Promise<void> => {
     logger.error(`Failed to connect to MongoDB after ${maxRetryAttempts} attempts.`)
 }
 
+// Check if the database is an in-memory replica set
+export function isMemoryServer(): boolean { return replSet instanceof MongoMemoryReplSet };
+
 const disconnectFromDatabase = async (): Promise<void> => {
     try {
-        if (process.env.NODE_ENV === 'test' && replSet) {
-            await replSet.stop()
-            logger.info('In-memory MongoDB replica set stopped')
+        // Stop in-memory MongoDB replica set if it's in use
+        if (isMemoryServer()) {
+            await (replSet as MongoMemoryReplSet).stop();
+            logger.info('In-memory MongoDB replica set stopped');
         }
 
         // Disconnect Mongoose for both test and production
         if (mongooseConnection) {
-            await mongooseConnection.disconnect()
-            logger.info('Disconnected specific Mongoose connection')
+            await mongooseConnection.disconnect();
+            logger.info('Disconnected specific Mongoose connection');
         }
 
         if (mongoose.connection.readyState !== 0) { // 0: disconnected
-            await mongoose.disconnect()
-            logger.info('Disconnected default Mongoose connection')
+            await mongoose.disconnect();
+            logger.info('Disconnected default Mongoose connection');
         }
     } catch (error: any) {
-        logger.error(`Error disconnecting from MongoDB: ${error.message || error}`)
+        logger.error(`Error disconnecting from MongoDB: ${error.message || error}`);
     }
 }
 
-const deleteAllDocumentsFromAllCollections = async () => {
-    try {
-        const collections = Object.keys(mongoose.connection.collections)
-        for (const collectionName of collections) {
-            const collection = mongoose.connection.collections[collectionName]
-            await collection.deleteMany({})
-        }
-        logger.info('All documents from all collections have been deleted')
-    } catch (error) {
-        if (error instanceof Error) {
-            logger.error(`Error deleting documents from MongoDB: ${error.message}`)
-        } else {
-            logger.error(`Error deleting documents from MongoDB: ${error}`)
-        }
-    }
-}
-
-export { connectToDatabase, disconnectFromDatabase, deleteAllDocumentsFromAllCollections, mongoose }
+export { connectToDatabase, disconnectFromDatabase, mongoose }
