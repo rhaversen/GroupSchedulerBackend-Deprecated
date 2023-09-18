@@ -17,7 +17,10 @@ import {
     UserAlreadyConfirmedError,
     UserNotConfirmedError
 } from '../utils/errors.js'
-import { sendConfirmationEmail } from '../utils/mailer.js'
+import {
+    sendConfirmationEmail,
+    sendPasswordResetEmail
+} from '../utils/mailer.js'
 import UserModel, { type IUserPopulated, type IUser } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import logger from '../utils/logger.js'
@@ -102,7 +105,7 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
 
     const existingUser = await UserModel.findOne({ email }).exec()
 
-    if (existingUser) {
+    if (existingUser) { // TODO: It should not reveal whether the email exists in the database. Log the user in instead
         next(new EmailAlreadyExistsError('Email already exists, please sign in instead')); return
     }
 
@@ -123,7 +126,17 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
     })
 })
 
-export const sendPasswordResetEmail = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const requestPasswordResetEmail = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { email } = req.body
+
+    const user = await UserModel.findOne({ email }).exec()
+
+    if (user) {
+        const registrationCode = await user.generateNewPasswordResetCode()
+        const confirmationLink = generateConfirmationLink(registrationCode)
+        await sendPasswordResetEmail(email, confirmationLink)
+    }
+
     res.status(200).json({
         message: 'If the email address exists, a password reset email has been sent.'
     })

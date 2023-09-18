@@ -52,11 +52,13 @@ export interface IUser extends Document {
     registrationCode?: string
     registrationDate: Date
     expirationDate?: Date
+    passwordResetCode?: string
 
     confirmUser: () => void
     comparePassword: (candidatePassword: string) => Promise<boolean>
     generateNewUserCode: () => Promise<string>
     generateNewRegistrationCode: () => Promise<string>
+    generateNewPasswordResetCode: () => Promise<string>
     follows: (candidateUser: IUser) => Promise<void>
     unFollows: (candidateUser: IUser) => Promise<void>
 }
@@ -73,7 +75,8 @@ const userSchema = new Schema<IUser>({
     confirmed: { type: Boolean, default: false },
     registrationCode: { type: String, unique: true }, // Should be kept secret
     registrationDate: { type: Date, default: new Date() }, // Keep track of registration date
-    expirationDate: { type: Date }
+    expirationDate: { type: Date },
+    passwordResetCode: { type: String, unique: true } // Should be kept secret
 })
 
 userSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
@@ -172,6 +175,19 @@ userSchema.methods.generateNewRegistrationCode = async function (this: IUser & {
 
     this.registrationCode = registrationCode
     return registrationCode
+}
+
+userSchema.methods.generateNewPasswordResetCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
+    let passwordResetCode: string
+    let existingUser: IUser | null
+
+    do {
+        passwordResetCode = nanoid()
+        existingUser = await UserModel.findOne({ passwordResetCode }).exec()
+    } while (existingUser || this.passwordResetCode === passwordResetCode) // Generate a new and unique registration code
+
+    this.passwordResetCode = passwordResetCode
+    return passwordResetCode
 }
 
 userSchema.pre(/^find/, function (next) {
