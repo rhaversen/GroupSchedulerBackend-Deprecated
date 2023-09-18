@@ -61,28 +61,28 @@ const connectToDatabase = async (): Promise<void> => {
 }
 
 // Check if the database is an in-memory replica set
-export function isMemoryServer(): boolean { return replSet instanceof MongoMemoryReplSet };
+export function isMemoryServer (): boolean { return replSet instanceof MongoMemoryReplSet }
 
 const disconnectFromDatabase = async (): Promise<void> => {
     try {
         // Stop in-memory MongoDB replica set if it's in use
         if (isMemoryServer()) {
-            await (replSet as MongoMemoryReplSet).stop();
-            logger.info('In-memory MongoDB replica set stopped');
+            await (replSet as MongoMemoryReplSet).stop()
+            logger.info('In-memory MongoDB replica set stopped')
         }
 
         // Disconnect Mongoose for both test and production
         if (mongooseConnection) {
-            await mongooseConnection.disconnect();
-            logger.info('Disconnected specific Mongoose connection');
+            await mongooseConnection.disconnect()
+            logger.info('Disconnected specific Mongoose connection')
         }
 
         if (mongoose.connection.readyState !== 0) { // 0: disconnected
-            await mongoose.disconnect();
-            logger.info('Disconnected default Mongoose connection');
+            await mongoose.disconnect()
+            logger.info('Disconnected default Mongoose connection')
         }
     } catch (error: any) {
-        logger.error(`Error disconnecting from MongoDB: ${error.message || error}`);
+        logger.error(`Error disconnecting from MongoDB: ${error.message || error}`)
     }
 }
 

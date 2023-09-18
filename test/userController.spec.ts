@@ -32,18 +32,18 @@ async function getCSRFToken (agent: ChaiHttp.Agent) {
     return res.body.csrfToken
 }
 
-async function cleanDatabase() {
-    //////////////////////////////////////////////
-    //////////////////////////////////////////////
-    if ( !isMemoryServer() ) { return }
-    //////////////////////////////////////////////
-    //////////////////////////////////////////////
+async function cleanDatabase () {
+    /// ////////////////////////////////////////////
+    /// ///////////////////////////////////////////
+    if (!isMemoryServer()) { return }
+    /// ////////////////////////////////////////////
+    /// ///////////////////////////////////////////
     try {
-        await UserModel.collection.dropIndexes();
-        await EventModel.collection.dropIndexes();
-        logger.silly('Indexes dropped successfully');
+        await UserModel.collection.dropIndexes()
+        await EventModel.collection.dropIndexes()
+        logger.silly('Indexes dropped successfully')
     } catch (error: any) {
-        logger.error('Error dropping indexes:', error ? error.message || error : "Unknown error");
+        logger.error('Error dropping indexes:', error ? error.message || error : 'Unknown error')
     }
 }
 
