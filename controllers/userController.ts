@@ -100,7 +100,7 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
         next(new InvalidCredentialsError('Password must be at least 5 characters')); return
     }
 
-    const existingUser = await UserModel.findOne({ email: { $eq: email } }).exec()
+    const existingUser = await UserModel.findOne({ email }).exec()
 
     if (!existingUser) {
         // User doesn't exist, create a new user
@@ -144,7 +144,7 @@ export const confirmUser = asyncErrorHandler(async (req: Request, res: Response,
     }
 
     // Find the user with the corresponding confirmation code
-    const user = await UserModel.findOne({ userCode: { $eq: userCode } }).exec()
+    const user = await UserModel.findOne({ userCode }).exec()
 
     if (!user) {
         next(new InvalidConfirmationCodeError('Invalid confirmation code')); return
