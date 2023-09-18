@@ -49,12 +49,14 @@ export interface IUser extends Document {
     followers: Types.ObjectId[] | IUser[]
     userCode: string
     confirmed: boolean
+    registrationCode?: String
     registrationDate: Date
     expirationDate?: Date
 
     confirmUser: () => void
     comparePassword: (candidatePassword: string) => Promise<boolean>
     generateNewUserCode: () => Promise<string>
+    generateNewRegistrationCode: () => Promise<string>
     follows: (candidateUser: IUser) => Promise<void>
     unFollows: (candidateUser: IUser) => Promise<void>
 }
@@ -69,6 +71,7 @@ const userSchema = new Schema<IUser>({
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     userCode: { type: String, unique: true },
     confirmed: { type: Boolean, default: false },
+    registrationCode: { type: String, unique: true }, // Should be kept secret
     registrationDate: { type: Date, default: new Date() }, // Keep track of registration date
     expirationDate: { type: Date }
 })
@@ -78,6 +81,7 @@ userSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
 userSchema.methods.confirmUser = function () {
     this.confirmed = true // Update the user's status to confirmed
     delete this.expirationDate // Remove the expiration date to cancel auto-deletion
+    delete this.registrationCode
 }
 
 // Method for comparing parameter to this users password. Returns true if passwords match
@@ -157,6 +161,19 @@ userSchema.methods.generateNewUserCode = async function (this: IUser & { constru
     return userCode
 }
 
+userSchema.methods.generateNewRegistrationCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
+    let registrationCode: string
+    let existingUser: IUser | null
+
+    do {
+        registrationCode = nanoid()
+        existingUser = await UserModel.findOne({ registrationCode }).exec()
+    } while (existingUser || this.registrationCode === registrationCode) // Generate a new and unique registration code 
+
+    this.registrationCode = registrationCode
+    return registrationCode
+}
+
 userSchema.pre(/^find/, function (next) {
     const transformEmailToLowercase = (obj: any) => {
         for (const key in obj) {
@@ -179,6 +196,7 @@ userSchema.pre(/^find/, function (next) {
 userSchema.pre('save', async function (next) {
     if (this.isNew) {
         await this.generateNewUserCode()
+        await this.generateNewRegistrationCode()
         this.email = this.email.toString().toLowerCase()
         if (!this.confirmed) {
             this.expirationDate = new Date(Date.now() + userExpiry * 1000) // TTL index, document will expire in process.env.UNCONFIRMED_USER_EXPIRY seconds if not confirmed
@@ -187,6 +205,7 @@ userSchema.pre('save', async function (next) {
 
     if (this.confirmed) {
         delete this.expirationDate
+        delete this.registrationCode
     }
 
     if (this.isModified('email')) {
