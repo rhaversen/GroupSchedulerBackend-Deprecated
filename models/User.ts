@@ -232,6 +232,7 @@ userSchema.pre('save', async function (next) {
     if (this.isModified('password')) {
         try {
             this.password = await hash(this.password, saltRounds) // Using a custom salt for each user
+            delete this.passwordResetCode
             next(); return
         } catch (error) {
             if (error instanceof Error) {
