@@ -11,7 +11,7 @@ import { ensureAuthenticated } from '../utils/passportConfig.js'
 import {
     getCurrentUser,
     registerUser,
-    sendPasswordResetEmail,
+    requestPasswordResetEmail,
     confirmUser,
     loginUserLocal,
     logoutUser,
@@ -51,13 +51,13 @@ router.post('/',
 )
 
 /**
-* @route POST api/v1/users/send-password-reset-email
-* @desc Send a password reset email
+* @route POST api/v1/users/request-password-reset-email
+* @desc Request a password reset email
 * @access Public
 */
-router.post('/send-reset-password-email',
+router.post('/request-reset-password-email',
     sanitizeInput,
-    sendPasswordResetEmail
+    requestPasswordResetEmail
 )
 
 /**
