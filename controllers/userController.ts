@@ -176,7 +176,8 @@ export const confirmUser = asyncErrorHandler(async (req: Request, res: Response,
 
     // Redirect the user or send a success message
     res.status(200).json({
-        message: 'Confirmation successful! Your account has been activated.'
+        message: 'Confirmation successful! Your account has been activated.',
+        user
     })
 })
 
@@ -204,7 +205,7 @@ export const loginUserLocal = asyncErrorHandler(async (req: Request, res: Respon
                 req.session.cookie.maxAge = sessionExpiry * 1000
             }
 
-            res.status(200).json({ auth: true })
+            res.status(200).json({ auth: true, user })
         })
     })(req, res, next)
 })
@@ -233,7 +234,7 @@ export const newCode = asyncErrorHandler(async (req: Request, res: Response, nex
     // Generate a new userCode
     const userCode = await user.generateNewUserCode()
     await user.save()
-    res.status(200).json({ userCode })
+    res.status(200).json(user)
 })
 
 export const followUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -256,7 +257,7 @@ export const followUser = asyncErrorHandler(async (req: Request, res: Response, 
 
     await user.follows(candidateUser)
 
-    res.status(200).json(candidateUser)
+    res.status(200).json(user)
 })
 
 export const unfollowUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -279,7 +280,7 @@ export const unfollowUser = asyncErrorHandler(async (req: Request, res: Response
 
     await user.unFollows(candidateUser)
 
-    res.status(200).json(candidateUser)
+    res.status(200).json(user)
 })
 
 export const getFollowers = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -363,7 +364,6 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
     }
 
     const user = await UserModel.findOne({ passwordResetCode })
-
     if (!user) {
         res.status(404).send(); return
     }
