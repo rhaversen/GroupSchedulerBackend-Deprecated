@@ -1110,12 +1110,12 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         }
 
         const res = await agent.patch('/api/v1/users/reset-password').send(partialResetDetails)
-        
+
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
 
-    expect(res.body.error).to.be.equal('Missing passwordResetCode')
+        expect(res.body.error).to.be.equal('Missing passwordResetCode')
     })
 })
 
