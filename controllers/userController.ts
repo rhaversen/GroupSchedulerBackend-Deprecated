@@ -15,7 +15,6 @@ import {
     MissingFieldsError,
     InvalidConfirmationCodeError,
     UserAlreadyConfirmedError,
-    UserNotConfirmedError
 } from '../utils/errors.js'
 import {
     sendConfirmationEmail,
@@ -54,8 +53,22 @@ function generateConfirmationLink (registrationCode: string): string {
     return confirmationLink
 }
 
+function generatePasswordResetLink (passwordResetCode: string): string {
+    let passwordResetLink: string
+    // Generate confirmation link
+    if (process.env.NODE_ENV === 'production') {
+        passwordResetLink = `http://${frontendDomain}/reset-password?passwordResetCode=${passwordResetCode}`
+    } else {
+        passwordResetLink = `http://${frontendDomain}:${nextJsPort}/reset-password?passwordResetCode=${passwordResetCode}`
+    }
+
+    logger.silly(passwordResetLink)
+
+    return passwordResetLink
+}
+
 function ensureFieldsPresent (body: Record<string, string>, requiredFields: string[], next: NextFunction): void {
-    const missingFields = requiredFields.filter(reqField => !body[reqField])
+    const missingFields = requiredFields.filter(reqField => !body[reqField] )
     if (missingFields.length > 0) {
         missingFields.sort((a, b) => a.localeCompare(b))
         throw new MissingFieldsError(`Missing ${missingFields.join(', ')}`)
@@ -128,8 +141,8 @@ export const requestPasswordResetEmail = asyncErrorHandler(async (req: Request, 
     const user = await UserModel.findOne({ email }).exec()
 
     if (user) {
-        const registrationCode = await user.generateNewPasswordResetCode()
-        const confirmationLink = generateConfirmationLink(registrationCode)
+        const passwordResetCode = await user.generateNewPasswordResetCode()
+        const confirmationLink = generatePasswordResetLink(passwordResetCode)
         await sendPasswordResetEmail(email, confirmationLink)
     }
 
@@ -339,10 +352,10 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
     const {
         newPassword,
         confirmNewPassword,
-        passwordResetCode
     } = req.body
+    const { passwordResetCode } = req.params
 
-    const requiredFields = ['newPassword', 'confirmNewPassword', 'passwordResetCode']
+    const requiredFields = ['newPassword', 'confirmNewPassword']
     ensureFieldsPresent(req.body, requiredFields, next)
 
     if (newPassword !== confirmNewPassword) {

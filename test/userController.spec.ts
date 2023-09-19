@@ -1052,10 +1052,8 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         const resetDetails = {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'NewPassword123',
-            passwordResetCode: 'sampleResetCode12345'
         }
-
-        const res = await agent.patch('/api/v1/users/reset-password').send(resetDetails)
+        const res = await agent.patch('/api/v1/users/reset-password/sampleResetCode12345').send(resetDetails)
 
         expect(res).to.have.status(201)
 
@@ -1067,23 +1065,21 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         const mismatchingPasswords = {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'WrongPassword123',
-            passwordResetCode: 'sampleResetCode12345'
         }
-        const res = await agent.patch('/api/v1/users/reset-password').send(mismatchingPasswords)
+        const res = await agent.patch('/api/v1/users/reset-password/sampleResetCode12345').send(mismatchingPasswords)
 
         expect(res).to.have.status(400)
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
-        expect(updatedTestUser.passwordResetCode).to.be.equal(mismatchingPasswords.passwordResetCode)
+        expect(updatedTestUser.passwordResetCode).to.be.equal('sampleResetCode12345')
     })
 
     it('should return an error if newPassword and confirmNewPassword do not match', async function () {
         const mismatchingPasswords = {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'WrongPassword123',
-            passwordResetCode: 'sampleResetCode12345'
         }
-        const res = await agent.patch('/api/v1/users/reset-password').send(mismatchingPasswords)
+        const res = await agent.patch('/api/v1/users/reset-password/sampleResetCode12345').send(mismatchingPasswords)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -1092,30 +1088,27 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
     })
 
     it('should return an error if passwordResetCode is invalid', async function () {
-        const invalidResetCode = {
+        const resetDetails = {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'NewPassword123',
-            passwordResetCode: 'invalidResetCode'
         }
 
-        const res = await agent.patch('/api/v1/users/reset-password').send(invalidResetCode)
+        const res = await agent.patch('/api/v1/users/reset-password/InvalidResetCode').send(resetDetails)
         expect(res).to.have.status(404)
     })
 
     it('should return an error if not all fields are provided', async function () {
-        const partialResetDetails = {
+        const partialPasswordDetails = {
             newPassword: 'PartialPassword',
-            confirmNewPassword: 'PartialPassword'
-            // Missing passwordResetCode
         }
 
-        const res = await agent.patch('/api/v1/users/reset-password').send(partialResetDetails)
+        const res = await agent.patch('/api/v1/users/reset-password/sampleResetCode12345').send(partialPasswordDetails) // Missing reset code
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
 
-        expect(res.body.error).to.be.equal('Missing passwordResetCode')
+        expect(res.body.error).to.be.equal('Missing confirmNewPassword')
     })
 })
 
