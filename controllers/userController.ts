@@ -363,7 +363,8 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
         next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match')); return
     }
 
-    const user = await UserModel.findOne({ passwordResetCode })
+    const user = await UserModel.findOne({ passwordResetCode }).exec()
+
     if (!user) {
         res.status(404).send(); return
     }
