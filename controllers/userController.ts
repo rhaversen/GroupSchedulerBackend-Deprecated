@@ -54,14 +54,12 @@ function generateConfirmationLink (registrationCode: string): string {
     return confirmationLink
 }
 
-function ensureFieldsPresent (body: Record<string, string>, requiredFields: string[], next: NextFunction): boolean {
+function ensureFieldsPresent (body: Record<string, string>, requiredFields: string[], next: NextFunction): void {
     const missingFields = requiredFields.filter(reqField => !body[reqField])
     if (missingFields.length > 0) {
         missingFields.sort((a, b) => a.localeCompare(b))
-        next(new MissingFieldsError(`Missing ${missingFields.join(', ')}`))
-        return true
+        throw new MissingFieldsError(`Missing ${missingFields.join(', ')}`)
     }
-    return false
 }
 
 export const getCurrentUser =
@@ -87,9 +85,7 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
     const { username, email, password, confirmPassword } = req.body
 
     const requiredFields = ['username', 'email', 'password', 'confirmPassword']
-    if (ensureFieldsPresent(req.body, requiredFields, next)) {
-        return
-    }
+    ensureFieldsPresent(req.body, requiredFields, next)
 
     if (!validator.isEmail(email)) {
         next(new InvalidEmailError('Invalid email format')); return
@@ -173,9 +169,7 @@ export const confirmUser = asyncErrorHandler(async (req: Request, res: Response,
 
 export const loginUserLocal = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const requiredFieldsForLogin = ['email', 'password']
-    if (ensureFieldsPresent(req.body, requiredFieldsForLogin, next)) {
-        return
-    }
+    ensureFieldsPresent(req.body, requiredFieldsForLogin, next)
 
     passport.authenticate('local', (err: Error, user: IUser, info: { message: string }) => {
         if (err) {
@@ -323,9 +317,7 @@ export const updatePassword = asyncErrorHandler(async (req: Request, res: Respon
     } = req.body
 
     const requiredFields = ['newPassword', 'confirmNewPassword', 'currentPassword']
-    if (ensureFieldsPresent(req.body, requiredFields, next)) {
-        return
-    }
+    ensureFieldsPresent(req.body, requiredFields, next)
 
     if (newPassword !== confirmNewPassword) {
         next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match')); return
@@ -351,9 +343,7 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
     } = req.body
 
     const requiredFields = ['newPassword', 'confirmNewPassword', 'passwordResetCode']
-    if (ensureFieldsPresent(req.body, requiredFields, next)) {
-        return
-    }
+    ensureFieldsPresent(req.body, requiredFields, next)
 
     if (newPassword !== confirmNewPassword) {
         next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match')); return
@@ -378,9 +368,7 @@ export const updateUsername = asyncErrorHandler(async (req: Request, res: Respon
     const newUsername = req.body.newUsername
 
     const requiredFields = ['newUsername']
-    if (ensureFieldsPresent(req.body, requiredFields, next)) {
-        return
-    }
+    ensureFieldsPresent(req.body, requiredFields, next)
 
     user.username = newUsername
 
