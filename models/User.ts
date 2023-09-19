@@ -151,43 +151,32 @@ userSchema.methods.unFollows = async function (candidateUser: IUser): Promise<vo
     }
 }
 
-userSchema.methods.generateNewUserCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
-    let userCode: string
+type CodeFields = 'userCode' | 'registrationCode' | 'passwordResetCode'
+async function generateUniqueCodeForField (this: IUser & { constructor: Model<IUser> }, field: CodeFields): Promise<string> {
+    let generatedCode: string
     let existingUser: IUser | null
+    const query: Record<string, unknown> = {}
 
     do {
-        userCode = nanoid()
-        existingUser = await UserModel.findOne({ userCode }).exec()
-    } while (existingUser)
+        generatedCode = nanoid()
+        query[field] = generatedCode
+        existingUser = await UserModel.findOne(query).exec()
+    } while (existingUser || this[field] === generatedCode)
 
-    this.userCode = userCode
-    return userCode
+    this[field] = generatedCode
+    return generatedCode
+}
+
+userSchema.methods.generateNewUserCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
+    return await generateUniqueCodeForField.call(this, 'userCode')
 }
 
 userSchema.methods.generateNewRegistrationCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
-    let registrationCode: string
-    let existingUser: IUser | null
-
-    do {
-        registrationCode = nanoid()
-        existingUser = await UserModel.findOne({ registrationCode }).exec()
-    } while (existingUser || this.registrationCode === registrationCode) // Generate a new and unique registration code
-
-    this.registrationCode = registrationCode
-    return registrationCode
+    return await generateUniqueCodeForField.call(this, 'registrationCode')
 }
 
 userSchema.methods.generateNewPasswordResetCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
-    let passwordResetCode: string
-    let existingUser: IUser | null
-
-    do {
-        passwordResetCode = nanoid()
-        existingUser = await UserModel.findOne({ passwordResetCode }).exec()
-    } while (existingUser || this.passwordResetCode === passwordResetCode) // Generate a new and unique registration code
-
-    this.passwordResetCode = passwordResetCode
-    return passwordResetCode
+    return await generateUniqueCodeForField.call(this, 'passwordResetCode')
 }
 
 userSchema.pre(/^find/, function (next) {
