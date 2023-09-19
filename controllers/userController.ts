@@ -14,7 +14,7 @@ import {
     EmailAlreadyExistsError,
     MissingFieldsError,
     InvalidConfirmationCodeError,
-    UserAlreadyConfirmedError,
+    UserAlreadyConfirmedError
 } from '../utils/errors.js'
 import {
     sendConfirmationEmail,
@@ -68,7 +68,7 @@ function generatePasswordResetLink (passwordResetCode: string): string {
 }
 
 function ensureFieldsPresent (body: Record<string, string>, requiredFields: string[], next: NextFunction): void {
-    const missingFields = requiredFields.filter(reqField => !body[reqField] )
+    const missingFields = requiredFields.filter(reqField => !body[reqField])
     if (missingFields.length > 0) {
         missingFields.sort((a, b) => a.localeCompare(b))
         throw new MissingFieldsError(`Missing ${missingFields.join(', ')}`)
@@ -351,7 +351,7 @@ export const updatePassword = asyncErrorHandler(async (req: Request, res: Respon
 export const resetPassword = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const {
         newPassword,
-        confirmNewPassword,
+        confirmNewPassword
     } = req.body
     const { passwordResetCode } = req.params
 
