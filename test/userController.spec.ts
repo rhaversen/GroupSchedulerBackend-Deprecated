@@ -1020,6 +1020,105 @@ describe('Update Password Endpoint PATCH /update-password', function () {
     })
 })
 
+describe('Reset Password Endpoint PATCH /reset-password', function () {
+    let testUser: IUser
+    let agent: ChaiHttp.Agent
+
+    beforeEach(async function () {
+        // Create a test user
+        testUser = new UserModel({
+            username: 'TestUser',
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword',
+            passwordResetCode: 'sampleResetCode12345'
+        })
+        testUser.confirmUser()
+        await testUser.save()
+
+        agent = chai.request.agent(server.app)
+        await agent.post('/api/v1/users/login-local').send({
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
+        })
+    })
+
+    afterEach(async function () {
+        // Cleanup: remove test user
+        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
+        agent.close()
+    })
+
+    it('should reset the password successfully', async function () {
+        const resetDetails = {
+            newPassword: 'NewPassword123',
+            confirmNewPassword: 'NewPassword123',
+            passwordResetCode: 'sampleResetCode12345'
+        }
+
+        const res = await agent.patch('/api/v1/users/reset-password').send(resetDetails)
+
+        expect(res).to.have.status(201)
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
+        expect(await updatedTestUser.comparePassword('NewPassword123')).to.be.true
+    })
+
+    it('should not update the reset password code passwords do not match', async function () {
+        const mismatchingPasswords = {
+            newPassword: 'NewPassword123',
+            confirmNewPassword: 'WrongPassword123',
+            passwordResetCode: 'sampleResetCode12345'
+        }
+        const res = await agent.patch('/api/v1/users/reset-password').send(mismatchingPasswords)
+
+        expect(res).to.have.status(400)
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
+        expect(updatedTestUser.passwordResetCode).to.be.equal(mismatchingPasswords.passwordResetCode)
+    })
+
+    it('should return an error if newPassword and confirmNewPassword do not match', async function () {
+        const mismatchingPasswords = {
+            newPassword: 'NewPassword123',
+            confirmNewPassword: 'WrongPassword123',
+            passwordResetCode: 'sampleResetCode12345'
+        }
+        const res = await agent.patch('/api/v1/users/reset-password').send(mismatchingPasswords)
+
+        expect(res).to.have.status(400)
+        expect(res.body).to.be.a('object')
+        expect(res.body).to.have.property('error')
+        expect(res.body.error).to.be.equal('newPassword and confirmNewPassword does not match')
+    })
+
+    it('should return an error if passwordResetCode is invalid', async function () {
+        const invalidResetCode = {
+            newPassword: 'NewPassword123',
+            confirmNewPassword: 'NewPassword123',
+            passwordResetCode: 'invalidResetCode'
+        }
+
+        const res = await agent.patch('/api/v1/users/reset-password').send(invalidResetCode)
+        expect(res).to.have.status(404)
+    })
+
+    it('should return an error if not all fields are provided', async function () {
+        const partialResetDetails = {
+            newPassword: 'PartialPassword',
+            confirmNewPassword: 'PartialPassword'
+            // Missing passwordResetCode
+        }
+
+        const res = await agent.patch('/api/v1/users/reset-password').send(partialResetDetails)
+        
+        expect(res).to.have.status(400)
+        expect(res.body).to.be.a('object')
+        expect(res.body).to.have.property('error')
+
+    expect(res.body.error).to.be.equal('Missing passwordResetCode')
+    })
+})
+
 describe('Update Username Endpoint PATCH /update-username', function () {
     let testUser: IUser
     let agent: ChaiHttp.Agent

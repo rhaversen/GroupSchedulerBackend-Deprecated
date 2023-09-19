@@ -12,6 +12,7 @@ import {
     getCurrentUser,
     registerUser,
     requestPasswordResetEmail,
+    resetPassword,
     confirmUser,
     loginUserLocal,
     logoutUser,
@@ -59,6 +60,16 @@ router.post('/',
 router.post('/request-reset-password-email',
     sanitizeInput,
     requestPasswordResetEmail
+)
+
+/**
+* @route PATCH api/v1/users/reset-password
+* @desc Reset a users password given a correct password reset code (From a password reset email)
+* @access Public
+*/
+router.patch('/reset-password',
+    sanitizeInput,
+    resetPassword
 )
 
 /**

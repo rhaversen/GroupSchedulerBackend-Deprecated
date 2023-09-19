@@ -343,6 +343,35 @@ export const updatePassword = asyncErrorHandler(async (req: Request, res: Respon
     res.status(200).json(user)
 })
 
+export const resetPassword = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const {
+        newPassword,
+        confirmNewPassword,
+        passwordResetCode
+    } = req.body
+
+    const requiredFields = ['newPassword', 'confirmNewPassword', 'passwordResetCode']
+    if (ensureFieldsPresent(req.body, requiredFields, next)) {
+        return
+    }
+
+    if (newPassword !== confirmNewPassword) {
+        next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match')); return
+    }
+
+    const user = await UserModel.findOne({ passwordResetCode })
+
+    if (!user) {
+        res.status(404).send(); return
+    }
+
+    user.password = newPassword
+
+    await user.save()
+
+    res.status(201).json(user)
+})
+
 export const updateUsername = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
 
