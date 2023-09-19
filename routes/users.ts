@@ -23,7 +23,8 @@ import {
     getFollowing,
     getCommonEvents,
     updatePassword,
-    updateUsername
+    updateUsername,
+    deleteUser
 } from '../controllers/userController.js'
 
 // Destructuring and global variables
@@ -198,7 +199,7 @@ router.patch('/update-username',
 router.delete('/',
     sanitizeInput,
     ensureAuthenticated,
-    updateUsername
+    deleteUser
 )
 
 export default router
