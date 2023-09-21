@@ -286,6 +286,9 @@ describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', func
         expect(res.body).to.have.property('message')
         expect(res.body.message).to.be.equal('Confirmation successful! Your account has been activated.')
 
+        expect(res.body).to.have.property('user')
+        expect(res.body.user._id).to.be.equal(savedUser.id)
+
         const confirmedUser = await UserModel.findById(savedUser._id).exec() as IUser
         expect(confirmedUser.confirmed).to.be.true
     })
@@ -309,7 +312,7 @@ describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', func
 })
 
 describe('User Login Endpoint POST /api/v1/users/login-local', function () {
-    let registeredUser
+    let registeredUser: IUser
     let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
@@ -341,6 +344,9 @@ describe('User Login Endpoint POST /api/v1/users/login-local', function () {
         expect(res.body).to.have.property('auth')
         expect(res).to.have.cookie('connect.sid') // Expecting the default session cookie name.
         expect(res.body.auth).to.be.true
+
+        expect(res.body).to.have.property('user')
+        expect(res.body.user._id).to.be.equal(registeredUser.id)
     })
 
     it('should successfully login a user even though the user is not confirmed', async function () {
@@ -670,11 +676,13 @@ describe('Generate New User Code Endpoint PUT /api/v1/users/new-code', function 
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
-        expect(res.body).to.have.property('userCode')
+
+        expect(res.body).to.have.property('user')
+        expect(res.body.user._id).to.be.equal(testUser.id)
 
         // Fetch the user from the database to verify userCode
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
-        expect(updatedTestUser.userCode).to.equal(res.body.userCode)
+        expect(updatedTestUser.userCode).to.equal(res.body.user.userCode)
         expect(updatedTestUser.userCode).to.not.equal(userCodeBefore)
     })
 })
@@ -730,6 +738,9 @@ describe('Follow User Endpoint PUT /api/v1/users/following/:userId', function ()
 
         // Check that userB's followers array contains userA's ID
         expect(updatedUserB.followers).to.include(userA._id)
+
+        expect(res.body).to.have.property('user')
+        expect(res.body.user._id).to.be.equal(userA.id)
     })
 
     it('should not allow following if user is not authenticated', async function () {

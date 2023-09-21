@@ -232,9 +232,9 @@ export const getEvents = asyncErrorHandler(async (req: Request, res: Response, n
 export const newCode = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
     // Generate a new userCode
-    const userCode = await user.generateNewUserCode()
+    await user.generateNewUserCode()
     await user.save()
-    res.status(200).json(user)
+    res.status(200).json({user})
 })
 
 export const followUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -257,7 +257,7 @@ export const followUser = asyncErrorHandler(async (req: Request, res: Response, 
 
     await user.follows(candidateUser)
 
-    res.status(200).json(user)
+    res.status(200).json({user})
 })
 
 export const unfollowUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -280,7 +280,7 @@ export const unfollowUser = asyncErrorHandler(async (req: Request, res: Response
 
     await user.unFollows(candidateUser)
 
-    res.status(200).json(user)
+    res.status(200).json({user})
 })
 
 export const getFollowers = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -346,7 +346,7 @@ export const updatePassword = asyncErrorHandler(async (req: Request, res: Respon
 
     await user.save()
 
-    res.status(200).json(user)
+    res.status(200).json({user})
 })
 
 export const resetPassword = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -373,7 +373,7 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
 
     await user.save()
 
-    res.status(201).json(user)
+    res.status(201).json({user})
 })
 
 export const updateUsername = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -388,7 +388,7 @@ export const updateUsername = asyncErrorHandler(async (req: Request, res: Respon
 
     await user.save()
 
-    res.status(200).json(user)
+    res.status(200).json({user})
 })
 
 export const deleteUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -398,5 +398,5 @@ export const deleteUser = asyncErrorHandler(async (req: Request, res: Response, 
 
     await user.save()
 
-    res.status(200).json(user)
+    res.status(200).json({user})
 })
