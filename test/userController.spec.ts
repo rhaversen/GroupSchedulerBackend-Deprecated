@@ -54,10 +54,9 @@ afterEach(async function () {
     await cleanDatabase()
 })
 
-after(async function () {
-    this.timeout(10000) // Set the timeout to 10 seconds.
-    await server.shutDown()
-})
+after(function () {
+    server.shutDown()
+});
 
 describe('Get Current User Endpoint GET /api/v1/users/current-user', function () {
     let agent: ChaiHttp.Agent
