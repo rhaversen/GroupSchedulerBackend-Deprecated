@@ -3,3 +3,4 @@ node_modules/
 dist/
 .eslintrc.cjs
 backend/.eslintrc.cjs
+.nyc_output/

@@ -7,5 +7,6 @@ npm-debug.log
 *.log
 .vscode/
 dist/
+.nyc_output/
 
 rasmus.pgp
