@@ -3,7 +3,6 @@ import http from 'http'
 
 // Third-party libraries
 import express from 'express'
-import 'express-async-errors'
 import mongoSanitize from 'express-mongo-sanitize'
 import RateLimit from 'express-rate-limit'
 import passport from 'passport'
@@ -36,7 +35,7 @@ import availabilityRoutes from './routes/availabilities.js'
 
 // Global variables and setup
 const app = express()
-const server = http.createServer(app)
+const index = http.createServer(app)
 
 // Configs
 const helmetCSP = getHelmetCSP()
@@ -51,7 +50,7 @@ const expressPort = getExpressPort()
 configurePassport(passport)
 
 // Helmet security
-if (typeof helmetCSP === 'object' && helmetCSP !== null) {
+/* if (typeof helmetCSP === 'object' && helmetCSP !== null) {
     app.use(helmet.contentSecurityPolicy(helmetCSP))
 } else {
     logger.warn('Helmet ContentSecurityPolicyOptions is not set! App not using CSP!')
@@ -61,7 +60,7 @@ if (typeof helmetHSTS === 'object' && helmetHSTS !== null) {
     app.use(helmet.strictTransportSecurity(helmetHSTS))
 } else {
     logger.warn('Helmet StrictTransportSecurityOptions is not set! App not using HSTS!')
-}
+} */
 
 // Connect to MongoDB
 await connectToDatabase()
@@ -121,11 +120,15 @@ app.use('/api/v1/users/update-password', sensitiveApiLimiter)
 app.use('/api/v1/users/login', sensitiveApiLimiter)
 app.use('/api/v1/users/signup', sensitiveApiLimiter)
 
+app.get('/', (req, res) => {
+    res.send('pong');
+});
+
 // Global error handler middleware
 app.use(globalErrorHandler)
 
-// Start server
-server.listen(expressPort, () => {
+// Start index
+index.listen(expressPort, () => {
     logger.info(`App listening at http://localhost:${expressPort}`)
 })
 

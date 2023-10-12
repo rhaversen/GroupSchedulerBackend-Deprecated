@@ -6,20 +6,20 @@ import chaiHttp from 'chai-http'
 import { parse } from 'cookie'
 
 // Own modules
-import logger from '../utils/logger.js'
-import UserModel, { type IUser } from '../models/User.js'
-import EventModel, { type IEvent } from '../models/Event.js'
+import logger from '../src/utils/logger.js'
+import UserModel, { type IUser } from '../src/models/User.js'
+import EventModel, { type IEvent } from '../src/models/Event.js'
 import {
     getSessionExpiry,
     getSessionPersistentExpiry,
     getExpressPort
-} from '../utils/setupConfig.js'
-import { isMemoryServer } from '../utils/database.js'
+} from '../src/utils/setupConfig.js'
+import { isMemoryServer } from '../src/utils/database.js'
 
 chai.use(chaiHttp)
 const { expect } = chai
 
-const server = await import('../server.js')
+const server = await import('../src')
 
 // Configs
 const sessionExpiry = getSessionExpiry()

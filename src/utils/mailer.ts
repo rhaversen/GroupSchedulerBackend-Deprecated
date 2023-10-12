@@ -7,7 +7,7 @@ import nodemailer from 'nodemailer'
 import {
     getTransporterPort,
     getEmailFrom
-} from '../utils/setupConfig.js'
+} from './setupConfig.js'
 
 // Config
 const transporterPort = getTransporterPort()

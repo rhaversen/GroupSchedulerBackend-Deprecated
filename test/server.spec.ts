@@ -7,7 +7,7 @@ import { deleteAllDocumentsFromAllCollections } from '../utils/database.js'
 import logger from '../utils/logger.js'
 import UserModel, { type IUser } from '../models/User.js'
 import error from '../utils/errors.js'
-import { AppType, ShutDownType } from '../server.js'
+import { AppType, ShutDownType } from '../index.js'
 
 // Controller functions
 import {
@@ -49,7 +49,7 @@ let server: ServerType
 describe('Server Tests', () => {
     before(async function () {
         this.timeout(10000) // Set the timeout to 10 seconds.
-        server = await import('../server.js')
+        server = await import('../index.js')
         // Wipe database before testing
         await deleteAllDocumentsFromAllCollections()
     })
