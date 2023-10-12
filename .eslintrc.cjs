@@ -14,7 +14,6 @@ module.exports = {
         "project": "./tsconfig.json"
     },
     "rules": {
-        'no-mutate-config-get/no-mutate-config-get': 'warn',
         "indent": ["error", 4], // Standard ESLint indent rule
         "@typescript-eslint/indent": ["error", 4] // TypeScript-specific indent rule
     },
