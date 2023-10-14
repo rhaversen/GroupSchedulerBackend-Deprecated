@@ -19,7 +19,7 @@ import { isMemoryServer } from '../src/utils/database.js'
 chai.use(chaiHttp)
 const { expect } = chai
 
-const server = await import('../src')
+const server = await import('../src/index.js')
 
 // Configs
 const sessionExpiry = getSessionExpiry()
