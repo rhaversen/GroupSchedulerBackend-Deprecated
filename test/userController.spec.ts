@@ -56,7 +56,7 @@ afterEach(async function () {
 
 after(function () {
     server.shutDown()
-});
+})
 
 describe('Get Current User Endpoint GET /api/v1/users/current-user', function () {
     let agent: ChaiHttp.Agent
