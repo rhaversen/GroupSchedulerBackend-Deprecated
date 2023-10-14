@@ -121,8 +121,8 @@ app.use('/api/v1/users/login', sensitiveApiLimiter)
 app.use('/api/v1/users/signup', sensitiveApiLimiter)
 
 app.get('/', (req, res) => {
-    res.send('pong');
-});
+    res.send('pong')
+})
 
 // Global error handler middleware
 app.use(globalErrorHandler)
