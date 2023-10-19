@@ -1,4 +1,4 @@
-name: Backend Docker Image CI
+name: Backend Test CI
 
 on:
   push:
