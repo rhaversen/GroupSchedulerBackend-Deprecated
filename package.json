@@ -3,6 +3,18 @@
     "version": "0.1.0",
     "private": true,
     "type": "module",
+    "scripts": {
+        "devdev": "ts-node-dev src/index.ts",
+        "dev": "ts-node --loader tsconfig.json src/index.ts",
+        "start": "node --env-file=.env dist/src/index.js",
+        "build-and-start": "npm run build && npm run start",
+        "test": "cross-env NODE_ENV=test MOCHA_REPORTER_OPTIONS=toConsole=true mocha --reporter spec --recursive dist/test/**/*.spec.js",
+        "build": "tsc",
+        "build-and-test": "npm run build && npm run test",
+        "lint": "npx eslint **/*.ts",
+        "lint:fix": "npx eslint **/*.ts --fix",
+        "depcheck": "npx depcheck"
+    },
     "dependencies": {
         "bcryptjs": "^2.4.3",
         "config": "^3.3.9",
@@ -54,18 +66,6 @@
         "ts-node": "^10.9.1",
         "ts-node-dev": "^2.0.0",
         "typescript": "^5.2.2"
-    },
-    "scripts": {
-        "devdev": "ts-node-dev src/index.ts",
-        "dev": "ts-node --loader tsconfig.json src/index.ts",
-        "start": "node --env-file=.env dist/src/index.js",
-        "build-and-start": "npm run build && npm run start",
-        "test": "cross-env NODE_ENV=test MOCHA_REPORTER_OPTIONS=toConsole=true mocha --reporter spec --recursive dist/test/**/*.spec.js",
-        "build": "tsc",
-        "build-and-test": "npm run build && npm run test",
-        "lint": "npx eslint **/*.ts",
-        "lint:fix": "npx eslint **/*.ts --fix",
-        "depcheck": "npx depcheck"
     },
     "ts-node-dev": {}
 }
