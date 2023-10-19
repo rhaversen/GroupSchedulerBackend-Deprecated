@@ -14,7 +14,7 @@ COPY package*.json ./
 COPY config/ ./config/
 
 # Install production dependencies
-RUN npm install --omit=dev
+RUN npm install --production
 
 # Expose the port Express.js runs on
 EXPOSE 5000
