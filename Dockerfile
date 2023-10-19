@@ -3,7 +3,7 @@
 # for production
 
 # Use an official Node.js runtime as the base image
-FROM --platform=linux/arm64 node:20.8-alpine
+FROM --platform=linux/arm64 node:20.8
 
 # Set working directory
 WORKDIR /app
