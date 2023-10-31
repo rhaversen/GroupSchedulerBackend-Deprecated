@@ -1,15 +1,15 @@
 {
-    "corsOpts": {
-        "origin": "http://localhost:3000"
+    "corsOpts":{
+        "origin":"http://localhost:3000"
     },
-    "frontend": {
-        "domain": "localhost"
+    "frontend":{
+        "domain":"localhost"
     },
-    "ports": {
-        "nextJs": 3000,
-        "express": 5000
+    "ports":{
+        "nextJs":3000,
+        "express":5000
     },
-    "bcrypt": {
-        "saltRounds": 0
+    "bcrypt":{
+        "saltRounds":0
     }
 }
