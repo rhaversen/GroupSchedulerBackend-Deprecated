@@ -1,61 +1,65 @@
 {
-    "email": {
-        "from": "rasmus@haversen.dk",
-        "port": 465
+    "email":{
+        "from":"rasmus@haversen.dk",
+        "port":465
     },
-    "userSettings": {
-        "unconfirmedUserExpiry": 86400
+    "userSettings":{
+        "unconfirmedUserExpiry":86400
     },
-    "bcrypt": {
-        "saltRounds": 10
+    "bcrypt":{
+        "saltRounds":10
     },
-    "nanoid": {
-        "alphabet": "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-        "length": 10
+    "nanoid":{
+        "alphabet":"1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+        "length":10
     },
-    "cookieOptions": {
-        "httpOnly": true,
-        "secure": false,
-        "SameSite": "strict"
+    "cookieOptions":{
+        "httpOnly":true,
+        "secure":false,
+        "SameSite":"strict"
     },
-    "mongoose": {
-        "retrySettings": {
-            "maxAttempts": 5,
-            "interval": 1000
+    "mongoose":{
+        "retrySettings":{
+            "maxAttempts":5,
+            "interval":1000
         },
-        "options": {
-            "useNewUrlParser": true,
-            "useUnifiedTopology": true
+        "options":{}
+    },
+    "session":{
+        "expiry":86400,
+        "persistentExpiry":2592000
+    },
+    "helmet":{
+        "CSP":{
+            "defaultSrc":[
+                "'self'"
+            ],
+            "scriptSrc":[
+                "'self'",
+                "'unsafe-inline'"
+            ],
+            "styleSrc":[
+                "'self'"
+            ]
+        },
+        "HSTS":{
+            "maxAge":31536000,
+            "includeSubDomains":true,
+            "preload":true
         }
     },
-    "session": {
-        "expiry": 86400,
-        "persistentExpiry": 2592000
-    },
-    "helmet": {
-        "CSP": {
-            "defaultSrc": ["'self'"],
-            "scriptSrc": ["'self'", "'unsafe-inline'"],
-            "styleSrc": ["'self'"]
+    "apiLimiter":{
+        "nonSensitive":{
+            "windowMs":60000,
+            "max":60
         },
-        "HSTS": {
-            "maxAge": 31536000,
-            "includeSubDomains": true,
-            "preload": true
-        }
-    },
-    "apiLimiter": {
-        "nonSensitive": {
-            "windowMs": 60000,
-            "max": 60
+        "sensitive":{
+            "windowMs":60000,
+            "max":5
         },
-        "sensitive": {
-            "windowMs": 60000,
-            "max": 5
-        },
-        "test": {
-            "windowMs": 1,
-            "max": 100
+        "test":{
+            "windowMs":1,
+            "max":100
         }
     }
 }
