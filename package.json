@@ -6,8 +6,10 @@
     "scripts": {
         "devdev": "ts-node-dev src/index.ts",
         "dev": "ts-node --loader tsconfig.json src/index.ts",
-        "start": "node --env-file=.env dist/src/index.js",
+        "start-dev": "node --env-file=.env dist/src/index.js",
+        "start": "node dist/src/index.js",
         "build-and-start": "npm run build && npm run start",
+        "build-and-start-dev": "npm run build && npm run start-dev",
         "test": "cross-env NODE_ENV=test MOCHA_REPORTER_OPTIONS=toConsole=true mocha --reporter spec --recursive dist/test/**/*.spec.js",
         "build": "tsc",
         "build-and-test": "npm run build && npm run test",
