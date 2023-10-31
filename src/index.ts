@@ -74,9 +74,8 @@ const sessionMiddleware = session({
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true
     },
-    store: new MongoStore({
-        client: mongoose.connection.getClient() // Extract MongoClient from Mongoose connection
-    })
+    store: MongoStore.create({ client: mongoose.connection.getClient() }),
+
 })
 
 // Global middleware
