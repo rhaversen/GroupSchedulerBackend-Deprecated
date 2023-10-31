@@ -1,3 +1,7 @@
+// Load vault into env file
+import { loadSecrets } from './utils/vault.js'
+await loadSecrets()
+
 // Node.js built-in modules
 import http from 'http'
 
@@ -32,6 +36,7 @@ import {
 import userRoutes from './routes/users.js'
 import eventRoutes from './routes/events.js'
 import availabilityRoutes from './routes/availabilities.js'
+import NodeVault from 'node-vault/index.js'
 
 // Global variables and setup
 const app = express()
@@ -74,7 +79,7 @@ const sessionMiddleware = session({
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true
     },
-    store: MongoStore.create({ client: mongoose.connection.getClient() }),
+    store: MongoStore.create({ client: mongoose.connection.getClient() })
 
 })
 
