@@ -43,7 +43,6 @@ const connectToDatabase = async (): Promise<void> => {
             logger.info('Attempting connection to MongoDB')
 
             try {
-                console.log(process.env.DB_USER)
                 const mongoUri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`
                 // Use Mongoose to connect for production database
                 mongooseConnection = await mongoose.connect(mongoUri, mongooseOpts)
