@@ -1,5 +1,6 @@
 // Load vault into env file
 import { loadSecrets } from './utils/vault.js'
+await loadSecrets()
 
 // Node.js built-in modules
 import http from 'http'
@@ -36,7 +37,6 @@ import userRoutes from './routes/users.js'
 import eventRoutes from './routes/events.js'
 import availabilityRoutes from './routes/availabilities.js'
 import NodeVault from 'node-vault/index.js'
-await loadSecrets()
 
 // Global variables and setup
 const app = express()
