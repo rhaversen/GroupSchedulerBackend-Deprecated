@@ -136,11 +136,20 @@ index.listen(expressPort, () => {
     logger.info(`App listening at http://localhost:${expressPort}`)
 })
 
-// Handle unhandled promise rejections outside middleware
 process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
+    // Attempt to get a string representation of the promise
+    const promiseString = JSON.stringify(promise) || 'a promise'
+
+    // Get a detailed string representation of the reason
+    const reasonDetail = reason instanceof Error ? reason.stack || reason.message : JSON.stringify(reason)
+
+    // Log the detailed error message
+    logger.error(`Unhandled Rejection at: ${promiseString}, reason: ${reasonDetail}`)
+
     shutDown().catch(error => {
-        logger.error('An error occurred during shutdown:', error)
+        // If 'error' is an Error object, log its stack trace; otherwise, convert to string
+        const errorDetail = error instanceof Error ? error.stack || error.message : String(error)
+        logger.error(`An error occurred during shutdown: ${errorDetail}`)
         process.exit(1)
     })
 })
