@@ -6,7 +6,7 @@ let vault: client
 try {
     const NodeVault = await import('node-vault')
     vault = NodeVault.default({
-        endpoint: 'http://localhost:8200',
+        endpoint: 'https://localhost:8200',
         token: process.env.VAULT_TOKEN
     })
 } catch (e) {
