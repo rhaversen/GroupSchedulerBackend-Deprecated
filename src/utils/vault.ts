@@ -1,5 +1,5 @@
 import { type client } from 'node-vault'
-import logger from './logger'
+import logger from './logger.js'
 
 let vault: client
 
