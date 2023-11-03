@@ -11,16 +11,16 @@ WORKDIR /app
 # Create a user within the container
 RUN useradd -m backend_user
 
-# Make sure the directory belongs to the non-root user
-RUN chown -R backend_user /app
-
-# Switch to user for subsequent commands
-USER backend_user
-
 # Copy the `dist` directory, package.json and Config
 COPY dist/ ./dist/
 COPY package*.json ./
 COPY config/ ./config/
+
+# Change the ownership of the copied files to backend_user
+RUN chown -R backend_user:backend_user /app
+
+# Switch to user for subsequent commands
+USER backend_user
 
 # Install production dependencies
 RUN npm install --omit=dev
