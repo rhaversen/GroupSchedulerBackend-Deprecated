@@ -5,6 +5,12 @@
 # Use an official Node.js runtime as the base image
 FROM --platform=linux/arm64 node:20.8.1-bookworm-slim
 
+# Create a user within the container
+RUN useradd -m backend_user
+
+# Switch to user for subsequent commands
+USER backend_user
+
 # Set working directory
 WORKDIR /app
 

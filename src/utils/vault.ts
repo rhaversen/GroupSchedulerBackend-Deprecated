@@ -1,4 +1,5 @@
 import { type client } from 'node-vault'
+import logger from './logger.js'
 
 let vault: client
 
@@ -10,10 +11,10 @@ try {
     })
 } catch (e) {
     if (process.env.NODE_ENV === 'production') {
-        console.error('node-vault is required in production')
+        logger.error('node-vault is required in production')
         process.exit(1)
     }
-    console.warn('node-vault is not installed. Falling back to .env')
+    logger.warn('node-vault is not installed. Falling back to .env')
 }
 
 export async function loadSecrets () {
@@ -36,13 +37,13 @@ export async function loadSecrets () {
     try {
         if (process.env.NODE_ENV === 'production' && vault) {
             for (const key of keys) {
-                const secret = await vault.read(`path/to/your/secret/${key}`)
+                const secret = await vault.read(`secret/data/backend/${key}`)
                 process.env[key] = secret.data.value
             }
         } else {
             // .env values are already loaded by dotenv
         }
     } catch (err) {
-        console.error(`Failed to load secrets: ${err}`)
+        logger.error(`Failed to load secrets: ${err}`)
     }
 }
