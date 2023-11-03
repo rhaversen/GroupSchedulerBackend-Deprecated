@@ -16,7 +16,7 @@ import {
     getSessionPersistentExpiry,
     getExpressPort
 } from '../src/utils/setupConfig.js'
-import { isMemoryServer } from '../src/utils/database.js'
+import { isMemoryDatabase } from '../src/database/databaseHandler.js'
 
 chai.use(chaiHttp)
 const { expect } = chai
@@ -37,7 +37,7 @@ async function getCSRFToken (agent: ChaiHttp.Agent) {
 async function cleanDatabase () {
     /// ////////////////////////////////////////////
     /// ///////////////////////////////////////////
-    if (!isMemoryServer()) { return }
+    if (!isMemoryDatabase()) { return }
     /// ////////////////////////////////////////////
     /// ///////////////////////////////////////////
     try {

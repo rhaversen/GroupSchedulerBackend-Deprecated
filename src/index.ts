@@ -1,6 +1,5 @@
 // Load vault into env file
 import { loadSecrets } from './utils/vault.js'
-await loadSecrets()
 
 // Node.js built-in modules
 import http from 'http'
@@ -20,7 +19,7 @@ import MongoStore from 'connect-mongo'
 import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
-import { connectToDatabase, disconnectFromDatabase, mongoose } from './utils/database.js'
+import { initializeDatabaseConnection, closeDatabaseConnection, mongoose } from './database/databaseHandler.js'
 // import csrfProtection from './utils/csrfProtection.js';
 import {
     getHelmetCSP,
@@ -37,6 +36,7 @@ import userRoutes from './routes/users.js'
 import eventRoutes from './routes/events.js'
 import availabilityRoutes from './routes/availabilities.js'
 import NodeVault from 'node-vault/index.js'
+await loadSecrets()
 
 // Global variables and setup
 const app = express()
@@ -67,8 +67,8 @@ if (typeof helmetHSTS === 'object' && helmetHSTS !== null) {
     logger.warn('Helmet StrictTransportSecurityOptions is not set! App not using HSTS!')
 } */
 
-// Connect to MongoDB
-await connectToDatabase()
+// Connect to MongoDB (Automatically connect to in-memory replica set if not production environment)
+await initializeDatabaseConnection()
 
 // Configuration for session
 const sessionMiddleware = session({
@@ -136,11 +136,20 @@ index.listen(expressPort, () => {
     logger.info(`App listening at http://localhost:${expressPort}`)
 })
 
-// Handle unhandled promise rejections outside middleware
 process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
+    // Attempt to get a string representation of the promise
+    const promiseString = JSON.stringify(promise) || 'a promise'
+
+    // Get a detailed string representation of the reason
+    const reasonDetail = reason instanceof Error ? reason.stack || reason.message : JSON.stringify(reason)
+
+    // Log the detailed error message
+    logger.error(`Unhandled Rejection at: ${promiseString}, reason: ${reasonDetail}`)
+
     shutDown().catch(error => {
-        logger.error('An error occurred during shutdown:', error)
+        // If 'error' is an Error object, log its stack trace; otherwise, convert to string
+        const errorDetail = error instanceof Error ? error.stack || error.message : String(error)
+        logger.error(`An error occurred during shutdown: ${errorDetail}`)
         process.exit(1)
     })
 })
@@ -167,7 +176,7 @@ process.on('SIGINT', () => {
 async function shutDown () {
     try {
         logger.info('Starting database disconnection...')
-        await disconnectFromDatabase()
+        await closeDatabaseConnection()
         logger.info('Shutdown completed')
         process.exit(0) // Exit with code 0 indicating successful termination
     } catch (error) {
