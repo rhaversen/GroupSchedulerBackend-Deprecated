@@ -7,7 +7,7 @@ try {
     logger.error(process.env.VAULT_TOKEN)
     const NodeVault = await import('node-vault')
     vault = NodeVault.default({
-        endpoint: 'https://localhost:8200',
+        endpoint: 'https://host.docker.internal:8200',
         token: process.env.VAULT_TOKEN
     })
     logger.info("Connected to node-vault!")
