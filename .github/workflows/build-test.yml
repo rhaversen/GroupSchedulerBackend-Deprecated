@@ -28,4 +28,4 @@ jobs:
     - name: Build Docker image for testing purposes
       run: |
         docker buildx create --use
-        docker buildx build --load --file Dockerfile --platform linux/arm64 .
+        docker buildx build --output type=docker --file Dockerfile --platform linux/arm64 .
