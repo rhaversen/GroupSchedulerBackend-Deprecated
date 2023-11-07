@@ -28,9 +28,9 @@ const logger = createLogger({
     ),
     defaultMeta: { service: 'group-scheduler' }, // Set a default metadata field
     transports: [
-        new _transports.File({ filename: join(__dirname, '../../logs/error.log'), level: 'error' }),
-        new _transports.File({ filename: join(__dirname, '../../logs/info.log'), level: 'info' }),
-        new _transports.File({ filename: join(__dirname, '../../logs/combined.log'), level: 'silly' })
+        new _transports.File({ filename: join(__dirname, '../../../logs/error.log'), level: 'error' }),
+        new _transports.File({ filename: join(__dirname, '../../../logs/info.log'), level: 'info' }),
+        new _transports.File({ filename: join(__dirname, '../../../logs/combined.log'), level: 'silly' })
     ]
 })
 
