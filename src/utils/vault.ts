@@ -23,9 +23,6 @@ export async function loadSecrets () {
     const keys: string[] =
     [
         'SESSION_SECRET',
-        'DB_URI',
-        'OTHER_SECRET',
-        'DB_PORT',
         'DB_NAME',
         'DB_USER',
         'DB_PASSWORD',
