@@ -33,6 +33,7 @@ export async function loadSecrets () {
         'EMAIL_PASS'
     ]
     if (process.env.NODE_ENV === 'production') {
+        logger.info('Loading secrets')
         for (const key of keys) {
             try {
                 logger.silly('Loading secret for key' + key)
@@ -45,6 +46,7 @@ export async function loadSecrets () {
             }
         }
     } else {
+        logger.info('Using development .env')
         // .env values are already loaded by dotenv
     }
 }
