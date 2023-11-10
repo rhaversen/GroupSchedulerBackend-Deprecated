@@ -4,7 +4,6 @@ import logger from './logger.js'
 let vault: client
 
 try {
-    logger.error("vault token: " + process.env.VAULT_TOKEN)
     const NodeVault = await import('node-vault')
     vault = NodeVault.default({
         endpoint: process.env.VAULT_ADDR, // Injected with initial .env
@@ -44,5 +43,7 @@ export async function loadSecrets () {
         }
     } catch (err) {
         logger.error(`Failed to load secrets: ${err}`)
+        logger.error(`Shutting down`)
+        process.exit(1)
     }
 }
