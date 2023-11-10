@@ -32,18 +32,19 @@ export async function loadSecrets () {
         'EMAIL_USER',
         'EMAIL_PASS'
     ]
-    try {
-        if (process.env.NODE_ENV === 'production' && vault) {
-            for (const key of keys) {
+    if (process.env.NODE_ENV === 'production') {
+        for (const key of keys) {
+            try {
+                logger.silly('Loading secret for key' + key)
                 const secret = await vault.read(`secret/data/backend/${key}`)
                 process.env[key] = secret.data.value
+            } catch (err) {
+                logger.error(`Failed to load secrets: ${err}`)
+                logger.error(`Shutting down`)
+                process.exit(1)
             }
-        } else {
-            // .env values are already loaded by dotenv
         }
-    } catch (err) {
-        logger.error(`Failed to load secrets: ${err}`)
-        logger.error(`Shutting down`)
-        process.exit(1)
+    } else {
+        // .env values are already loaded by dotenv
     }
 }
