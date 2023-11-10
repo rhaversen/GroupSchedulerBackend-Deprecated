@@ -10,6 +10,6 @@
         "express":5000
     },
     "bcrypt":{
-        "saltRounds":0
+        "saltRounds":1
     }
 }

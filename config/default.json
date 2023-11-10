@@ -21,7 +21,7 @@
     "mongoose":{
         "retrySettings":{
             "maxAttempts":5,
-            "interval":1000
+            "interval":5000
         },
         "options":{}
     },
