@@ -4,11 +4,10 @@ import logger from './logger.js'
 let vault: client
 
 try {
-    logger.error("vault token: " + process.env.VAULT_TOKEN)
     const NodeVault = await import('node-vault')
     vault = NodeVault.default({
-        endpoint: 'https://192.168.1.231:8200',
-        token: process.env.VAULT_TOKEN
+        endpoint: process.env.VAULT_ADDR, // Injected with initial .env
+        token: process.env.VAULT_TOKEN // Injected with initial .env
     })
     logger.info("Connected to node-vault!")
 } catch (e) {
@@ -23,9 +22,6 @@ export async function loadSecrets () {
     const keys: string[] =
     [
         'SESSION_SECRET',
-        'DB_URI',
-        'OTHER_SECRET',
-        'DB_PORT',
         'DB_NAME',
         'DB_USER',
         'DB_PASSWORD',
@@ -36,16 +32,19 @@ export async function loadSecrets () {
         'EMAIL_USER',
         'EMAIL_PASS'
     ]
-    try {
-        if (process.env.NODE_ENV === 'production' && vault) {
-            for (const key of keys) {
+    if (process.env.NODE_ENV === 'production') {
+        for (const key of keys) {
+            try {
+                logger.silly('Loading secret for key' + key)
                 const secret = await vault.read(`secret/data/backend/${key}`)
                 process.env[key] = secret.data.value
+            } catch (err) {
+                logger.error(`Failed to load secrets: ${err}`)
+                logger.error(`Shutting down`)
+                process.exit(1)
             }
-        } else {
-            // .env values are already loaded by dotenv
         }
-    } catch (err) {
-        logger.error(`Failed to load secrets: ${err}`)
+    } else {
+        // .env values are already loaded by dotenv
     }
 }
