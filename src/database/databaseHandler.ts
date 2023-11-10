@@ -15,13 +15,16 @@ let disconnect: () => Promise<void>
 let mongoose: Mongoose
 
 async function initializeDatabaseConnection (): Promise<void> {
+    logger.info('Handling database connection...')
     if (process.env.NODE_ENV !== 'production') {
+        logger.info('Connecting to non-production database...')
         const replicaSetDatabaseConnector = await import('./replicaSetDatabaseConnector.js')
         connect = replicaSetDatabaseConnector.connectToDatabase
         disconnect = replicaSetDatabaseConnector.disconnectFromDatabase
         mongoose = replicaSetDatabaseConnector.mongoose
         dbConnectionType = 'replicaSet'
     } else {
+        logger.info('Connectiong to production database...')
         const productionDatabaseConnector = await import('./productionDatabaseConnector.js')
         connect = productionDatabaseConnector.connectToDatabase
         disconnect = productionDatabaseConnector.disconnectFromDatabase
