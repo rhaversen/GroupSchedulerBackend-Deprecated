@@ -35,15 +35,16 @@ export async function loadSecrets () {
         logger.info('Loading secrets')
         for (const key of keys) {
             try {
-                logger.silly('Loading secret for key' + key)
-                const secret = await vault.read(`secret/data/backend/${key}`)
-                process.env[key] = secret.data.value
+                logger.silly('Loading secret for key ' + key)
+                const secretResponse = await vault.read(`secret/data/backend/${key}`)
+                const secret = secretResponse.data.data;
+                process.env[key] = secret.value;
             } catch (err) {
                 logger.error(`Failed to load secrets: ${err}`)
                 logger.error(`Shutting down`)
                 process.exit(1)
             }
-        }
+        }   
     } else {
         logger.info('Using development .env')
         // .env values are already loaded by dotenv
