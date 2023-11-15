@@ -5,6 +5,12 @@
 # Use an official Node.js runtime as the base image
 FROM --platform=linux/arm64 node:iron-bookworm-slim
 
+# Update package list and upgrade
+RUN apt-get update && apt-get upgrade -y
+
+# Install required packages
+RUN apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
 # Set working directory
 WORKDIR /app
 
