@@ -1,6 +1,8 @@
 // Load vault into env file
 logger.silly('importing vault handling file')
+import { connectToVault, loadSecrets } from './utils/vault.js'
 logger.silly('calling connectToVault')
+await connectToVault()
 logger.silly('calling loadSecrets')
 await loadSecrets()
 logger.silly('done loading secrets from vault')

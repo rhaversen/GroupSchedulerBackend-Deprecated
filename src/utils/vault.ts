@@ -3,6 +3,7 @@ import logger from './logger.js'
 
 let vault: client
 
+export async function connectToVault () {
 try {
         logger.silly('importing node-vault')
     const NodeVault = await import('node-vault')
@@ -19,6 +20,7 @@ try {
         process.exit(1)
     }
     logger.warn('node-vault is not installed. Falling back to .env')
+    }
 }
 
 export async function loadSecrets () {
