@@ -4,11 +4,14 @@ import logger from './logger.js'
 let vault: client
 
 try {
+        logger.silly('importing node-vault')
     const NodeVault = await import('node-vault')
     vault = NodeVault.default({
         endpoint: process.env.VAULT_ADDR, // Injected with initial .env
         token: process.env.VAULT_TOKEN // Injected with initial .env
     })
+        logger.silly('Checking vault health')
+        logger.info('Vault health: ' + await vault.health())
     logger.info("Connected to node-vault!")
 } catch (e) {
     if (process.env.NODE_ENV === 'production') {
@@ -19,6 +22,7 @@ try {
 }
 
 export async function loadSecrets () {
+    logger.silly('defining keys')
     const keys: string[] =
     [
         'DB_NAME',
@@ -31,6 +35,7 @@ export async function loadSecrets () {
         'EMAIL_USER',
         'EMAIL_PASS'
     ]
+    logger.silly('determining node env')
     if (process.env.NODE_ENV === 'production') {
         logger.info('Loading secrets')
         for (const key of keys) {

@@ -1,6 +1,9 @@
 // Load vault into env file
-import { loadSecrets } from './utils/vault.js'
+logger.silly('importing vault handling file')
+logger.silly('calling connectToVault')
+logger.silly('calling loadSecrets')
 await loadSecrets()
+logger.silly('done loading secrets from vault')
 
 // Node.js built-in modules
 import http from 'http'
