@@ -60,7 +60,7 @@ after(function () {
     server.shutDown()
 })
 
-describe('Get Current User Endpoint GET /v1/users/current-user', function () {
+describe('Get Current User Endpoint GET /api/v1/users/current-user', function () {
     let agent: ChaiHttp.Agent
     let testUser: IUser
     let testEvent: IEvent
@@ -87,7 +87,7 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
         agent = chai.request.agent(server.app) // Create an agent instance
 
         // Log the user in to get a token
-        await agent.post('/v1/users/login-local').send(user)
+        await agent.post('/api/v1/users/login-local').send(user)
     })
 
     afterEach(async function () {
@@ -97,7 +97,7 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
     })
 
     it('should fetch current user details successfully', async function () {
-        const res = await agent.get('/v1/users/current-user')
+        const res = await agent.get('/api/v1/users/current-user')
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
@@ -117,7 +117,7 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
 
     it('should fail due to lack of authentication', async function () {
         const newAgent = chai.request.agent(server.app)
-        const res = await newAgent.get('/v1/users/current-user')
+        const res = await newAgent.get('/api/v1/users/current-user')
 
         expect(res).to.have.status(401)
         expect(res.body.message).to.be.equal('Unauthorized')
@@ -126,7 +126,7 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
     })
 })
 
-describe('User Registration Endpoint POST /v1/users', function () {
+describe('User Registration Endpoint POST /api/v1/users', function () {
     const testUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' }
     let agent: ChaiHttp.Agent
 
@@ -143,7 +143,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
     it('should successfully register a new user', async function () {
         //        const csrfToken = await getCSRFToken(agent);
         const res = await agent
-            .post('/v1/users')
+            .post('/api/v1/users')
         //            .set('csrf-token', csrfToken)
             .send(testUser)
 
@@ -156,7 +156,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
     it('should fail due to missing fields (email)', async function () {
         const incompleteUser = { username: 'Test User', password: 'testpassword', confirmPassword: 'testpassword' }
 
-        const res = await agent.post('/v1/users').send(incompleteUser)
+        const res = await agent.post('/api/v1/users').send(incompleteUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -166,7 +166,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
     it('should fail due to missing fields (username)', async function () {
         const incompleteUser = { email: 'TestUser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' }
 
-        const res = await agent.post('/v1/users').send(incompleteUser)
+        const res = await agent.post('/api/v1/users').send(incompleteUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -176,7 +176,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
     it('should fail due to missing fields (password)', async function () {
         const incompleteUser = { username: 'Test User', email: 'TestUser@gmail.com', confirmPassword: 'testpassword' }
 
-        const res = await agent.post('/v1/users').send(incompleteUser)
+        const res = await agent.post('/api/v1/users').send(incompleteUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -186,7 +186,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
     it('should fail due to missing fields (confirmPassword)', async function () {
         const incompleteUser = { username: 'Test User', email: 'TestUser@gmail.com', password: 'testpassword' }
 
-        const res = await agent.post('/v1/users').send(incompleteUser)
+        const res = await agent.post('/api/v1/users').send(incompleteUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -196,7 +196,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
     it('should fail due to invalid email', async function () {
         const invalidEmailUser = { ...testUser, email: 'invalid-email' }
 
-        const res = await agent.post('/v1/users').send(invalidEmailUser)
+        const res = await agent.post('/api/v1/users').send(invalidEmailUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -206,7 +206,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
     it('should fail due to password mismatch', async function () {
         const passwordMismatchUser = { ...testUser, confirmPassword: 'differentpassword' }
 
-        const res = await agent.post('/v1/users').send(passwordMismatchUser)
+        const res = await agent.post('/api/v1/users').send(passwordMismatchUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -216,7 +216,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
     it('should fail due to short password', async function () {
         const shortPasswordUser = { ...testUser, password: '123', confirmPassword: '123' }
 
-        const res = await agent.post('/v1/users').send(shortPasswordUser)
+        const res = await agent.post('/api/v1/users').send(shortPasswordUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -232,7 +232,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
         user.confirmUser()
         await user.save()
 
-        const res = await agent.post('/v1/users').send(testUser)
+        const res = await agent.post('/api/v1/users').send(testUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -248,7 +248,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
         // We don't call confirmUser
         await unconfirmedUser.save()
 
-        const res = await agent.post('/v1/users').send(testUser)
+        const res = await agent.post('/api/v1/users').send(testUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -257,7 +257,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
     // TODO: It should not send the registration code in the response
 })
 
-describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function () {
+describe('User Confirmation Endpoint POST /api/v1/users/confirm/:userCode', function () {
     let savedUser: IUser
     let userCode: string
     let agent: ChaiHttp.Agent
@@ -282,7 +282,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     it('should confirm a user', async function () {
-        const res = await agent.post(`/v1/users/confirm/${userCode}`).send()
+        const res = await agent.post(`/api/v1/users/confirm/${userCode}`).send()
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('message')
@@ -296,7 +296,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     it('should fail if invalid code provided', async function () {
-        const res = await agent.post('/v1/users/confirm/INVALID_CODE').send()
+        const res = await agent.post('/api/v1/users/confirm/INVALID_CODE').send()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
@@ -304,8 +304,8 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     it('should fail if user already confirmed', async function () {
-        await agent.post(`/v1/users/confirm/${userCode}`).send()
-        const res = await agent.post(`/v1/users/confirm/${userCode}`).send()
+        await agent.post(`/api/v1/users/confirm/${userCode}`).send()
+        const res = await agent.post(`/api/v1/users/confirm/${userCode}`).send()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
@@ -313,7 +313,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 })
 
-describe('User Login Endpoint POST /v1/users/login-local', function () {
+describe('User Login Endpoint POST /api/v1/users/login-local', function () {
     let registeredUser: IUser
     let agent: ChaiHttp.Agent
 
@@ -339,7 +339,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should successfully login a user', async function () {
         const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword', stayLoggedIn: true }
 
-        const res = await agent.post('/v1/users/login-local').send(loginUser)
+        const res = await agent.post('/api/v1/users/login-local').send(loginUser)
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
@@ -361,7 +361,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const unconfirmedUserCreds = { email: 'UnconfirmedUser@gmail.com', password: 'testpassword', stayLoggedIn: true }
 
-        const res = await agent.post('/v1/users/login-local').send(unconfirmedUserCreds)
+        const res = await agent.post('/api/v1/users/login-local').send(unconfirmedUserCreds)
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
@@ -375,7 +375,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should successfully login a user even though the email is capitalized', async function () {
         const loginUser = { email: 'TESTUSER@gmail.com', password: 'testpassword', stayLoggedIn: true }
 
-        const res = await agent.post('/v1/users/login-local').send(loginUser)
+        const res = await agent.post('/api/v1/users/login-local').send(loginUser)
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
@@ -387,7 +387,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should successfully login a user with short session expiration if stayLoggedIn is false', async function () {
         const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword', stayLoggedIn: false }
 
-        const res = await agent.post('/v1/users/login-local').send(loginUser)
+        const res = await agent.post('/api/v1/users/login-local').send(loginUser)
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
@@ -409,7 +409,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should successfully login a user with long session expiration if stayLoggedIn is true', async function () {
         const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword', stayLoggedIn: true }
 
-        const res = await agent.post('/v1/users/login-local').send(loginUser)
+        const res = await agent.post('/api/v1/users/login-local').send(loginUser)
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
@@ -431,7 +431,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should successfully login a user with short session expiration if stayLoggedIn is not defined', async function () {
         const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword' }
 
-        const res = await agent.post('/v1/users/login-local').send(loginUser)
+        const res = await agent.post('/api/v1/users/login-local').send(loginUser)
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
@@ -453,7 +453,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should fail due to missing email', async function () {
         const incompleteUser = { password: 'testpassword', stayLoggedIn: true }
 
-        const res = await agent.post('/v1/users/login-local').send(incompleteUser)
+        const res = await agent.post('/api/v1/users/login-local').send(incompleteUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -463,7 +463,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should fail due to missing password', async function () {
         const incompleteUser = { email: 'TestUser@gmail.com', stayLoggedIn: true }
 
-        const res = await agent.post('/v1/users/login-local').send(incompleteUser)
+        const res = await agent.post('/api/v1/users/login-local').send(incompleteUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -473,7 +473,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should fail due to missing email and password', async function () {
         const incompleteUser = { stayLoggedIn: true }
 
-        const res = await agent.post('/v1/users/login-local').send(incompleteUser)
+        const res = await agent.post('/api/v1/users/login-local').send(incompleteUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -483,7 +483,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should fail due to invalid email format', async function () {
         const invalidEmailUser = { email: 'invalid-email', password: 'testpassword', stayLoggedIn: true }
 
-        const res = await agent.post('/v1/users/login-local').send(invalidEmailUser)
+        const res = await agent.post('/api/v1/users/login-local').send(invalidEmailUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -493,7 +493,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should fail due to user not found', async function () {
         const notFoundUser = { email: 'NotFound@gmail.com', password: 'testpassword', stayLoggedIn: true }
 
-        const res = await agent.post('/v1/users/login-local').send(notFoundUser)
+        const res = await agent.post('/api/v1/users/login-local').send(notFoundUser)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -503,7 +503,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     it('should fail due to invalid credentials', async function () {
         const invalidCreds = { email: 'TestUser@gmail.com', password: 'wrongpassword', stayLoggedIn: true }
 
-        const res = await agent.post('/v1/users/login-local').send(invalidCreds)
+        const res = await agent.post('/api/v1/users/login-local').send(invalidCreds)
 
         expect(res).to.have.status(400)
         expect(res.body).to.have.property('error')
@@ -511,7 +511,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     })
 })
 
-describe('User Logout Endpoint DELETE /v1/users/logout', function () {
+describe('User Logout Endpoint DELETE /api/v1/users/logout', function () {
     let agent: ChaiHttp.Agent
     let registeredUser
 
@@ -525,7 +525,7 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
         await registeredUser.save()
 
         agent = chai.request.agent(server.app) // Create an agent instance
-        await agent.post('/v1/users/login-local').send({
+        await agent.post('/api/v1/users/login-local').send({
             email: 'TestUser@gmail.com',
             password: 'testpassword',
             stayLoggedIn: true
@@ -538,7 +538,7 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
     })
 
     it('should successfully log out a user', async function () {
-        const res = await agent.delete('/v1/users/logout')
+        const res = await agent.delete('/api/v1/users/logout')
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
@@ -549,14 +549,14 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
         expect(res).to.not.have.cookie('connect.sid')
 
         // Test that the session is indeed invalidated:
-        const protectedRes = await agent.get('/v1/users/events')
+        const protectedRes = await agent.get('/api/v1/users/events')
         expect(protectedRes).to.have.status(401)
     })
 
     it('should not allow logout without logging in', async function () {
         // Using a new agent that hasn't logged in:
         const newAgent = chai.request.agent(server.app)
-        const res = await newAgent.delete('/v1/users/logout')
+        const res = await newAgent.delete('/api/v1/users/logout')
 
         expect(res).to.have.status(401)
         expect(res.body).to.be.a('object')
@@ -571,7 +571,7 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
         const newAgent = chai.request.agent(server.app)
         newAgent.jar.setCookie('connect.sid=invalidSessionTokenHere', `localhost:${expressPort}`)
 
-        const res = await newAgent.delete('/v1/users/logout')
+        const res = await newAgent.delete('/api/v1/users/logout')
 
         expect(res).to.have.status(401)
         expect(res.body).to.be.a('object')
@@ -582,7 +582,7 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
     })
 })
 
-describe('Get User Events Endpoint GET /v1/users/events', function () {
+describe('Get User Events Endpoint GET /api/v1/users/events', function () {
     let agent: ChaiHttp.Agent
     let testUser: IUser
     let testEvent: IEvent
@@ -610,7 +610,7 @@ describe('Get User Events Endpoint GET /v1/users/events', function () {
         agent = chai.request.agent(server.app) // Create an agent instance
 
         // Log the user in to get a token
-        await agent.post('/v1/users/login-local').send(user)
+        await agent.post('/api/v1/users/login-local').send(user)
     })
 
     afterEach(async function () {
@@ -621,7 +621,7 @@ describe('Get User Events Endpoint GET /v1/users/events', function () {
     })
 
     it('should fetch user events successfully', async function () {
-        const res = await agent.get('/v1/users/events')
+        const res = await agent.get('/api/v1/users/events')
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('array')
@@ -635,7 +635,7 @@ describe('Get User Events Endpoint GET /v1/users/events', function () {
 
     it('should fail due to lack of authentication', async function () {
         const newAgent = chai.request.agent(server.app)
-        const res = await newAgent.get('/v1/users/events')
+        const res = await newAgent.get('/api/v1/users/events')
 
         expect(res).to.have.status(401)
         expect(res.body.message).to.be.equal('Unauthorized')
@@ -644,7 +644,7 @@ describe('Get User Events Endpoint GET /v1/users/events', function () {
     })
 })
 
-describe('Generate New User Code Endpoint PUT /v1/users/new-code', function () {
+describe('Generate New User Code Endpoint PUT /api/v1/users/new-code', function () {
     let testUser: IUser
     let agent: ChaiHttp.Agent
 
@@ -659,7 +659,7 @@ describe('Generate New User Code Endpoint PUT /v1/users/new-code', function () {
         await testUser.save()
 
         agent = chai.request.agent(server.app)
-        await agent.post('/v1/users/login-local').send({
+        await agent.post('/api/v1/users/login-local').send({
             email: 'CodeTestUser@gmail.com',
             password: 'TestPasswordForCode'
         })
@@ -674,7 +674,7 @@ describe('Generate New User Code Endpoint PUT /v1/users/new-code', function () {
     it('should generate a new user code successfully', async function () {
         const userCodeBefore = testUser.userCode
 
-        const res = await agent.post('/v1/users/new-code')
+        const res = await agent.post('/api/v1/users/new-code')
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
@@ -689,7 +689,7 @@ describe('Generate New User Code Endpoint PUT /v1/users/new-code', function () {
     })
 })
 
-describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
+describe('Follow User Endpoint PUT /api/v1/users/following/:userId', function () {
     let userA: IUser, userB: IUser
     let agent: ChaiHttp.Agent
 
@@ -713,7 +713,7 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
 
         // Login as userA
         agent = chai.request.agent(server.app)
-        await agent.post('/v1/users/login-local').send({
+        await agent.post('/api/v1/users/login-local').send({
             email: 'userA@gmail.com',
             password: 'passwordA'
         })
@@ -727,7 +727,7 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
     })
 
     it('should allow userA to follow userB', async function () {
-        const res = await agent.put(`/v1/users/following/${userB._id}`)
+        const res = await agent.put(`/api/v1/users/following/${userB._id}`)
 
         expect(res).to.have.status(200)
 
@@ -747,7 +747,7 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
 
     it('should not allow following if user is not authenticated', async function () {
         const newAgent = chai.request.agent(server.app) // New agent without logging in
-        const res = await newAgent.put(`/v1/users/following/${userB._id}`)
+        const res = await newAgent.put(`/api/v1/users/following/${userB._id}`)
 
         expect(res).to.have.status(401)
         expect(res.body.message).to.be.equal('Unauthorized')
@@ -757,7 +757,7 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
 
     it('should not allow following a non-existent user', async function () {
         const invalidUserId = '5f5f5f5f5f5f5f5f5f5f5f5f' // An example of a non-existent ObjectId
-        const res = await agent.put(`/v1/users/following/${invalidUserId}`)
+        const res = await agent.put(`/api/v1/users/following/${invalidUserId}`)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -766,7 +766,7 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
     })
 
     it('should not allow a user to follow themselves', async function () {
-        const res = await agent.put(`/v1/users/following/${userA._id}`)
+        const res = await agent.put(`/api/v1/users/following/${userA._id}`)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -776,10 +776,10 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
 
     it('should handle when a user tries to follow another user they are already following', async function () {
         // First, let's make userA follow userB
-        await agent.put(`/v1/users/following/${userB._id}`)
+        await agent.put(`/api/v1/users/following/${userB._id}`)
 
         // Now, try to follow again
-        const res = await agent.put(`/v1/users/following/${userB._id}`)
+        const res = await agent.put(`/api/v1/users/following/${userB._id}`)
 
         expect(res).to.have.status(200) // Success
         expect(res.body).to.be.a('object')
@@ -792,7 +792,7 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
         await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
 
         // Try to make userA follow userB, which should fail
-        const res = await agent.put(`/v1/users/following/${userB._id}`)
+        const res = await agent.put(`/api/v1/users/following/${userB._id}`)
 
         expect(res).to.have.status(400) // Expect validation error
 
@@ -802,7 +802,7 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
     })
 })
 
-describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
+describe('Unfollow User Endpoint PUT /api/v1/users/unfollow/:userId', function () {
     let userA: IUser, userB: IUser
     let agent: ChaiHttp.Agent
 
@@ -832,7 +832,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
 
         // Login as userA
         agent = chai.request.agent(server.app)
-        await agent.post('/v1/users/login-local').send({
+        await agent.post('/api/v1/users/login-local').send({
             email: 'userA@gmail.com',
             password: 'passwordA'
         })
@@ -847,7 +847,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
     })
 
     it('should allow userA to unfollow userB', async function () {
-        const res = await agent.delete(`/v1/users/unfollow/${userB.id}`)
+        const res = await agent.delete(`/api/v1/users/unfollow/${userB.id}`)
         expect(res).to.have.status(200)
 
         const updatedUserA = await UserModel.findById(userA._id).exec() as IUser
@@ -859,7 +859,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
 
     it('should not allow unfollowing if user is not authenticated', async function () {
         const newAgent = chai.request.agent(server.app)
-        const res = await newAgent.delete(`/v1/users/unfollow/${userB.id}`)
+        const res = await newAgent.delete(`/api/v1/users/unfollow/${userB.id}`)
 
         expect(res).to.have.status(401)
         expect(res.body.message).to.be.equal('Unauthorized')
@@ -869,7 +869,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
 
     it('should not allow unfollowing a non-existent user', async function () {
         const invalidUserId = '5f5f5f5f5f5f5f5f5f5f5f5f'
-        const res = await agent.delete(`/v1/users/unfollow/${invalidUserId}`)
+        const res = await agent.delete(`/api/v1/users/unfollow/${invalidUserId}`)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -878,7 +878,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
     })
 
     it('should not allow a user to unfollow themselves', async function () {
-        const res = await agent.delete(`/v1/users/unfollow/${userA.id}`)
+        const res = await agent.delete(`/api/v1/users/unfollow/${userA.id}`)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -897,12 +897,12 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
         await userC.save()
 
         const newAgent = chai.request.agent(server.app)
-        await newAgent.post('/v1/users/login-local').send({
+        await newAgent.post('/api/v1/users/login-local').send({
             email: 'userC@gmail.com',
             password: 'passwordC'
         })
 
-        const res = await newAgent.delete(`/v1/users/unfollow/${userB.id}`)
+        const res = await newAgent.delete(`/api/v1/users/unfollow/${userB.id}`)
 
         expect(res).to.have.status(400) // Error (This status and the message below is a suggestion)
         expect(res.body).to.be.a('object')
@@ -928,7 +928,7 @@ describe('Update Password Endpoint PATCH /update-password', function () {
         await testUser.save()
 
         agent = chai.request.agent(server.app)
-        await agent.post('/v1/users/login-local').send({
+        await agent.post('/api/v1/users/login-local').send({
             email: 'TestUser@gmail.com',
             password: 'TestPassword'
         })
@@ -946,7 +946,7 @@ describe('Update Password Endpoint PATCH /update-password', function () {
             confirmNewPassword: 'UpdatedPassword',
             currentPassword: 'TestPassword'
         }
-        const res = await agent.patch('/v1/users/update-password').send(updatedDetails)
+        const res = await agent.patch('/api/v1/users/update-password').send(updatedDetails)
 
         expect(res).to.have.status(200)
 
@@ -964,7 +964,7 @@ describe('Update Password Endpoint PATCH /update-password', function () {
 
     it('should not allow updating without authentication', async function () {
         const newAgent = chai.request.agent(server.app)
-        const res = await newAgent.patch('/v1/users/update-password').send({ newUsername: 'newTestUser' })
+        const res = await newAgent.patch('/api/v1/users/update-password').send({ newUsername: 'newTestUser' })
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
 
@@ -978,7 +978,7 @@ describe('Update Password Endpoint PATCH /update-password', function () {
     })
 
     it('should handle invalid or malformed data', async function () {
-        const res = await agent.patch('/v1/users/update-password').send({ newUsername: '' }) // Empty username
+        const res = await agent.patch('/api/v1/users/update-password').send({ newUsername: '' }) // Empty username
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
 
@@ -997,7 +997,7 @@ describe('Update Password Endpoint PATCH /update-password', function () {
             confirmNewPassword: 'UpdatedPassword2',
             currentPassword: 'WrongCurrentPassword'
         }
-        const res = await agent.patch('/v1/users/update-password').send(incorrectCurrentPasswordDetails)
+        const res = await agent.patch('/api/v1/users/update-password').send(incorrectCurrentPasswordDetails)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -1011,7 +1011,7 @@ describe('Update Password Endpoint PATCH /update-password', function () {
             confirmNewPassword: 'WrongConfirmPassword',
             currentPassword: 'TestPassword'
         }
-        const res = await agent.patch('/v1/users/update-password').send(mismatchingPasswords)
+        const res = await agent.patch('/api/v1/users/update-password').send(mismatchingPasswords)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -1024,7 +1024,7 @@ describe('Update Password Endpoint PATCH /update-password', function () {
             newPassword: 'PartialUpdatePassword',
             confirmNewPassword: 'PartialUpdatePassword'
         }
-        const res = await agent.patch('/v1/users/update-password').send(partialPasswordDetails)
+        const res = await agent.patch('/api/v1/users/update-password').send(partialPasswordDetails)
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
@@ -1048,7 +1048,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         await testUser.save()
 
         agent = chai.request.agent(server.app)
-        await agent.post('/v1/users/login-local').send({
+        await agent.post('/api/v1/users/login-local').send({
             email: 'TestUser@gmail.com',
             password: 'TestPassword'
         })
@@ -1065,7 +1065,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'NewPassword123'
         }
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(resetDetails)
+        const res = await agent.patch('/api/v1/users/reset-password/sampleResetCode12345').send(resetDetails)
 
         expect(res).to.have.status(201)
 
@@ -1078,7 +1078,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'WrongPassword123'
         }
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(mismatchingPasswords)
+        const res = await agent.patch('/api/v1/users/reset-password/sampleResetCode12345').send(mismatchingPasswords)
 
         expect(res).to.have.status(400)
 
@@ -1091,7 +1091,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'WrongPassword123'
         }
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(mismatchingPasswords)
+        const res = await agent.patch('/api/v1/users/reset-password/sampleResetCode12345').send(mismatchingPasswords)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -1105,7 +1105,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             confirmNewPassword: 'NewPassword123'
         }
 
-        const res = await agent.patch('/v1/users/reset-password/InvalidResetCode').send(resetDetails)
+        const res = await agent.patch('/api/v1/users/reset-password/InvalidResetCode').send(resetDetails)
         expect(res).to.have.status(404)
     })
 
@@ -1114,7 +1114,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'PartialPassword'
         }
 
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(partialPasswordDetails) // Missing reset code
+        const res = await agent.patch('/api/v1/users/reset-password/sampleResetCode12345').send(partialPasswordDetails) // Missing reset code
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -1139,7 +1139,7 @@ describe('Update Username Endpoint PATCH /update-username', function () {
         await testUser.save()
 
         agent = chai.request.agent(server.app)
-        await agent.post('/v1/users/login-local').send({
+        await agent.post('/api/v1/users/login-local').send({
             email: 'TestUser@gmail.com',
             password: 'TestPassword'
         })
@@ -1155,7 +1155,7 @@ describe('Update Username Endpoint PATCH /update-username', function () {
         const updatedDetails = {
             newUsername: 'UpdatedTestUser'
         }
-        const res = await agent.patch('/v1/users/update-username').send(updatedDetails)
+        const res = await agent.patch('/api/v1/users/update-username').send(updatedDetails)
 
         expect(res).to.have.status(200)
 
@@ -1170,7 +1170,7 @@ describe('Update Username Endpoint PATCH /update-username', function () {
 
     it('should not allow updating without authentication', async function () {
         const newAgent = chai.request.agent(server.app)
-        const res = await newAgent.patch('/v1/users/update-username').send({ newUsername: 'newTestUser' })
+        const res = await newAgent.patch('/api/v1/users/update-username').send({ newUsername: 'newTestUser' })
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
 
@@ -1184,7 +1184,7 @@ describe('Update Username Endpoint PATCH /update-username', function () {
     })
 
     it('should handle invalid or malformed data', async function () {
-        const res = await agent.patch('/v1/users/update-username').send({ newUsername: '' }) // Empty username
+        const res = await agent.patch('/api/v1/users/update-username').send({ newUsername: '' }) // Empty username
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
         expect(updatedTestUser.confirmed).to.be.true
@@ -1197,7 +1197,7 @@ describe('Update Username Endpoint PATCH /update-username', function () {
     })
 })
 
-describe('Get Followers Endpoint GET /v1/users/followers', function () {
+describe('Get Followers Endpoint GET /api/v1/users/followers', function () {
     let userA: IUser, userB: IUser, userC: IUser
     let agent: ChaiHttp.Agent
 
@@ -1241,7 +1241,7 @@ describe('Get Followers Endpoint GET /v1/users/followers', function () {
         ])
 
         // Login as userA
-        await agent.post('/v1/users/login-local').send({
+        await agent.post('/api/v1/users/login-local').send({
             email: 'userA@gmail.com',
             password: 'passwordA'
         })
@@ -1256,7 +1256,7 @@ describe('Get Followers Endpoint GET /v1/users/followers', function () {
     })
 
     it('should successfully get the followers of userA', async function () {
-        const res = await agent.get('/v1/users/followers')
+        const res = await agent.get('/api/v1/users/followers')
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
@@ -1267,12 +1267,12 @@ describe('Get Followers Endpoint GET /v1/users/followers', function () {
     it('should return an empty array if the user has no followers', async function () {
         const newAgent = chai.request.agent(server.app)
 
-        await newAgent.post('/v1/users/login-local').send({
+        await newAgent.post('/api/v1/users/login-local').send({
             email: 'userC@gmail.com',
             password: 'passwordC'
         })
 
-        const res = await newAgent.get('/v1/users/followers')
+        const res = await newAgent.get('/api/v1/users/followers')
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
@@ -1280,7 +1280,7 @@ describe('Get Followers Endpoint GET /v1/users/followers', function () {
     })
 })
 
-describe('Get Following Endpoint GET /v1/users/following', function () {
+describe('Get Following Endpoint GET /api/v1/users/following', function () {
     let userA: IUser, userB: IUser, userC: IUser
     let agent: ChaiHttp.Agent
 
@@ -1324,7 +1324,7 @@ describe('Get Following Endpoint GET /v1/users/following', function () {
         ])
 
         // Login as userA
-        await agent.post('/v1/users/login-local').send({
+        await agent.post('/api/v1/users/login-local').send({
             email: 'userA@gmail.com',
             password: 'passwordA'
         })
@@ -1339,7 +1339,7 @@ describe('Get Following Endpoint GET /v1/users/following', function () {
     })
 
     it('should successfully get the users that userA is following', async function () {
-        const res = await agent.get('/v1/users/following')
+        const res = await agent.get('/api/v1/users/following')
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
@@ -1350,12 +1350,12 @@ describe('Get Following Endpoint GET /v1/users/following', function () {
     it('should return an empty array if the user is not following anyone', async function () {
         const newAgent = chai.request.agent(server.app)
 
-        await newAgent.post('/v1/users/login-local').send({
+        await newAgent.post('/api/v1/users/login-local').send({
             email: 'userC@gmail.com',
             password: 'passwordC'
         })
 
-        const res = await newAgent.get('/v1/users/following')
+        const res = await newAgent.get('/api/v1/users/following')
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
@@ -1363,7 +1363,7 @@ describe('Get Following Endpoint GET /v1/users/following', function () {
     })
 })
 
-describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', function () {
+describe('Get Common Events Endpoint GET /api/v1/users/:userId/common-events', function () {
     let userA: IUser, userB: IUser, userC: IUser
     let event1: IEvent, event2: IEvent, event3: IEvent
     let agent: ChaiHttp.Agent
@@ -1434,7 +1434,7 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
         ])
 
         // Login as userA
-        await agent.post('/v1/users/login-local').send({
+        await agent.post('/api/v1/users/login-local').send({
             email: 'userA@gmail.com',
             password: 'passwordA'
         })
@@ -1452,7 +1452,7 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
     })
 
     it('should successfully get the common events between userA and userB', async function () {
-        const res = await agent.get(`/v1/users/${userB._id}/common-events`)
+        const res = await agent.get(`/api/v1/users/${userB._id}/common-events`)
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
@@ -1461,7 +1461,7 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
     })
 
     it('should return an empty array for common events between userA and userC', async function () {
-        const res = await agent.get(`/v1/users/${userC._id}/common-events`)
+        const res = await agent.get(`/api/v1/users/${userC._id}/common-events`)
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
@@ -1471,7 +1471,7 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
     it('should return a 400 error if the candidate user is not found', async function () {
         // const nonExistentUserId = new mongoose.Types.ObjectId()
         const nonExistentUserId = '121212121212121212121212'
-        const res = await agent.get(`/v1/users/${nonExistentUserId}/common-events`)
+        const res = await agent.get(`/api/v1/users/${nonExistentUserId}/common-events`)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -1481,7 +1481,7 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
 
     it('should return a 400 error if the userId is invalid', async function () {
         const invalidUserId = 'invalidId'
-        const res = await agent.get(`/v1/users/${invalidUserId}/common-events`)
+        const res = await agent.get(`/api/v1/users/${invalidUserId}/common-events`)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
