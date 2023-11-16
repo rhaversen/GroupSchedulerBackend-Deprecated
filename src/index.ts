@@ -41,7 +41,6 @@ import {
 import userRoutes from './routes/users.js'
 import eventRoutes from './routes/events.js'
 import availabilityRoutes from './routes/availabilities.js'
-import NodeVault from 'node-vault/index.js'
 
 // Global variables and setup
 const app = express()

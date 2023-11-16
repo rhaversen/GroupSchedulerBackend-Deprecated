@@ -45,9 +45,12 @@ export async function loadSecrets () {
         try {
             logger.silly('Loading secrets from Vault')
             const secretResponse = await vault.read('secret/data/backend')
+            logger.silly('Secret Response: ' + secretResponse)
             const secrets = secretResponse.data.data;
+            logger.silly('Secrets: ' + secrets)
 
             for (const key of keys) {
+                logger.silly('Reading key: ' + key)
                 if (secrets[key]) {
                     process.env[key] = secrets[key];
                 } else {
