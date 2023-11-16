@@ -22,8 +22,9 @@ export default async function loadVaultSecrets () {
             const response: AxiosResponse<VaultResponse> = await axios.get(`${vaultAddr}/v1/${secretPath}`, {
                 headers: { 'X-Vault-Token': token }
             })
-            logger.silly('Response: ' + JSON.stringify(response, null, 2))
-
+            logger.silly('Response Status: ' + response.status);
+            logger.silly('Response Data: ' + JSON.stringify(response.data, null, 2));
+            
             if (response.data?.data?.data) {
                 logger.silly('SecretValue: ' + JSON.stringify(response.data?.data?.data, null, 2))
                 process.env[key] = response.data.data.data[key]
