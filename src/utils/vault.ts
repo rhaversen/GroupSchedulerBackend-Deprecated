@@ -50,7 +50,7 @@ export async function loadSecrets () {
         try {
             for (const key of keys) {
                 logger.silly('Reading key: ' + key)
-                const secretPath = `secret/backend/${key}`
+                const secretPath = `secret/data/backend/${key}`
                 logger.silly('Secretpath: ' + secretPath)
                 const secretResponse = await vault.read(secretPath)
                 logger.silly('SecretResponse: ' + secretResponse)
