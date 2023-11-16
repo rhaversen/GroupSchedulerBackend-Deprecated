@@ -13,7 +13,7 @@ export async function connectToVault () {
             token: process.env.VAULT_TOKEN // Injected with initial .env
         })
         logger.silly('Checking vault health')
-        logger.info('Vault health: ' + await vault.health())
+        logger.info('Vault health: ' + JSON.stringify(await vault.health(), null, 2));
         logger.info("Connected to node-vault!")
     } catch (err) {
         logger.error('Error importing node-vault: ' + err)
