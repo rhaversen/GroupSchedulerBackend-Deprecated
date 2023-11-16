@@ -13,7 +13,7 @@ export async function connectToVault () {
             token: process.env.VAULT_TOKEN // Injected with initial .env
         })
         logger.silly('Checking vault health')
-        logger.info('Vault health: ' + await vault.health())
+        logger.info('Vault health: ' + JSON.stringify(await vault.health(), null, 2));
         logger.info("Connected to node-vault!")
     } catch (err) {
         logger.error('Error importing node-vault: ' + err)
@@ -43,11 +43,16 @@ export async function loadSecrets () {
     if (process.env.NODE_ENV === 'production') {
         logger.info('Loading secrets')
         try {
+            logger.silly('Loading secrets from Vault')
+            const secretResponse = await vault.read('secret/data/backend')
+            const secrets = secretResponse.data.data;
+
             for (const key of keys) {
-                logger.silly('Loading secret for key ' + key)
-                const secretResponse = await vault.read(`secret/data/backend/${key}`)
-                const secret = secretResponse.data.data;
-                process.env[key] = secret.value;
+                if (secrets[key]) {
+                    process.env[key] = secrets[key];
+                } else {
+                    logger.warn(`Key ${key} not found in Vault`);
+                }
             }   
         } catch (err) {
             logger.error(`Failed to load secrets: ${err}`)
