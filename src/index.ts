@@ -115,23 +115,23 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Endpoint to fetch the csrf token
-/* app.get('/api/csrf-token', sensitiveApiLimiter, (req, res) => {
+/* app.get('/csrf-token', sensitiveApiLimiter, (req, res) => {
     res.json({ csrfToken: req.session.csrfToken });
 }); */
 
 // App will be behind reverse proxy forwarding calls to domain.com/api/ to backend
 
 // Use all routes and with relaxed limiter
-app.use('/api/v1/users', relaxedApiLimiter, userRoutes)
-app.use('/api/v1/users/availabilities', relaxedApiLimiter, availabilityRoutes)
-app.use('/api/v1/events', relaxedApiLimiter, eventRoutes)
+app.use('/v1/users', relaxedApiLimiter, userRoutes)
+app.use('/v1/users/availabilities', relaxedApiLimiter, availabilityRoutes)
+app.use('/v1/events', relaxedApiLimiter, eventRoutes)
 
 // Apply stricter rate limiters to routes
-app.use('/api/v1/users/update-password', sensitiveApiLimiter)
-app.use('/api/v1/users/login', sensitiveApiLimiter)
-app.use('/api/v1/users/signup', sensitiveApiLimiter)
+app.use('/v1/users/update-password', sensitiveApiLimiter)
+app.use('/v1/users/login', sensitiveApiLimiter)
+app.use('/v1/users/signup', sensitiveApiLimiter)
 
-app.get('/api/', (req, res) => {
+app.get('/', (req, res) => {
     res.send('pong')
 })
 
