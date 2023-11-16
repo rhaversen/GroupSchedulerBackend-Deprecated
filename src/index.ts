@@ -122,16 +122,16 @@ if (process.env.NODE_ENV !== 'production') {
 // App will be behind reverse proxy forwarding calls to domain.com/api/ to backend
 
 // Use all routes and with relaxed limiter
-app.use('/v1/users', relaxedApiLimiter, userRoutes)
-app.use('/v1/users/availabilities', relaxedApiLimiter, availabilityRoutes)
-app.use('/v1/events', relaxedApiLimiter, eventRoutes)
+app.use('/api/v1/users', relaxedApiLimiter, userRoutes)
+app.use('/api/v1/users/availabilities', relaxedApiLimiter, availabilityRoutes)
+app.use('/api/v1/events', relaxedApiLimiter, eventRoutes)
 
 // Apply stricter rate limiters to routes
-app.use('/v1/users/update-password', sensitiveApiLimiter)
-app.use('/v1/users/login', sensitiveApiLimiter)
-app.use('/v1/users/signup', sensitiveApiLimiter)
+app.use('/api/v1/users/update-password', sensitiveApiLimiter)
+app.use('/api/v1/users/login', sensitiveApiLimiter)
+app.use('/api/v1/users/signup', sensitiveApiLimiter)
 
-app.get('/', (req, res) => {
+app.get('/api/', (req, res) => {
     res.send('pong')
 })
 

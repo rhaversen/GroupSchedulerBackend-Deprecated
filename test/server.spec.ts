@@ -195,12 +195,12 @@ describe('Server Tests', () => {
         await server.shutDown()
     })
 
-    it('POST /v1/users should create a new user', async function () {
+    it('POST /api/v1/users should create a new user', async function () {
         this.timeout(10000) // Set the timeout to 10 seconds.
 
         const newUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword', stayLoggedIn: false }
 
-        const res = await chai.request(server.app).post('/v1/users').send(newUser)
+        const res = await chai.request(server.app).post('/api/v1/users').send(newUser)
 
         expect(res).to.have.status(201)
         expect(res.body).to.be.a('object')
