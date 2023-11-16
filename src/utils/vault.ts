@@ -13,8 +13,8 @@ export async function connectToVault () {
             token: process.env.VAULT_TOKEN // Injected with initial .env
         })
         logger.silly('Checking vault health')
-        logger.info('Vault health: ' + JSON.stringify(await vault.health(), null, 2));
-        logger.info("Connected to node-vault!")
+        logger.info('Vault health: ' + JSON.stringify(await vault.health(), null, 2))
+        logger.info('Connected to node-vault!')
     } catch (err) {
         logger.error('Error importing node-vault: ' + err)
         if (process.env.NODE_ENV === 'production') {
@@ -27,8 +27,7 @@ export async function connectToVault () {
 
 export async function loadSecrets () {
     logger.silly('defining keys')
-    const keys: string[] =
-    [
+    const keys: string[] = [
         'DB_NAME',
         'DB_USER',
         'DB_PASSWORD',
@@ -39,27 +38,30 @@ export async function loadSecrets () {
         'EMAIL_USER',
         'EMAIL_PASS'
     ]
+
     logger.silly('determining node env')
     if (process.env.NODE_ENV === 'production') {
         logger.info('Loading secrets')
+
         try {
             logger.silly('Loading secrets from Vault')
             const secretResponse = await vault.read('secret/data/backend')
             logger.silly('Secret Response: ' + secretResponse)
-            const secrets = secretResponse.data.data;
+            const secrets = secretResponse.data.data
             logger.silly('Secrets: ' + secrets)
 
             for (const key of keys) {
                 logger.silly('Reading key: ' + key)
+
                 if (secrets[key]) {
-                    process.env[key] = secrets[key];
+                    process.env[key] = secrets[key]
                 } else {
-                    logger.warn(`Key ${key} not found in Vault`);
+                    logger.warn(`Key ${key} not found in Vault`)
                 }
-            }   
+            }
         } catch (err) {
             logger.error(`Failed to load secrets: ${err}`)
-            logger.error(`Shutting down`)
+            logger.error('Shutting down')
             process.exit(1)
         }
     } else {

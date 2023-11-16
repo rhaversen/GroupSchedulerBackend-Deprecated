@@ -1,12 +1,3 @@
-// Load vault into env file
-logger.silly('importing vault handling file')
-import { connectToVault, loadSecrets } from './utils/vault.js'
-logger.silly('calling connectToVault')
-await connectToVault()
-logger.silly('calling loadSecrets')
-await loadSecrets()
-logger.silly('done loading secrets from vault')
-
 // Node.js built-in modules
 import http from 'http'
 
@@ -36,11 +27,19 @@ import {
     getTestApiLimiterConfig,
     getExpressPort
 } from './utils/setupConfig.js'
+import { connectToVault, loadSecrets } from './utils/vault.js'
 
 // Import routes
 import userRoutes from './routes/users.js'
 import eventRoutes from './routes/events.js'
 import availabilityRoutes from './routes/availabilities.js'
+
+// Load environment
+logger.silly('calling connectToVault')
+await connectToVault()
+logger.silly('calling loadSecrets')
+await loadSecrets()
+logger.silly('done loading secrets from vault')
 
 // Global variables and setup
 const app = express()
