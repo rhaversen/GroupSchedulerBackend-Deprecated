@@ -4,24 +4,28 @@ import logger from './logger.js'
 let vault: client
 
 export async function connectToVault () {
-    try {
-        logger.silly('importing node-vault')
-        const NodeVault = await import('node-vault')
-        logger.silly('node-vault imported successfully')
-        vault = NodeVault.default({
-            endpoint: process.env.VAULT_ADDR, // Injected with initial .env
-            token: process.env.VAULT_TOKEN // Injected with initial .env
-        })
-        logger.silly('Checking vault health')
-        logger.info('Vault health: ' + JSON.stringify(await vault.health(), null, 2))
-        logger.info('Connected to node-vault!')
-    } catch (err) {
-        logger.error('Error importing node-vault: ' + err)
-        if (process.env.NODE_ENV === 'production') {
-            logger.error('node-vault is required in production')
-            process.exit(1)
+    if (process.env.NODE_ENV === 'production') {
+        try {
+            logger.silly('importing node-vault')
+            const NodeVault = await import('node-vault')
+            logger.silly('node-vault imported successfully')
+            vault = NodeVault.default({
+                endpoint: process.env.VAULT_ADDR, // Injected with initial .env
+                token: process.env.VAULT_TOKEN // Injected with initial .env
+            })
+            logger.silly('Checking vault health')
+            logger.info('Vault health: ' + JSON.stringify(await vault.health(), null, 2))
+            logger.info('Connected to node-vault!')
+        } catch (err) {
+            logger.error('Error importing node-vault: ' + err)
+            if (process.env.NODE_ENV === 'production') {
+                logger.error('node-vault is required in production')
+                process.exit(1)
+            }
+            logger.warn('node-vault is not installed. Falling back to .env')
         }
-        logger.warn('node-vault is not installed. Falling back to .env')
+    } else {
+        logger.info('Using development .env')
     }
 }
 
