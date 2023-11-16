@@ -73,10 +73,10 @@ const userSchema = new Schema<IUser>({
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     userCode: { type: String, unique: true },
     confirmed: { type: Boolean, default: false },
-    registrationCode: { type: String, unique: true }, // Should be kept secret
+    registrationCode: { type: String, unique: true, sparse: true }, // Should be kept secret
     registrationDate: { type: Date, default: new Date() }, // Keep track of registration date
-    expirationDate: { type: Date },
-    passwordResetCode: { type: String, unique: true } // Should be kept secret
+    expirationDate: { type: Date, sparse: true },
+    passwordResetCode: { type: String, unique: true, sparse: true } // Should be kept secret
 })
 
 userSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
