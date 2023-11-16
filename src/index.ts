@@ -84,7 +84,7 @@ const sessionMiddleware = session({
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true
     },
-    store: MongoStore.create({ client: mongoose.connection.getClient() })
+    //store: MongoStore.create({ client: mongoose.connection.getClient() })
 
 })
 
