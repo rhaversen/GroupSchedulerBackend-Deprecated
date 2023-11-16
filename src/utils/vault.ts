@@ -41,20 +41,21 @@ export async function loadSecrets () {
 
     logger.silly('determining node env')
     if (process.env.NODE_ENV === 'production') {
-        logger.info('Loading secrets')
+        logger.info('Loading secrets from Vault')
 
         try {
-            logger.silly('Loading secrets from Vault')
-            const secretResponse = await vault.read('secret/data/backend')
-            logger.silly('Secret Response: ' + secretResponse)
-            const secrets = secretResponse.data.data
-            logger.silly('Secrets: ' + secrets)
-
             for (const key of keys) {
                 logger.silly('Reading key: ' + key)
+                const secretPath = `secret/backend/${key}`
+                logger.silly('Secretpath: ' + secretPath)
+                const secretResponse = await vault.read(secretPath)
+                logger.silly('SecretResponse: ' + secretResponse)
+                const secretValue = secretResponse.data.data[key]
+                logger.silly('SecretValue: ' + secretValue)
 
-                if (secrets[key]) {
-                    process.env[key] = secrets[key]
+                if (secretValue) {
+                    process.env[key] = secretValue
+                    logger.silly('Saved to env: ' + process.env[key])
                 } else {
                     logger.warn(`Key ${key} not found in Vault`)
                 }
