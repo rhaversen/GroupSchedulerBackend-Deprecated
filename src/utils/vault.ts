@@ -7,6 +7,7 @@ export async function connectToVault () {
     try {
         logger.silly('importing node-vault')
         const NodeVault = await import('node-vault')
+        logger.silly('node-vault imported successfully')
         vault = NodeVault.default({
             endpoint: process.env.VAULT_ADDR, // Injected with initial .env
             token: process.env.VAULT_TOKEN // Injected with initial .env
@@ -14,7 +15,8 @@ export async function connectToVault () {
         logger.silly('Checking vault health')
         logger.info('Vault health: ' + await vault.health())
         logger.info("Connected to node-vault!")
-    } catch (e) {
+    } catch (err) {
+        logger.error('Error importing node-vault: ' + err)
         if (process.env.NODE_ENV === 'production') {
             logger.error('node-vault is required in production')
             process.exit(1)
