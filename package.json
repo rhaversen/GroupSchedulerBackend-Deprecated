@@ -19,6 +19,7 @@
         "upgrade-all": "npm update && npx ncu -u && npm install"
     },
     "dependencies": {
+        "@logtail/node": "^0.4.17",
         "axios": "^1.6.2",
         "bcryptjs": "^2.4.3",
         "config": "^3.3.9",
