@@ -77,12 +77,12 @@ function logToWinston (level: string, ...messages: any[]) {
 
 function logToBetterStack (level: string, ...messages: any[]) {
     if (!process.env.BETTERSTACK_LOG_TOKEN || process.env.NODE_ENV !== 'production') {
-        return;
+        return
     }
-    
+
     if (!betterStackLogger) {
-        betterStackLogger = new Logtail(process.env.BETTERSTACK_LOG_TOKEN as string) as Logtail;
-    }    
+        betterStackLogger = new Logtail(process.env.BETTERSTACK_LOG_TOKEN)
+    }
 
     const combinedMessage = messages.join(' ')
     switch (level) {
