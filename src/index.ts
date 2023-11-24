@@ -35,7 +35,6 @@ import eventRoutes from './routes/events.js'
 import availabilityRoutes from './routes/availabilities.js'
 
 // Load environment
-logger.silly('calling loadVaultSecrets')
 if (process.env.NODE_ENV === 'production') {
     await loadVaultSecrets()
 } else {
