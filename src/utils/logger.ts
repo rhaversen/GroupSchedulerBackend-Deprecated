@@ -46,7 +46,7 @@ const winstonLogger = createLogger({
 })
 
 // Instantiate betterStackLogger only in production
-let betterStackLogger = process.env.NODE_ENV === 'production' ? new Logtail(process.env.BETTERSTACK_LOG_TOKEN as string) : null
+let betterStackLogger: Logtail | null = null
 
 function logToWinston (level: string, ...messages: any[]) {
     const combinedMessage = messages.join(' ')
