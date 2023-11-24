@@ -16,19 +16,15 @@ export default async function loadVaultSecrets () {
     const token = process.env.VAULT_TOKEN // Vault token
     try {
         for (const key of keys) {
-            logger.silly('Reading key: ' + key)
-            const secretPath = `secret/data/backend/${key}` // Adjust path as needed
-            logger.silly('Secretpath: ' + secretPath)
+            const secretPath = `secret/data/backend/${key}`
+            logger.silly('Fetching secret key at path: ' + secretPath)
             const response: AxiosResponse<VaultResponse> = await axios.get(`${vaultAddr}/v1/${secretPath}`, {
                 headers: { 'X-Vault-Token': token }
             })
-            logger.silly('Response Status: ' + response.status);
-            logger.silly('Response Data: ' + JSON.stringify(response.data, null, 2));
-            
+
             if (response.data?.data?.data) {
-                logger.silly('SecretValue: ' + JSON.stringify(response.data?.data?.data, null, 2))
                 process.env[key] = response.data.data.data[key]
-                logger.silly('Saved to env: ' + process.env[key])
+                logger.info('Saved to env: ' + process.env[key])
             } else {
                 logger.warn(`Key ${key} not found in Vault`)
             }
