@@ -46,26 +46,62 @@ const winstonLogger = createLogger({
 })
 
 // Instantiate betterStackLogger only in production
-const betterStackLogger = process.env.NODE_ENV === 'production' ? new Logtail(process.env.BETTERSTACK_LOG_TOKEN as string) : null
+let betterStackLogger = process.env.NODE_ENV === 'production' ? new Logtail(process.env.BETTERSTACK_LOG_TOKEN as string) : null
 
-// Define a type for log levels
-type LogLevel = 'error' | 'warn' | 'info' | 'http' | 'verbose' | 'debug' | 'silly'
-
-// Function to check if logger has a method for the given log level
-function hasLogLevelMethod (logger: any, level: LogLevel): logger is { [key in LogLevel]: Function } {
-    return typeof logger === 'object' && logger !== null && level in logger
-}
-
-function logMessage (logger: any, level: LogLevel, messages: any[]) {
+function logToWinston (level: string, ...messages: any[]) {
     const combinedMessage = messages.join(' ')
-    if (hasLogLevelMethod(logger, level)) {
-        logger[level](combinedMessage)
+    switch (level) {
+        case 'error':
+            winstonLogger.error(combinedMessage)
+        break;
+        case 'warn':
+            winstonLogger.warn(combinedMessage)
+        break;
+        case 'info':
+            winstonLogger.info(combinedMessage)
+        break;
+        case 'http':
+            winstonLogger.http(combinedMessage)
+        break;
+        case 'verbose':
+            winstonLogger.verbose(combinedMessage)
+        break;
+        case 'debug':
+            winstonLogger.debug(combinedMessage)
+        break;
+        case 'silly':
+            winstonLogger.silly(combinedMessage)
+        break;
     }
 }
 
-function log (level: LogLevel, ...messages: any[]) {
-    logMessage(winstonLogger, level, messages)
-    logMessage(betterStackLogger, level, messages)
+function logToBetterStack (level: string, ...messages: any[]) {
+    if (!process.env.BETTERSTACK_LOG_TOKEN || process.env.NODE_ENV !== 'production') {
+        return;
+    }
+    
+    if (!betterStackLogger) {
+        betterStackLogger = new Logtail(process.env.BETTERSTACK_LOG_TOKEN as string) as Logtail;
+    }    
+
+    const combinedMessage = messages.join(' ')
+    switch (level) {
+        case 'error':
+            betterStackLogger.error(combinedMessage)
+        break;
+        case 'warn':
+            betterStackLogger.warn(combinedMessage)
+        break;
+        case 'info':
+            betterStackLogger.info(combinedMessage)
+        break;
+        default:
+            betterStackLogger.debug(combinedMessage)
+    }
+}
+function log (level: string, ...messages: any[]) {
+    logToBetterStack(level, messages)
+    logToWinston(level, messages)
 }
 
 const logger = {
