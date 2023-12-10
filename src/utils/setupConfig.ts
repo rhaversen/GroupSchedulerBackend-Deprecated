@@ -47,10 +47,6 @@ export function getSensitiveApiLimiterConfig (): RateLimitOptions {
     return config.get('apiLimiter.sensitive')
 }
 
-export function getTestApiLimiterConfig (): RateLimitOptions {
-    return config.get('apiLimiter.test')
-}
-
 export function getExpressPort (): number {
     return config.get('ports.express')
 }
