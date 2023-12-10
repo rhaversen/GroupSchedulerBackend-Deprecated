@@ -131,6 +131,7 @@ app.use('/v1/users/login', sensitiveApiLimiter)
 app.use('/v1/users/signup', sensitiveApiLimiter)
 
 app.get('/', (req, res) => {
+    logger.debug('pong')
     res.send('pong')
 })
 
