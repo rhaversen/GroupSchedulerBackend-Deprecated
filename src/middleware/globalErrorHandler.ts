@@ -23,9 +23,9 @@ export default (function (err: any, req: Request, res: Response, next: NextFunct
         logger.error(err.toString())
 
         if (err.stack) {
-            logger.error('Error stack:', err.stack);
+            logger.error('Error stack:', err.stack)
         }
-        
+
         res.status(500).json({ error: 'An error occurred, please try again later' })
     }
 })
