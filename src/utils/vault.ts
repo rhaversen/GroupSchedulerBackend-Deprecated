@@ -11,7 +11,7 @@ interface VaultResponse {
 }
 
 export default async function loadVaultSecrets () {
-    const keys = ['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'SESSION_SECRET', 'CSRF_SECRET', 'EMAIL_HOST', 'EMAIL_USER', 'EMAIL_PASS', 'BETTERSTACK_LOG_TOKEN']
+    const keys = ['BETTERSTACK_LOG_TOKEN', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'SESSION_SECRET', 'CSRF_SECRET', 'EMAIL_HOST', 'EMAIL_USER', 'EMAIL_PASS']
     const vaultAddr = process.env.VAULT_ADDR // Vault address
     const token = process.env.VAULT_TOKEN // Vault token
     try {
