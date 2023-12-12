@@ -24,10 +24,25 @@ export default async function loadVaultSecrets () {
 
             if (response.data?.data?.data) {
                 process.env[key] = response.data.data.data[key]
-                logger.info('Saved to env: ' + process.env[key])
+                if (process.env[key] == response.data.data.data[key]) {
+                    logger.debug('Saved to env: ' + process.env[key])
+                } else {
+                    logger.error('Failed to save to env: ' + process.env[key])
+                }
             } else {
                 logger.warn(`Key ${key} not found in Vault`)
             }
+        }
+
+        // Check if all required keys are loaded
+        const missingKeys = []
+        for (const key of keys) {
+            if (!process.env[key]) {
+                missingKeys.push(key)
+            }
+        }
+        if (missingKeys.length != 0) {
+            throw new Error('Missing keys ' + missingKeys.toString())
         }
     } catch (err) {
         logger.error(`Failed to load secrets: ${err}`)
