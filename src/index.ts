@@ -24,7 +24,6 @@ import {
     getCorsOptions,
     getRelaxedApiLimiterConfig,
     getSensitiveApiLimiterConfig,
-    getTestApiLimiterConfig,
     getExpressPort
 } from './utils/setupConfig.js'
 import loadVaultSecrets from './utils/vault.js'
@@ -52,7 +51,6 @@ const helmetHSTS = getHelmetHSTS()
 const confCorsOptions = getCorsOptions()
 const confRelaxedApiLimiter = getRelaxedApiLimiterConfig()
 const confSensitiveApiLimiter = getSensitiveApiLimiterConfig()
-const confTestApiLimiter = getTestApiLimiterConfig()
 const expressPort = getExpressPort()
 
 // Function invocations
@@ -103,15 +101,8 @@ app.use(cors({
 // app.use(csrfProtection);
 
 // Create rate limiters
-let relaxedApiLimiter
-let sensitiveApiLimiter
-if (process.env.NODE_ENV !== 'production') {
-    relaxedApiLimiter = RateLimit(confTestApiLimiter)
-    sensitiveApiLimiter = RateLimit(confTestApiLimiter)
-} else {
-    relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
-    sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter)
-}
+const relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
+const sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter)
 
 // Endpoint to fetch the csrf token
 /* app.get('/csrf-token', sensitiveApiLimiter, (req, res) => {
