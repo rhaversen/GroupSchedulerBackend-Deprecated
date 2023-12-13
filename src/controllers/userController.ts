@@ -39,13 +39,13 @@ const nextJsPort = getNextJsPort()
 const frontendDomain = getFrontendDomain()
 
 // Helper functions
-function generateConfirmationLink (registrationCode: string): string {
+function generateConfirmationLink (confirmationCode: string): string {
     let confirmationLink: string
     // Generate confirmation link
     if (process.env.NODE_ENV === 'production') {
-        confirmationLink = `http://${frontendDomain}/confirm?userCode=${registrationCode}`
+        confirmationLink = `https://${frontendDomain}/confirm?confirmationCode=${confirmationCode}`
     } else {
-        confirmationLink = `http://${frontendDomain}:${nextJsPort}/confirm?userCode=${registrationCode}`
+        confirmationLink = `https://${frontendDomain}:${nextJsPort}/confirm?confirmationCode=${confirmationCode}`
     }
 
     logger.silly(confirmationLink)
@@ -57,9 +57,9 @@ function generatePasswordResetLink (passwordResetCode: string): string {
     let passwordResetLink: string
     // Generate confirmation link
     if (process.env.NODE_ENV === 'production') {
-        passwordResetLink = `http://${frontendDomain}/reset-password?passwordResetCode=${passwordResetCode}`
+        passwordResetLink = `https://${frontendDomain}/reset-password?passwordResetCode=${passwordResetCode}`
     } else {
-        passwordResetLink = `http://${frontendDomain}:${nextJsPort}/reset-password?passwordResetCode=${passwordResetCode}`
+        passwordResetLink = `https://${frontendDomain}:${nextJsPort}/reset-password?passwordResetCode=${passwordResetCode}`
     }
 
     logger.silly(passwordResetLink)
@@ -126,8 +126,8 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
     })
     const savedUser = await newUser.save()
 
-    const registrationCode = await savedUser.generateNewRegistrationCode()
-    const confirmationLink = generateConfirmationLink(registrationCode)
+    const confirmationCode = await savedUser.generateNewConfirmationCode()
+    const confirmationLink = generateConfirmationLink(confirmationCode)
     await sendConfirmationEmail(email, confirmationLink)
 
     res.status(201).json({
@@ -153,14 +153,14 @@ export const requestPasswordResetEmail = asyncErrorHandler(async (req: Request, 
 
 export const confirmUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // Extract the confirmation code from the query parameters
-    const { userCode } = req.params
+    const { confirmationCode } = req.params
 
-    if (!userCode) {
+    if (!confirmationCode) {
         next(new MissingFieldsError('Confirmation code missing')); return
     }
 
     // Find the user with the corresponding confirmation code
-    const user = await UserModel.findOne({ userCode }).exec()
+    const user = await UserModel.findOne({ confirmationCode }).exec()
 
     if (!user) {
         next(new InvalidConfirmationCodeError('Invalid confirmation code')); return

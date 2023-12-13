@@ -73,11 +73,11 @@ router.patch('/reset-password/:passwordResetCode',
 )
 
 /**
- * @route POST api/v1/users/confirm/:userCode
+ * @route POST api/v1/users/confirm/:confirmationCode
  * @desc Confirm user
  * @access Public
  */
-router.post('/confirm/:userCode',
+router.post('/confirm/:confirmationCode',
     sanitizeInput,
     confirmUser
 )
