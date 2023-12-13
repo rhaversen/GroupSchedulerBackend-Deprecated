@@ -271,7 +271,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
             password: 'ToBeConfirmedPassword'
         })
         savedUser = await newUser.save()
-        confirmationCode = savedUser.confirmationCode as string
+        confirmationCode = savedUser.confirmationCode!
 
         agent = chai.request.agent(server.app) // Create an agent instance
     })

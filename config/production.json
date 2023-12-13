@@ -3,7 +3,7 @@
         "origin":"http://localhost:3000"
     },
     "frontend":{
-        "domain":"https://raindate.net"
+        "domain":"raindate.net"
     },
     "ports":{
         "nextJs":3000,

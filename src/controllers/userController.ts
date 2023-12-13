@@ -126,8 +126,7 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
     })
     const savedUser = await newUser.save()
 
-    const confirmationCode = await savedUser.generateNewConfirmationCode()
-    const confirmationLink = generateConfirmationLink(confirmationCode)
+    const confirmationLink = generateConfirmationLink(savedUser.confirmationCode!)
     await sendConfirmationEmail(email, confirmationLink)
 
     res.status(201).json({
