@@ -34,6 +34,7 @@ export default async function loadVaultSecrets () {
 
         logger.debug('Reading vault keys: ' + keys.toString())
 
+        // Load all keys
         for (const key of keys) {
             const secretPath = `secret/data/backend/${key}`
             logger.debug('Fetching secret key at path: ' + secretPath)
@@ -41,8 +42,10 @@ export default async function loadVaultSecrets () {
                 headers: { 'X-Vault-Token': token }
             })
 
-            if (response.data?.data?.data) {
+            // Save the key-value pair to runtime env
                 process.env[key] = response.data.data.data[key]
+
+            // Check if it is saved successfully
                 logger.debug('Saved to env: ' + key)
             } else {
                 logger.error('Failed to save to env: ' + key)
@@ -57,7 +60,7 @@ export default async function loadVaultSecrets () {
             }
         }
         if (missingKeys.length != 0) {
-            throw new Error('Missing keys ' + missingKeys.toString())
+            throw new Error('Keys failed to load to env: ' + missingKeys.toString())
         } else {
             logger.info('All secrets successfully loaded from vault!')
         }
