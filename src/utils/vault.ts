@@ -1,9 +1,10 @@
 import logger from './logger.js'
+import nodeVault from 'node-vault'
 
 const vaultAddr = process.env.VAULT_ADDR // Vault address
 const token = process.env.VAULT_TOKEN // Vault token
 
-const vault = require('node-vault')({
+const vault = nodeVault({
     apiVersion: 'v1',
     endpoint: vaultAddr,
     token
