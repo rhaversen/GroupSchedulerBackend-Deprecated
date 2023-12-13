@@ -43,13 +43,9 @@ export default async function loadVaultSecrets () {
 
             if (response.data?.data?.data) {
                 process.env[key] = response.data.data.data[key]
-                if (process.env[key] == response.data.data.data[key]) {
-                    logger.debug('Saved to env: ' + key + " = " + process.env[key])
-                } else {
-                    logger.error('Failed to save to env: ' + process.env[key])
-                }
+                logger.debug('Saved to env: ' + key)
             } else {
-                logger.warn(`Key ${key} not found in Vault`)
+                logger.error('Failed to save to env: ' + key)
             }
         }
 
