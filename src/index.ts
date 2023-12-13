@@ -34,12 +34,7 @@ import eventRoutes from './routes/events.js'
 import availabilityRoutes from './routes/availabilities.js'
 
 // Load environment
-if (process.env.NODE_ENV === 'production') {
-    await loadVaultSecrets()
-} else {
-    logger.info('Using development .env')
-}
-logger.silly('done loading secrets from vault')
+await loadVaultSecrets()
 
 // Global variables and setup
 const app = express()
