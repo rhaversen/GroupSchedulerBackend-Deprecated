@@ -1,17 +1,13 @@
-import axios, { type AxiosResponse } from 'axios'
 import logger from './logger.js'
 
-interface VaultSecretResponse {
-    data: {
-        data: Record<string, string>
-    }
-}
+const vaultAddr = process.env.VAULT_ADDR // Vault address
+const token = process.env.VAULT_TOKEN // Vault token
 
-interface VaultMetadataResponse {
-    data: {
-        keys: string[]
-    }
-}
+const vault = require('node-vault')({
+    apiVersion: 'v1',
+    endpoint: vaultAddr,
+    token
+})
 
 export default async function loadVaultSecrets () {
     if (process.env.NODE_ENV !== 'production') {
@@ -20,17 +16,13 @@ export default async function loadVaultSecrets () {
     }
 
     try {
-        const vaultAddr = process.env.VAULT_ADDR // Vault address
-        const token = process.env.VAULT_TOKEN // Vault token
+        // Reading the keys in backend directory
+        const vaultMetadata = await vault.list('secret/metadata/backend')
 
-        // Reading the keys in backend to be read using backend metadata
-        const vaultMetadata: AxiosResponse<VaultMetadataResponse> = await axios.get(`${vaultAddr}/v1/secret/metadata/backend`, {
-            headers: { 'X-Vault-Token': token }
-        })
         // KEEP UPDATED:
         // Expected production env keys:
         // 'BETTERSTACK_LOG_TOKEN', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'SESSION_SECRET', 'CSRF_SECRET', 'EMAIL_HOST', 'EMAIL_USER', 'EMAIL_PASS'
-        const keys = vaultMetadata.data.data.keys
+        const keys = vaultMetadata.data.keys
 
         logger.debug('Reading vault keys: ' + keys.toString())
 
@@ -38,18 +30,22 @@ export default async function loadVaultSecrets () {
         for (const key of keys) {
             const secretPath = `secret/data/backend/${key}`
             logger.debug('Fetching secret key at path: ' + secretPath)
-            const response: AxiosResponse<VaultSecretResponse> = await axios.get(`${vaultAddr}/v1/${secretPath}`, {
-                headers: { 'X-Vault-Token': token }
-            })
 
-            // Save the key-value pair to runtime env
-            process.env[key] = response.data.data.data[key]
+            try {
+                const response = await vault.read(secretPath)
+                const secretValue = response.data.data[key]
 
-            // Check if it is saved successfully
-            if (process.env[key] === response.data.data.data[key]) {
-                logger.debug('Saved to env: ' + key)
-            } else {
-                logger.error('Failed to save to env: ' + key)
+                // Save the key-value pair to runtime env
+                process.env[key] = secretValue
+
+                // Check if it is saved successfully
+                if (process.env[key] === secretValue) {
+                    logger.debug('Saved to env: ' + key)
+                } else {
+                    logger.error('Failed to save to env: ' + key)
+                }
+            } catch (error: any) {
+                logger.error(`Error fetching secret for ${key}: ${error.message}`)
             }
         }
 
