@@ -49,7 +49,7 @@ export interface IUser extends Document {
     followers: Types.ObjectId[] | IUser[]
     userCode: string
     confirmed: boolean
-    registrationCode?: string
+    confirmationCode?: string
     registrationDate: Date
     expirationDate?: Date
     passwordResetCode?: string
@@ -57,7 +57,7 @@ export interface IUser extends Document {
     confirmUser: () => void
     comparePassword: (candidatePassword: string) => Promise<boolean>
     generateNewUserCode: () => Promise<string>
-    generateNewRegistrationCode: () => Promise<string>
+    generateNewConfirmationCode: () => Promise<string>
     generateNewPasswordResetCode: () => Promise<string>
     follows: (candidateUser: IUser) => Promise<void>
     unFollows: (candidateUser: IUser) => Promise<void>
@@ -73,7 +73,7 @@ const userSchema = new Schema<IUser>({
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     userCode: { type: String, unique: true },
     confirmed: { type: Boolean, default: false },
-    registrationCode: { type: String, unique: true, sparse: true }, // Should be kept secret
+    confirmationCode: { type: String, unique: true, sparse: true }, // Should be kept secret
     registrationDate: { type: Date, default: new Date() }, // Keep track of registration date
     expirationDate: { type: Date, sparse: true },
     passwordResetCode: { type: String, unique: true, sparse: true } // Should be kept secret
@@ -84,7 +84,7 @@ userSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
 userSchema.methods.confirmUser = function () {
     this.confirmed = true // Update the user's status to confirmed
     delete this.expirationDate // Remove the expiration date to cancel auto-deletion
-    delete this.registrationCode
+    delete this.confirmationCode
 }
 
 // Method for comparing parameter to this users password. Returns true if passwords match
@@ -151,7 +151,7 @@ userSchema.methods.unFollows = async function (candidateUser: IUser): Promise<vo
     }
 }
 
-type CodeFields = 'userCode' | 'registrationCode' | 'passwordResetCode'
+type CodeFields = 'userCode' | 'confirmationCode' | 'passwordResetCode'
 async function generateUniqueCodeForField (this: IUser & { constructor: Model<IUser> }, field: CodeFields): Promise<string> {
     let generatedCode: string
     let existingUser: IUser | null
@@ -171,8 +171,8 @@ userSchema.methods.generateNewUserCode = async function (this: IUser & { constru
     return await generateUniqueCodeForField.call(this, 'userCode')
 }
 
-userSchema.methods.generateNewRegistrationCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
-    return await generateUniqueCodeForField.call(this, 'registrationCode')
+userSchema.methods.generateNewConfirmationCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
+    return await generateUniqueCodeForField.call(this, 'confirmationCode')
 }
 
 userSchema.methods.generateNewPasswordResetCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
@@ -201,7 +201,7 @@ userSchema.pre(/^find/, function (next) {
 userSchema.pre('save', async function (next) {
     if (this.isNew) {
         await this.generateNewUserCode()
-        await this.generateNewRegistrationCode()
+        await this.generateNewConfirmationCode()
         this.email = this.email.toString().toLowerCase()
         if (!this.confirmed) {
             this.expirationDate = new Date(Date.now() + userExpiry * 1000) // TTL index, document will expire in process.env.UNCONFIRMED_USER_EXPIRY seconds if not confirmed
@@ -210,7 +210,7 @@ userSchema.pre('save', async function (next) {
 
     if (this.confirmed) {
         delete this.expirationDate
-        delete this.registrationCode
+        delete this.confirmationCode
     }
 
     if (this.isModified('email')) {

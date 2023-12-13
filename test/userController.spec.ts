@@ -260,7 +260,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
 
 describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function () {
     let savedUser: IUser
-    let userCode: string
+    let confirmationCode: string
     let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
@@ -271,7 +271,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
             password: 'ToBeConfirmedPassword'
         })
         savedUser = await newUser.save()
-        userCode = savedUser.userCode
+        confirmationCode = savedUser.confirmationCode as string
 
         agent = chai.request.agent(server.app) // Create an agent instance
     })
@@ -283,7 +283,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     it('should confirm a user', async function () {
-        const res = await agent.post(`/v1/users/confirm/${userCode}`).send()
+        const res = await agent.post(`/v1/users/confirm/${confirmationCode}`).send()
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('message')
@@ -305,8 +305,8 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     it('should fail if user already confirmed', async function () {
-        await agent.post(`/v1/users/confirm/${userCode}`).send()
-        const res = await agent.post(`/v1/users/confirm/${userCode}`).send()
+        await agent.post(`/v1/users/confirm/${confirmationCode}`).send()
+        const res = await agent.post(`/v1/users/confirm/${confirmationCode}`).send()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
