@@ -1,8 +1,10 @@
 import axios, { type AxiosResponse } from 'axios'
 import logger from './logger.js'
 
-interface VaultSecretData {
+interface VaultSecretResponse {
+    data: {
     data: Record<string, string>
+    }
 }
 
 interface VaultMetadataResponse {
@@ -35,7 +37,7 @@ export default async function loadVaultSecrets () {
         for (const key of keys) {
             const secretPath = `secret/data/backend/${key}`
             logger.debug('Fetching secret key at path: ' + secretPath)
-            const response: AxiosResponse<VaultResponse> = await axios.get(`${vaultAddr}/v1/${secretPath}`, {
+            const response: AxiosResponse<VaultSecretResponse> = await axios.get(`${vaultAddr}/v1/${secretPath}`, {
                 headers: { 'X-Vault-Token': token }
             })
 
