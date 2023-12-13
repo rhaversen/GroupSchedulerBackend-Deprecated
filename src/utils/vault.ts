@@ -46,6 +46,7 @@ export default async function loadVaultSecrets () {
                 process.env[key] = response.data.data.data[key]
 
             // Check if it is saved successfully
+            if (process.env[key] === response.data.data.data[key]) {
                 logger.debug('Saved to env: ' + key)
             } else {
                 logger.error('Failed to save to env: ' + key)
