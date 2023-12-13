@@ -5,9 +5,10 @@ interface VaultSecretData {
     data: Record<string, string>
 }
 
-interface VaultResponse {
-    data: VaultSecretData
-    // Include other fields from the response as needed
+interface VaultMetadataResponse {
+    data: {
+        keys: string[]
+    }
 }
 
 export default async function loadVaultSecrets () {
@@ -16,10 +17,21 @@ export default async function loadVaultSecrets () {
         return
     }
 
-    const keys = ['BETTERSTACK_LOG_TOKEN', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'SESSION_SECRET', 'CSRF_SECRET', 'EMAIL_HOST', 'EMAIL_USER', 'EMAIL_PASS']
-    const vaultAddr = process.env.VAULT_ADDR // Vault address
-    const token = process.env.VAULT_TOKEN // Vault token
     try {
+        const vaultAddr = process.env.VAULT_ADDR // Vault address
+        const token = process.env.VAULT_TOKEN // Vault token
+
+        // Reading the keys in backend to be read using backend metadata
+        const vaultMetadata: AxiosResponse<VaultMetadataResponse> = await axios.get(`${vaultAddr}/v1/secret/metadata/backend`, {
+            headers: { 'X-Vault-Token': token }
+        })
+        // KEEP UPDATED:
+        // Expected production env keys:
+        // 'BETTERSTACK_LOG_TOKEN', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'SESSION_SECRET', 'CSRF_SECRET', 'EMAIL_HOST', 'EMAIL_USER', 'EMAIL_PASS'
+        const keys = vaultMetadata.data.data.keys
+
+        logger.debug('Reading vault keys: ' + keys.toString())
+
         for (const key of keys) {
             const secretPath = `secret/data/backend/${key}`
             logger.debug('Fetching secret key at path: ' + secretPath)
