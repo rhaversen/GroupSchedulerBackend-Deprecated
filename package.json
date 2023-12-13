@@ -34,6 +34,7 @@
         "mongodb": "^6.3.0",
         "mongoose": "^8.0.3",
         "nanoid": "^5.0.4",
+        "node-vault": "^0.10.2",
         "nodemailer": "^6.9.7",
         "passport": "^0.7.0",
         "passport-local": "^1.0.0",
