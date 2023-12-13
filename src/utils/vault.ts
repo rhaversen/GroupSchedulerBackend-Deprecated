@@ -3,7 +3,7 @@ import logger from './logger.js'
 
 interface VaultSecretResponse {
     data: {
-    data: Record<string, string>
+        data: Record<string, string>
     }
 }
 
@@ -43,7 +43,7 @@ export default async function loadVaultSecrets () {
             })
 
             // Save the key-value pair to runtime env
-                process.env[key] = response.data.data.data[key]
+            process.env[key] = response.data.data.data[key]
 
             // Check if it is saved successfully
             if (process.env[key] === response.data.data.data[key]) {
