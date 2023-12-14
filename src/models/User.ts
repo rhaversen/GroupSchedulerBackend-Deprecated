@@ -209,8 +209,8 @@ userSchema.pre('save', async function (next) {
     }
 
     if (this.confirmed) {
-        delete this.expirationDate
-        delete this.confirmationCode
+        this.expirationDate = undefined // Unset the expiration date to cancel auto-deletion
+        this.confirmationCode = undefined // Unset the confirmation code
     }
 
     if (this.isModified('email')) {
