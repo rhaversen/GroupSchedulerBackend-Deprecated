@@ -312,6 +312,18 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
         expect(res.body).to.have.property('error')
         expect(res.body.error).to.be.equal('The confirmation code is invalid or the user has already been confirmed')
     })
+
+    it('should should delete confirmationCode', async function () {
+        await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
+        const confirmedUser = await UserModel.findById(savedUser._id).exec() as IUser
+        expect(confirmedUser.confirmationCode).to.be.undefined
+    })
+
+    it('should should delete expirationDate', async function () {
+        await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
+        const confirmedUser = await UserModel.findById(savedUser._id).exec() as IUser
+        expect(confirmedUser.expirationDate).to.be.undefined
+    })
 })
 
 describe('User Login Endpoint POST /v1/users/login-local', function () {
