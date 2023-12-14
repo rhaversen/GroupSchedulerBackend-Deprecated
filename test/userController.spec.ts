@@ -283,7 +283,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     it('should confirm a user', async function () {
-        const res = await agent.post(`/v1/users/confirm/${confirmationCode}`).send()
+        const res = await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('message')
