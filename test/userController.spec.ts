@@ -301,7 +301,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('Invalid confirmation code')
+        expect(res.body.error).to.be.equal('The confirmation code is invalid or the user has already been confirmed')
     })
 
     it('should fail if user already confirmed', async function () {
@@ -310,7 +310,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('User has already been confirmed')
+        expect(res.body.error).to.be.equal('The confirmation code is invalid or the user has already been confirmed')
     })
 })
 
