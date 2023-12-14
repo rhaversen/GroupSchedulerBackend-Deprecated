@@ -297,7 +297,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     it('should fail if invalid code provided', async function () {
-        const res = await agent.post('/v1/users/confirm/INVALID_CODE').send()
+        const res = await agent.post('/v1/users/confirm?confirmationCode=INVALID_CODE').send()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
@@ -305,8 +305,8 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     it('should fail if user already confirmed', async function () {
-        await agent.post(`/v1/users/confirm/${confirmationCode}`).send()
-        const res = await agent.post(`/v1/users/confirm/${confirmationCode}`).send()
+        await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
+        const res = await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')

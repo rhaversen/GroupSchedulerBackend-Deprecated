@@ -152,7 +152,7 @@ export const requestPasswordResetEmail = asyncErrorHandler(async (req: Request, 
 
 export const confirmUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // Extract the confirmation code from the query parameters
-    const { confirmationCode } = req.params
+    const { confirmationCode } = req.query
 
     if (!confirmationCode) {
         next(new MissingFieldsError('Confirmation code missing')); return
