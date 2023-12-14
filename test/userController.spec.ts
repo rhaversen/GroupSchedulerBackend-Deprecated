@@ -304,6 +304,22 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
         expect(res.body.error).to.be.equal('The confirmation code is invalid or the user has already been confirmed')
     })
 
+    it('should fail if no code provided', async function () {
+        const res = await agent.post('/v1/users/confirm').send()
+        expect(res).to.have.status(400)
+        expect(res.body).to.be.a('object')
+        expect(res.body).to.have.property('error')
+        expect(res.body.error).to.be.equal('Confirmation code missing')
+    })
+
+    it('should fail if code is empty', async function () {
+        const res = await agent.post('/v1/users/confirm?confirmationCode= ').send()
+        expect(res).to.have.status(400)
+        expect(res.body).to.be.a('object')
+        expect(res.body).to.have.property('error')
+        expect(res.body.error).to.be.equal('Confirmation code missing')
+    })
+
     it('should fail if user already confirmed', async function () {
         await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
         const res = await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
