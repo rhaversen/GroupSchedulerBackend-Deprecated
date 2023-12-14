@@ -15,12 +15,12 @@ const emailFrom = getEmailFrom()
 
 // Configure transporter
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
+    host: process.env.SMTP_SERVER,
     port: transporterPort,
-    secure: true, // true for 465, false for other ports
+    secure: false, // true for 465, false for other ports
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: process.env.SMTP_LOGIN,
+        pass: process.env.SMTP_KEY
     }
 })
 

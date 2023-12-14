@@ -1,7 +1,7 @@
 {
     "email":{
-        "from":"rasmus@haversen.dk",
-        "port":465
+        "from":"RainDate <noreply@raindate.net>",
+        "port":587
     },
     "userSettings":{
         "unconfirmedUserExpiry":86400
