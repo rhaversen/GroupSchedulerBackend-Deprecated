@@ -283,7 +283,7 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     it('should confirm a user', async function () {
-        const res = await agent.post(`/v1/users/confirm/${confirmationCode}`).send()
+        const res = await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('message')
@@ -297,20 +297,48 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     it('should fail if invalid code provided', async function () {
-        const res = await agent.post('/v1/users/confirm/INVALID_CODE').send()
+        const res = await agent.post('/v1/users/confirm?confirmationCode=INVALID_CODE').send()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('Invalid confirmation code')
+        expect(res.body.error).to.be.equal('The confirmation code is invalid or the user has already been confirmed')
+    })
+
+    it('should fail if no code provided', async function () {
+        const res = await agent.post('/v1/users/confirm').send()
+        expect(res).to.have.status(400)
+        expect(res.body).to.be.a('object')
+        expect(res.body).to.have.property('error')
+        expect(res.body.error).to.be.equal('Confirmation code missing')
+    })
+
+    it('should fail if code is empty', async function () {
+        const res = await agent.post('/v1/users/confirm?confirmationCode= ').send()
+        expect(res).to.have.status(400)
+        expect(res.body).to.be.a('object')
+        expect(res.body).to.have.property('error')
+        expect(res.body.error).to.be.equal('Confirmation code missing')
     })
 
     it('should fail if user already confirmed', async function () {
-        await agent.post(`/v1/users/confirm/${confirmationCode}`).send()
-        const res = await agent.post(`/v1/users/confirm/${confirmationCode}`).send()
+        await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
+        const res = await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('User has already been confirmed')
+        expect(res.body.error).to.be.equal('The confirmation code is invalid or the user has already been confirmed')
+    })
+
+    it('should should delete confirmationCode', async function () {
+        await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
+        const confirmedUser = await UserModel.findById(savedUser._id).exec() as IUser
+        expect(confirmedUser.confirmationCode).to.be.undefined
+    })
+
+    it('should should delete expirationDate', async function () {
+        await agent.post(`/v1/users/confirm?confirmationCode=${confirmationCode}`).send()
+        const confirmedUser = await UserModel.findById(savedUser._id).exec() as IUser
+        expect(confirmedUser.expirationDate).to.be.undefined
     })
 })
 

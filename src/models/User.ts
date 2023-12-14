@@ -83,8 +83,8 @@ userSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
 
 userSchema.methods.confirmUser = function () {
     this.confirmed = true // Update the user's status to confirmed
-    delete this.expirationDate // Remove the expiration date to cancel auto-deletion
-    delete this.confirmationCode
+    this.expirationDate = undefined // Unset the expiration date to cancel auto-deletion
+    this.confirmationCode = undefined // Unset the confirmation code
 }
 
 // Method for comparing parameter to this users password. Returns true if passwords match

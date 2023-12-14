@@ -13,8 +13,7 @@ import {
     UserNotFoundError,
     EmailAlreadyExistsError,
     MissingFieldsError,
-    InvalidConfirmationCodeError,
-    UserAlreadyConfirmedError
+    InvalidQueryError
 } from '../utils/errors.js'
 import {
     sendConfirmationEmail,
@@ -152,7 +151,7 @@ export const requestPasswordResetEmail = asyncErrorHandler(async (req: Request, 
 
 export const confirmUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // Extract the confirmation code from the query parameters
-    const { confirmationCode } = req.params
+    const { confirmationCode } = req.query
 
     if (!confirmationCode) {
         next(new MissingFieldsError('Confirmation code missing')); return
@@ -162,11 +161,7 @@ export const confirmUser = asyncErrorHandler(async (req: Request, res: Response,
     const user = await UserModel.findOne({ confirmationCode }).exec()
 
     if (!user) {
-        next(new InvalidConfirmationCodeError('Invalid confirmation code')); return
-    }
-
-    if (user.confirmed) {
-        next(new UserAlreadyConfirmedError('User has already been confirmed')); return
+        next(new InvalidQueryError('The confirmation code is invalid or the user has already been confirmed')); return
     }
 
     // Update the user's status to 'confirmed'
