@@ -145,8 +145,8 @@ export const joinEvent = asyncErrorHandler(async (req: Request, res: Response, n
 
     // Add event to user's events and user to event's participants
     await Promise.all([
-        UserModel.findByIdAndUpdate(user._id, { $pull: { events: { $in: [event._id] } } }).exec(),
-        EventModel.findByIdAndUpdate(event._id, { $pull: { participants: { $in: [user._id] } } }).exec()
+        UserModel.findByIdAndUpdate(user._id, { $push: { events: { $in: [event._id] } } }).exec(),
+        EventModel.findByIdAndUpdate(event._id, { $push: { participants: { $in: [user._id] } } }).exec()
     ])
 
     res.status(200).json(event)
