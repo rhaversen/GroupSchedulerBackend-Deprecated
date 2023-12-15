@@ -3,31 +3,23 @@
 // Third-party libraries
 import passport from 'passport'
 import validator from 'validator'
-import { type Request, type Response, type NextFunction } from 'express'
+import { type NextFunction, type Request, type Response } from 'express'
 import mongoose, { type Types } from 'mongoose'
 
 // Own modules
 import {
-    InvalidEmailError,
-    InvalidCredentialsError,
-    UserNotFoundError,
     EmailAlreadyExistsError,
+    InvalidCredentialsError,
+    InvalidEmailError,
+    InvalidQueryError,
     MissingFieldsError,
-    InvalidQueryError
+    UserNotFoundError
 } from '../utils/errors.js'
-import {
-    sendConfirmationEmail,
-    sendPasswordResetEmail
-} from '../utils/mailer.js'
-import UserModel, { type IUserPopulated, type IUser } from '../models/User.js'
+import { sendConfirmationEmail, sendPasswordResetEmail } from '../utils/mailer.js'
+import UserModel, { type IUser, type IUserPopulated } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import logger from '../utils/logger.js'
-import {
-    getSessionExpiry,
-    getSessionPersistentExpiry,
-    getNextJsPort,
-    getFrontendDomain
-} from '../utils/setupConfig.js'
+import { getFrontendDomain, getNextJsPort, getSessionExpiry, getSessionPersistentExpiry } from '../utils/setupConfig.js'
 
 // Destructuring and global variables
 
@@ -75,23 +67,23 @@ function ensureFieldsPresent (body: Record<string, string>, requiredFields: stri
 }
 
 export const getCurrentUser =
-(req: Request, res: Response, next: NextFunction): void => {
-    const user = req.user as IUser
+    (req: Request, res: Response, next: NextFunction): void => {
+        const user = req.user as IUser
 
-    const userToSendToFrontend = {
-        username: user.username,
-        email: user.email,
-        events: user.events,
-        availabilities: user.availabilities,
-        following: user.following,
-        followers: user.followers,
-        userCode: user.userCode,
-        confirmed: user.confirmed,
-        registrationDate: user.registrationDate,
-        expirationDate: user.expirationDate
+        const userToSendToFrontend = {
+            username: user.username,
+            email: user.email,
+            events: user.events,
+            availabilities: user.availabilities,
+            following: user.following,
+            followers: user.followers,
+            userCode: user.userCode,
+            confirmed: user.confirmed,
+            registrationDate: user.registrationDate,
+            expirationDate: user.expirationDate
+        }
+        res.send(userToSendToFrontend)
     }
-    res.send(userToSendToFrontend)
-}
 
 export const registerUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { username, email, password, confirmPassword } = req.body
@@ -100,21 +92,25 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
     ensureFieldsPresent(req.body, requiredFields, next)
 
     if (!validator.isEmail(email)) {
-        next(new InvalidEmailError('Invalid email format')); return
+        next(new InvalidEmailError('Invalid email format'))
+        return
     }
 
     if (password !== confirmPassword) {
-        next(new InvalidCredentialsError('Password and Confirm Password does not match')); return
+        next(new InvalidCredentialsError('Password and Confirm Password does not match'))
+        return
     }
 
     if (String(password).length < 4) {
-        next(new InvalidCredentialsError('Password must be at least 5 characters')); return
+        next(new InvalidCredentialsError('Password must be at least 5 characters'))
+        return
     }
 
     const existingUser = await UserModel.findOne({ email }).exec()
 
     if (existingUser) { // TODO: It should not reveal whether the email exists in the database. Log the user in instead
-        next(new EmailAlreadyExistsError('Email already exists, please sign in instead')); return
+        next(new EmailAlreadyExistsError('Email already exists, please sign in instead'))
+        return
     }
 
     // User doesn't exist, create a new user
@@ -154,14 +150,16 @@ export const confirmUser = asyncErrorHandler(async (req: Request, res: Response,
     const { confirmationCode } = req.query
 
     if (!confirmationCode) {
-        next(new MissingFieldsError('Confirmation code missing')); return
+        next(new MissingFieldsError('Confirmation code missing'))
+        return
     }
 
     // Find the user with the corresponding confirmation code
     const user = await UserModel.findOne({ confirmationCode }).exec()
 
     if (!user) {
-        next(new InvalidQueryError('The confirmation code is invalid or the user has already been confirmed')); return
+        next(new InvalidQueryError('The confirmation code is invalid or the user has already been confirmed'))
+        return
     }
 
     // Update the user's status to 'confirmed'
@@ -181,16 +179,19 @@ export const loginUserLocal = asyncErrorHandler(async (req: Request, res: Respon
 
     passport.authenticate('local', (err: Error, user: IUser, info: { message: string }) => {
         if (err) {
-            next(err); return
+            next(err)
+            return
         }
 
         if (!user) {
-            res.status(401).json({ auth: false, error: info.message }); return
+            res.status(401).json({ auth: false, error: info.message })
+            return
         }
 
         req.login(user, err => {
             if (err) {
-                next(err); return
+                next(err)
+                return
             }
 
             if (req.body.stayLoggedIn === 'true') {
@@ -206,11 +207,15 @@ export const loginUserLocal = asyncErrorHandler(async (req: Request, res: Respon
 
 export const logoutUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     req.logout(function (err) {
-        if (err) { next(err); return }
+        if (err) {
+            next(err)
+            return
+        }
 
         req.session.destroy(function (sessionErr) {
             if (sessionErr) {
-                next(sessionErr); return
+                next(sessionErr)
+                return
             }
             res.status(200).json({ message: 'Logged out successfully' })
         })
@@ -237,16 +242,19 @@ export const followUser = asyncErrorHandler(async (req: Request, res: Response, 
     const user = req.user as IUser
 
     if (!candidateUser) {
-        next(new UserNotFoundError('The user to be followed could not be found')); return
+        next(new UserNotFoundError('The user to be followed could not be found'))
+        return
     }
 
     if (candidateUser.id === user.id) {
-        next(new UserNotFoundError('User cannot follow themselves')); return
+        next(new UserNotFoundError('User cannot follow themselves'))
+        return
     }
 
     const followingArray = user.following as Array<{ _id: Types.ObjectId }>
     if (followingArray.find(u => u._id.toString() === candidateUser._id.toString())) {
-        res.status(200).json({ message: 'User is already followed' }); return
+        res.status(200).json({ message: 'User is already followed' })
+        return
     }
 
     await user.follows(candidateUser)
@@ -260,16 +268,19 @@ export const unfollowUser = asyncErrorHandler(async (req: Request, res: Response
 
     const candidateUser = await UserModel.findById(candidateUserId).exec()
     if (!candidateUser) {
-        next(new UserNotFoundError('The user to be un-followed could not be found')); return
+        next(new UserNotFoundError('The user to be un-followed could not be found'))
+        return
     }
 
     if (candidateUserId === user.id) {
-        next(new UserNotFoundError('User cannot un-follow themselves')); return
+        next(new UserNotFoundError('User cannot un-follow themselves'))
+        return
     }
 
     const followingArray = user.following as Array<{ _id: Types.ObjectId }>
     if (!followingArray.find(u => u._id.toString() === candidateUser._id.toString())) {
-        res.status(400).json({ error: 'User is not followed' }); return
+        res.status(400).json({ error: 'User is not followed' })
+        return
     }
 
     await user.unFollows(candidateUser)
@@ -298,13 +309,15 @@ export const getCommonEvents = asyncErrorHandler(async (req: Request, res: Respo
     const candidateUserId = req.params.userId
 
     if (!mongoose.Types.ObjectId.isValid(candidateUserId)) {
-        res.status(400).json({ error: 'Invalid user ID format' }); return
+        res.status(400).json({ error: 'Invalid user ID format' })
+        return
     }
 
     const candidateUser = await UserModel.findById(candidateUserId).exec()
 
     if (!candidateUser) {
-        next(new UserNotFoundError('The user to be found events in common with could not be found')); return
+        next(new UserNotFoundError('The user to be found events in common with could not be found'))
+        return
     }
 
     const userEvents = user.events as Types.ObjectId[]
@@ -328,14 +341,16 @@ export const updatePassword = asyncErrorHandler(async (req: Request, res: Respon
     ensureFieldsPresent(req.body, requiredFields, next)
 
     if (newPassword !== confirmNewPassword) {
-        next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match')); return
+        next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match'))
+        return
     }
 
     const passwordsMatch = await user.comparePassword(currentPassword)
     if (passwordsMatch) {
         user.password = newPassword
     } else {
-        next(new InvalidCredentialsError('currentPassword does not match with user password')); return
+        next(new InvalidCredentialsError('currentPassword does not match with user password'))
+        return
     }
 
     await user.save()
@@ -354,13 +369,15 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
     ensureFieldsPresent(req.body, requiredFields, next)
 
     if (newPassword !== confirmNewPassword) {
-        next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match')); return
+        next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match'))
+        return
     }
 
     const user = await UserModel.findOne({ passwordResetCode }).exec()
 
     if (!user) {
-        res.status(404).send(); return
+        res.status(404).send()
+        return
     }
 
     user.password = newPassword

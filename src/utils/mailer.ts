@@ -4,10 +4,7 @@
 import nodemailer from 'nodemailer'
 
 // Own modules
-import {
-    getTransporterPort,
-    getEmailFrom
-} from './setupConfig.js'
+import { getEmailFrom, getTransporterPort } from './setupConfig.js'
 
 // Config
 const transporterPort = getTransporterPort()

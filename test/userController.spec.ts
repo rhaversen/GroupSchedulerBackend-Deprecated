@@ -12,11 +12,7 @@ import { parse } from 'cookie'
 import logger from '../src/utils/logger.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
-import {
-    getSessionExpiry,
-    getSessionPersistentExpiry,
-    getExpressPort
-} from '../src/utils/setupConfig.js'
+import { getExpressPort, getSessionExpiry, getSessionPersistentExpiry } from '../src/utils/setupConfig.js'
 import { isMemoryDatabase } from '../src/database/databaseHandler.js'
 
 chai.use(chaiHttp)
@@ -38,7 +34,9 @@ async function getCSRFToken (agent: ChaiHttp.Agent) {
 async function cleanDatabase () {
     /// ////////////////////////////////////////////
     /// ///////////////////////////////////////////
-    if (!isMemoryDatabase()) { return }
+    if (!isMemoryDatabase()) {
+        return
+    }
     /// ////////////////////////////////////////////
     /// ///////////////////////////////////////////
     try {
@@ -128,7 +126,12 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
 })
 
 describe('User Registration Endpoint POST /v1/users', function () {
-    const testUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' }
+    const testUser = {
+        username: 'Test User',
+        email: 'testuser@gmail.com',
+        password: 'testpassword',
+        confirmPassword: 'testpassword'
+    }
     let agent: ChaiHttp.Agent
 
     beforeEach(async function () {

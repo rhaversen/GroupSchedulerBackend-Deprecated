@@ -2,33 +2,25 @@
 
 // Third-party libraries
 import Router from 'express'
-import passport from 'passport'
 
 // Own modules
-import {
-    checkUserInEvent,
-    checkUserIsAuthenticatedToEdit
-} from '../middleware/eventUserChecks.js'
-import {
-    sanitizeInput
-} from '../middleware/sanitizer.js'
-import { 
-    ensureAuthenticated 
-} from '../utils/passportConfig.js'
+import { checkUserInEvent, checkUserIsAuthenticatedToEdit } from '../middleware/eventUserChecks.js'
+import { sanitizeInput } from '../middleware/sanitizer.js'
+import { ensureAuthenticated } from '../utils/passportConfig.js'
 
 // Controller functions
 import {
-    newCode,
-    getEventAndSend,
-    getEventAndAttach,
-    createEvent,
-    updateEvent,
-    joinEvent,
-    leaveEvent,
-    kickUserFromEvent,
-    deleteEvent,
     addUserToEventAdmins,
-    removeUserFromEventAdmins
+    createEvent,
+    deleteEvent,
+    getEventAndAttach,
+    getEventAndSend,
+    joinEvent,
+    kickUserFromEvent,
+    leaveEvent,
+    newCode,
+    removeUserFromEventAdmins,
+    updateEvent
 } from '../controllers/eventController.js'
 
 // Destructuring and global variables
@@ -38,7 +30,7 @@ const router = Router()
  * @route POST api/v1/events/:eventIdOrCode/new-code
  * @desc Update event with a random event code
  * @access Authenticated
-*/
+ */
 router.post('/:eventIdOrCode/new-code',
     sanitizeInput,
     ensureAuthenticated,

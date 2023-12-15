@@ -1,5 +1,5 @@
 // Third-party libraries
-import { type Request, type Response, type NextFunction } from 'express'
+import { type NextFunction, type Request, type Response } from 'express'
 import validator from 'validator'
 
 // Helper function to recursively sanitize the objects

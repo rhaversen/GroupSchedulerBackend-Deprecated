@@ -1,25 +1,21 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { type Request, type Response, type NextFunction } from 'express'
+import { type NextFunction, type Request, type Response } from 'express'
 
 // Own modules
-import logger from '../utils/logger.js'
 import {
-    MissingFieldsError,
-    UserNotAdminError,
+    CantKickAdminOrOwner,
     EventNotFoundError,
     InvalidEventIdOrCode,
+    MissingFieldsError,
     OwnerCantLeaveError,
-    CantKickAdminOrOwner
+    UserNotAdminError
 } from '../utils/errors.js'
 import EventModel, { type IEvent } from '../models/Event.js'
 import UserModel, { type IUser } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-import {
-    getNanoidAlphabet,
-    getNanoidLength
-} from '../utils/setupConfig.js'
+import { getNanoidAlphabet, getNanoidLength } from '../utils/setupConfig.js'
 
 // Destructuring and global variables
 
@@ -36,6 +32,7 @@ export interface IRequestWithEvent extends Request {
 function isMongoId (str: string): boolean {
     return /^[0-9a-fA-F]{24}$/.test(str)
 }
+
 function isNanoid (str: string): boolean {
     const regex = new RegExp(`^[${nanoidAlphabet}]{${nanoidLength}}$`)
     return regex.test(str)
@@ -94,7 +91,8 @@ export const createEvent = asyncErrorHandler(async (req: Request, res: Response,
 
     // Checks if eventName, startDate, and endDate are not falsy (e.g., undefined, null, empty string)
     if (!eventName || !startDate || !endDate) {
-        next(new MissingFieldsError('Missing required fields: eventName, startDate or endDate')); return
+        next(new MissingFieldsError('Missing required fields: eventName, startDate or endDate'))
+        return
     }
 
     const newEvent = new EventModel({
@@ -155,7 +153,8 @@ export const leaveEvent = asyncErrorHandler(async (req: IRequestWithEvent, res: 
     const user = req.user as IUser
 
     if (event.isOwner(user.id)) {
-        next(new OwnerCantLeaveError('The owner cant leave the event. The event should instead be deleted')); return
+        next(new OwnerCantLeaveError('The owner cant leave the event. The event should instead be deleted'))
+        return
     }
 
     await Promise.all([
@@ -178,7 +177,8 @@ export const kickUserFromEvent = asyncErrorHandler(async (req: IRequestWithEvent
 
     // Check if the user to be kicked is admin or owner
     if (event.isAdmin(user.id) || event.isOwner(user.id)) {
-        next(new UserNotAdminError('Only admins and owners can kick users')); return
+        next(new UserNotAdminError('Only admins and owners can kick users'))
+        return
     }
 
     // Check if the user to be kicked is admin or owner

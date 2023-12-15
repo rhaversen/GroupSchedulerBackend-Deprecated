@@ -1,5 +1,6 @@
 class CustomError extends Error {
     statusCode: number
+
     constructor (message: string, statusCode: number = 400) {
         super(message)
         this.name = this.constructor.name
@@ -8,7 +9,8 @@ class CustomError extends Error {
 }
 
 // Validation errors
-export class ValidationError extends CustomError {}
+export class ValidationError extends CustomError {
+}
 
 export class UserNotFoundError extends ValidationError {
     constructor (message: string) {
@@ -16,13 +18,26 @@ export class UserNotFoundError extends ValidationError {
     }
 }
 
-export class InvalidEmailError extends ValidationError {}
-export class InvalidCredentialsError extends ValidationError {}
-export class EmailAlreadyExistsError extends ValidationError {}
-export class PasswordIncorrectError extends ValidationError {}
-export class MissingFieldsError extends ValidationError {}
-export class InvalidQueryError extends ValidationError {}
-export class UserNotConfirmedError extends ValidationError {}
+export class InvalidEmailError extends ValidationError {
+}
+
+export class InvalidCredentialsError extends ValidationError {
+}
+
+export class EmailAlreadyExistsError extends ValidationError {
+}
+
+export class PasswordIncorrectError extends ValidationError {
+}
+
+export class MissingFieldsError extends ValidationError {
+}
+
+export class InvalidQueryError extends ValidationError {
+}
+
+export class UserNotConfirmedError extends ValidationError {
+}
 
 export class UserNotInEventError extends ValidationError {
     constructor (message: string) {
@@ -36,14 +51,24 @@ export class UserNotAdminError extends ValidationError {
     }
 }
 
-export class InvalidEventIdOrCode extends ValidationError {}
+export class InvalidEventIdOrCode extends ValidationError {
+}
 
 // Event errors
-export class EventError extends CustomError {}
-export class EventCodeError extends EventError {}
-export class EventNotFoundError extends EventError {}
-export class OwnerCantLeaveError extends EventError {}
-export class CantKickAdminOrOwner extends EventError {}
+export class EventError extends CustomError {
+}
+
+export class EventCodeError extends EventError {
+}
+
+export class EventNotFoundError extends EventError {
+}
+
+export class OwnerCantLeaveError extends EventError {
+}
+
+export class CantKickAdminOrOwner extends EventError {
+}
 
 // Server errors
 export class ServerError extends CustomError {

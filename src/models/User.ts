@@ -3,21 +3,14 @@
 // Third-party libraries
 import bcryptjsPkg from 'bcryptjs'
 import { customAlphabet } from 'nanoid'
-import mongoose, { type Document, type Types, model, type Model } from 'mongoose'
+import mongoose, { type Document, model, type Model, type Types } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
 import AvailabilityModel, { type IAvailability } from './Availability.js'
 import EventModel, { type IEvent } from './Event.js'
-import {
-    getSaltRounds,
-    getNanoidAlphabet,
-    getNanoidLength,
-    getUserExpiry
-} from '../utils/setupConfig.js'
-import {
-    UserNotFoundError
-} from '../utils/errors.js'
+import { getNanoidAlphabet, getNanoidLength, getSaltRounds, getUserExpiry } from '../utils/setupConfig.js'
+import { UserNotFoundError } from '../utils/errors.js'
 
 // Destructuring and global variables
 const { compare, hash } = bcryptjsPkg
@@ -152,7 +145,10 @@ userSchema.methods.unFollows = async function (candidateUser: IUser): Promise<vo
 }
 
 type CodeFields = 'userCode' | 'confirmationCode' | 'passwordResetCode'
-async function generateUniqueCodeForField (this: IUser & { constructor: Model<IUser> }, field: CodeFields): Promise<string> {
+
+async function generateUniqueCodeForField (this: IUser & {
+    constructor: Model<IUser>
+}, field: CodeFields): Promise<string> {
     let generatedCode: string
     let existingUser: IUser | null
     const query: Record<string, unknown> = {}
@@ -171,11 +167,15 @@ userSchema.methods.generateNewUserCode = async function (this: IUser & { constru
     return await generateUniqueCodeForField.call(this, 'userCode')
 }
 
-userSchema.methods.generateNewConfirmationCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
+userSchema.methods.generateNewConfirmationCode = async function (this: IUser & {
+    constructor: Model<IUser>
+}): Promise<string> {
     return await generateUniqueCodeForField.call(this, 'confirmationCode')
 }
 
-userSchema.methods.generateNewPasswordResetCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
+userSchema.methods.generateNewPasswordResetCode = async function (this: IUser & {
+    constructor: Model<IUser>
+}): Promise<string> {
     return await generateUniqueCodeForField.call(this, 'passwordResetCode')
 }
 
@@ -222,7 +222,8 @@ userSchema.pre('save', async function (next) {
         try {
             this.password = await hash(this.password, saltRounds) // Using a custom salt for each user
             delete this.passwordResetCode
-            next(); return
+            next()
+            return
         } catch (error) {
             if (error instanceof Error) {
                 next(error)
@@ -236,7 +237,9 @@ userSchema.pre('save', async function (next) {
     logger.silly('User saved')
 })
 
-const deleteLogic = async function (this: IUser & { constructor: Model<IUser> }, next: mongoose.CallbackWithoutResultAndOptionalError): Promise<void> {
+const deleteLogic = async function (this: IUser & {
+    constructor: Model<IUser>
+}, next: mongoose.CallbackWithoutResultAndOptionalError): Promise<void> {
     const session = await mongoose.startSession()
     session.startTransaction()
 

@@ -4,54 +4,54 @@
 import validator from 'validator'
 import { Strategy as LocalStrategy } from 'passport-local'
 // import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
-
 // Own modules
 import UserModel, { type IUser } from '../models/User.js'
 import { type PassportStatic } from 'passport'
-import logger from './logger.js'
-import { type Request, type Response, type NextFunction } from 'express'
-import {
-    InvalidEmailError,
-    InvalidCredentialsError,
-    UserNotFoundError
-} from './errors.js'
+import { type NextFunction, type Request, type Response } from 'express'
+import { InvalidCredentialsError, InvalidEmailError, UserNotFoundError } from './errors.js'
 
 // Destructuring and global variables
 
 export const ensureAuthenticated =
-(req: Request, res: Response, next: NextFunction): void => {
-    if (req.isAuthenticated()) {
-        next(); return
+    (req: Request, res: Response, next: NextFunction): void => {
+        if (req.isAuthenticated()) {
+            next()
+            return
+        }
+        // If not authenticated, you can redirect or send an error response
+        res.status(401).json({ message: 'Unauthorized' })
     }
-    // If not authenticated, you can redirect or send an error response
-    res.status(401).json({ message: 'Unauthorized' })
-}
 
 const configurePassport = (passport: PassportStatic): void => {
     // Local Strategy
     passport.use(new LocalStrategy({ usernameField: 'email' },
         (email, password, done) => {
             try {
-            // Validate email format
+                // Validate email format
                 if (!validator.isEmail(email)) {
-                    done(new InvalidEmailError('Invalid email format')); return
+                    done(new InvalidEmailError('Invalid email format'))
+                    return
                 }
                 // Find user by email
                 UserModel.findOne({ email }).exec()
                     .then(async user => {
-                    // Check if user exists
+                        // Check if user exists
                         if (!user) {
-                            done(new InvalidEmailError('A user with the email ' + email + ' was not found. Please check spelling or sign up')); return
+                            done(new InvalidEmailError('A user with the email ' + email + ' was not found. Please check spelling or sign up'))
+                            return
                         }
 
                         // Check password
                         const isMatch = await user.comparePassword(password)
                         if (!isMatch) {
-                            done(new InvalidCredentialsError('Invalid credentials')); return
+                            done(new InvalidCredentialsError('Invalid credentials'))
+                            return
                         }
                         done(null, user)
                     })
-                    .catch(err => { done(err) })
+                    .catch(err => {
+                        done(err)
+                    })
             } catch (err) {
                 done(err)
             }
@@ -83,7 +83,9 @@ const configurePassport = (passport: PassportStatic): void => {
                 }
                 done(null, user)
             })
-            .catch(err => { done(err, false) })
+            .catch(err => {
+                done(err, false)
+            })
     })
 }
 

@@ -1,12 +1,8 @@
 // Third-party libraries
-import { type Request, type Response, type NextFunction } from 'express'
+import { type NextFunction, type Request, type Response } from 'express'
 
 // Own modules
-import {
-    ValidationError,
-    EventError,
-    ServerError
-} from '../utils/errors.js'
+import { EventError, ServerError, ValidationError } from '../utils/errors.js'
 import logger from '../utils/logger.js'
 
 export default (function (err: any, req: Request, res: Response, next: NextFunction): void {

@@ -1,19 +1,14 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import mongoose, { type Document, type Types, model, type Model } from 'mongoose'
+import mongoose, { type Document, model, type Model, type Types } from 'mongoose'
 import { customAlphabet } from 'nanoid'
 
 // Own modules
 import UserModel, { type IUser } from './User.js'
 import logger from '../utils/logger.js'
-import {
-    getNanoidAlphabet,
-    getNanoidLength
-} from '../utils/setupConfig.js'
-import {
-    UserNotFoundError
-} from '../utils/errors.js'
+import { getNanoidAlphabet, getNanoidLength } from '../utils/setupConfig.js'
+import { UserNotFoundError } from '../utils/errors.js'
 
 // Destructuring and global variables
 const { Schema } = mongoose
@@ -50,8 +45,26 @@ export interface IEvent extends Document {
 const eventSchema = new Schema<IEvent>({
     eventName: { type: String, required: true },
     eventDescription: { type: String },
-    startDate: { type: Date, required: true, validate: { validator: function (this: IEvent, value: Date) { return value < this.endDate }, message: 'Start date must be before end date' } },
-    endDate: { type: Date, required: true, validate: { validator: function (this: IEvent, value: Date) { return value > this.startDate }, message: 'End date must be after start date' } },
+    startDate: {
+        type: Date,
+        required: true,
+        validate: {
+            validator: function (this: IEvent, value: Date) {
+                return value < this.endDate
+            },
+            message: 'Start date must be before end date'
+        }
+    },
+    endDate: {
+        type: Date,
+        required: true,
+        validate: {
+            validator: function (this: IEvent, value: Date) {
+                return value > this.startDate
+            },
+            message: 'End date must be after start date'
+        }
+    },
     participants: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     admins: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     owner: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -64,7 +77,9 @@ const eventSchema = new Schema<IEvent>({
 
 // TODO: Users should be able to set whether they would prefer sooner dates, later dates or no preference. If they just want to meet, soonest would be most attractive. If
 // they want to travel, later dates would be cheaper.
-eventSchema.methods.generateNewEventCode = async function (this: IEvent & { constructor: Model<IEvent> }): Promise<void> {
+eventSchema.methods.generateNewEventCode = async function (this: IEvent & {
+    constructor: Model<IEvent>
+}): Promise<void> {
     let eventCode: string
     let existingEvent: IEvent | null
 
@@ -117,7 +132,9 @@ eventSchema.pre('save', async function (this: IEvent & { constructor: Model<IEve
 })
 
 // Remove event from users
-const deleteLogic = async function (this: IEvent & { constructor: Model<IEvent> }, next: mongoose.CallbackWithoutResultAndOptionalError): Promise<void> {
+const deleteLogic = async function (this: IEvent & {
+    constructor: Model<IEvent>
+}, next: mongoose.CallbackWithoutResultAndOptionalError): Promise<void> {
     try {
         // Go through all participants
         for (const participantId of this.participants) {
@@ -125,7 +142,8 @@ const deleteLogic = async function (this: IEvent & { constructor: Model<IEvent> 
             const user = await UserModel.findById(participantId).exec()
 
             if (!user) {
-                next(new UserNotFoundError('User not found')); return
+                next(new UserNotFoundError('User not found'))
+                return
             }
 
             // Remove the event from the user's events array
