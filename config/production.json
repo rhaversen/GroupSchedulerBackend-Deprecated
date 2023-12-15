@@ -1,12 +1,12 @@
 {
-    "corsOpts":{
-        "origin":"http://localhost:3000"
-    },
-    "frontend":{
-        "domain":"raindate.net"
-    },
-    "ports":{
-        "nextJs":3000,
-        "express":5000
-    }
+  "corsOpts": {
+    "origin": "http://localhost:3000"
+  },
+  "frontend": {
+    "domain": "raindate.net"
+  },
+  "ports": {
+    "nextJs": 3000,
+    "express": 5000
+  }
 }
