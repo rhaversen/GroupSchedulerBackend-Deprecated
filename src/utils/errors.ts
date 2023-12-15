@@ -36,6 +36,9 @@ export class MissingFieldsError extends ValidationError {
 export class InvalidQueryError extends ValidationError {
 }
 
+export class InvalidParametersError extends ValidationError {
+}
+
 export class UserNotConfirmedError extends ValidationError {
 }
 

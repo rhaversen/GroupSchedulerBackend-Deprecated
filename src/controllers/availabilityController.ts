@@ -6,7 +6,7 @@ import { type NextFunction, type Request, type Response } from 'express'
 // Own modules
 import AvailabilityModel, { type IAvailability } from '../models/Availability.js'
 import UserModel, { type IUser, type IUserPopulated } from '../models/User.js'
-import { MissingFieldsError } from '../utils/errors.js'
+import { InvalidParametersError, MissingFieldsError } from '../utils/errors.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Destructuring and global variables
@@ -61,11 +61,36 @@ export const newOrUpdateAvailability = asyncErrorHandler(async (req: Request, re
 })
 
 export const getAvailabilities = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { fromDate, toDate } = req.params
     const user = req.user as IUser
 
-    const populatedUser = await user.populate('availabilities') as IUserPopulated
+    // Validate date strings
+    const fromDateObj = new Date(fromDate)
+    const toDateObj = new Date(toDate)
+
+    if (Number.isNaN(fromDateObj.getTime()) || Number.isNaN(toDateObj.getTime())) {
+        next(new InvalidParametersError('Invalid date format. Please use a valid date'))
+        return
+    }
+
+    // Check if fromDate is not after toDate
+    if (fromDateObj > toDateObj) {
+        next(new InvalidParametersError('From date must not be later than To date'))
+        return
+    }
+
+    // Proceed with populating availabilities
+    const populatedUser = await user.populate({
+        path: 'availabilities',
+        match: {
+            date: {
+                $gte: fromDateObj,
+                $lte: toDateObj
+            }
+        }
+    }) as IUserPopulated
 
     const availabilities = populatedUser.availabilities
 
-    res.status(201).json(availabilities)
+    res.status(200).json(availabilities)
 })

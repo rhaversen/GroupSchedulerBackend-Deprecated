@@ -25,11 +25,11 @@ router.put('/',
 )
 
 /**
- * @route GET api/v1/users/availabilities
- * @desc Get all the users availabilities
+ * @route GET api/v1/users/availabilities/:fromDate/:toDate
+ * @desc Get the user's availability between and including the specified dates
  * @access Authenticated
  */
-router.get('/',
+router.get('/:fromDate/:toDate',
     sanitizeInput,
     ensureAuthenticated,
     getAvailabilities
