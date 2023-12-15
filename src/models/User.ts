@@ -295,7 +295,6 @@ const deleteLogic = async function (this: IUser & { constructor: Model<IUser> },
 }
 
 userSchema.pre('deleteOne', { document: true, query: false }, deleteLogic)
-userSchema.pre('findOneAndDelete', { document: true, query: false }, deleteLogic)
 userSchema.pre('deleteMany', { document: true, query: false }, deleteLogic)
 
 const UserModel = model<IUser>('User', userSchema)
