@@ -8,7 +8,7 @@ import { sanitizeInput } from '../middleware/sanitizer.js'
 import { ensureAuthenticated } from '../utils/passportConfig.js'
 
 // Controller functions
-import { getAvailabilities, newOrUpdateAvailability } from '../controllers/availabilityController.js'
+import { getAvailabilities, newOrUpdateAvailability, deleteAvailability } from '../controllers/availabilityController.js'
 
 // Destructuring and global variables
 const router = Router()
@@ -33,6 +33,16 @@ router.get('/:fromDate/:toDate',
     sanitizeInput,
     ensureAuthenticated,
     getAvailabilities
+)
+/**
+ * @route DELETE api/v1/users/availabilities/:availabilityId
+ * @desc Delete availability with the specified availabilityId
+ * @access Authenticated
+ */
+router.delete('/:availabilityId',
+    sanitizeInput,
+    ensureAuthenticated,
+    deleteAvailability
 )
 
 export default router

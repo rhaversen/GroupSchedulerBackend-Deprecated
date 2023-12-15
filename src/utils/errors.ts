@@ -42,6 +42,9 @@ export class InvalidParametersError extends ValidationError {
 export class UserNotConfirmedError extends ValidationError {
 }
 
+export class UserNotOwnerError extends ValidationError {
+}
+
 export class UserNotInEventError extends ValidationError {
     constructor (message: string) {
         super(message, 403)

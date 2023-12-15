@@ -94,3 +94,34 @@ export const getAvailabilities = asyncErrorHandler(async (req: Request, res: Res
 
     res.status(200).json(availabilities)
 })
+
+export const deleteAvailability = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const user = req.user as IUser
+    const { availabilityId } = req.params // Extracting date from request parameters
+
+    // Check if the availabilityId is included
+    if (!availabilityId) {
+        next(new InvalidParametersError('availabilityId is required'))
+        return
+    }
+
+    // Check if the availability exists
+    const availabilityToDelete = await AvailabilityModel.findById(availabilityId).exec() as IAvailability
+    if (!availabilityToDelete) {
+        next(new InvalidParametersError('Availability not found in the database'))
+        return
+    }
+
+    // Check if the availability is owned by the user
+    const populatedUser = await user.populate('availabilities') as IUserPopulated
+    const userIsOwner = populatedUser.availabilities.includes(availabilityToDelete)
+    if (!userIsOwner) {
+        next(new UserNotOwnerError('User not owner of availability'))
+        return
+    }
+
+    // Perform the deletion
+    await AvailabilityModel.findByIdAndDelete(availabilityToDelete.id)
+
+    res.status(200).json({ message: 'Availability deleted successfully.' })
+})
