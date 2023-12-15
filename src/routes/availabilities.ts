@@ -8,6 +8,9 @@ import passport from 'passport'
 import {
     sanitizeInput
 } from '../middleware/sanitizer.js'
+import { 
+    ensureAuthenticated 
+} from '../utils/passportConfig.js'
 
 // Controller functions
 import {
@@ -24,8 +27,8 @@ const router = Router()
  * @access AUTHENTICATED
 */
 router.put('/',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     newOrUpdateAvailability
 )
 
@@ -35,8 +38,8 @@ router.put('/',
  * @access AUTHENTICATED
 */
 router.get('/',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getAvailabilities
 )
 

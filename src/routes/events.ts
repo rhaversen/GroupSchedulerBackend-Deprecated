@@ -12,6 +12,9 @@ import {
 import {
     sanitizeInput
 } from '../middleware/sanitizer.js'
+import { 
+    ensureAuthenticated 
+} from '../utils/passportConfig.js'
 
 // Controller functions
 import {
@@ -37,8 +40,8 @@ const router = Router()
  * @access AUTHENTICATED
 */
 router.post('/:eventIdOrCode/new-code',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserInEvent,
     checkUserIsAuthenticatedToEdit,
@@ -51,8 +54,8 @@ router.post('/:eventIdOrCode/new-code',
  * @access AUTHENTICATED
  */
 router.get('/:eventIdOrCode',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach, // TODO: Fix double call to find event
     checkUserInEvent,
     getEventAndSend
@@ -64,8 +67,8 @@ router.get('/:eventIdOrCode',
  * @access AUTHENTICATED
  */
 router.post('/',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     createEvent
 )
 
@@ -75,8 +78,8 @@ router.post('/',
  * @access AUTHENTICATED
  */
 router.patch('/:eventIdOrCode',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserInEvent,
     checkUserIsAuthenticatedToEdit,
@@ -89,8 +92,8 @@ router.patch('/:eventIdOrCode',
  * @access AUTHENTICATED
  */
 router.put('/:eventIdOrCode/users',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     joinEvent
 )
@@ -101,8 +104,8 @@ router.put('/:eventIdOrCode/users',
  * @access AUTHENTICATED
  */
 router.delete('/:eventIdOrCode/users/:userId',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserIsAuthenticatedToEdit,
     checkUserInEvent,
@@ -115,8 +118,8 @@ router.delete('/:eventIdOrCode/users/:userId',
  * @access AUTHENTICATED
  */
 router.delete('/:eventIdOrCode/users',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserInEvent,
     leaveEvent
@@ -128,8 +131,8 @@ router.delete('/:eventIdOrCode/users',
  * @access AUTHENTICATED
  */
 router.delete('/:eventIdOrCode',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserInEvent,
     checkUserIsAuthenticatedToEdit,
@@ -142,8 +145,8 @@ router.delete('/:eventIdOrCode',
  * @access AUTHENTICATED
  */
 router.put('/:eventIdOrCode/admins/:userId',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserInEvent,
     checkUserIsAuthenticatedToEdit,
@@ -156,8 +159,8 @@ router.put('/:eventIdOrCode/admins/:userId',
  * @access AUTHENTICATED
  */
 router.delete('/:eventIdOrCode/admins/:userId',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserInEvent,
     checkUserIsAuthenticatedToEdit,
