@@ -1516,7 +1516,7 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
         expect(res.body.error).to.equal('Invalid user ID format')
-    })    
+    })
 })
 
 describe('Delete User Endpoint DELETE /v1/users/', function () {
@@ -1569,7 +1569,7 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
 
             // UserA attends Event 2
             UserModel.findByIdAndUpdate(userA._id, { $push: { events: { $each: [event2._id] } } }).exec(),
-            EventModel.findByIdAndUpdate(event2._id, { $push: { participants: { $each: [userA._id] } } }).exec(),
+            EventModel.findByIdAndUpdate(event2._id, { $push: { participants: { $each: [userA._id] } } }).exec()
         ])
 
         // Login as userA
@@ -1589,7 +1589,7 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
     })
 
     it('should successfully delete the user', async function () {
-        const res = await agent.delete(`/v1/users/`)
+        const res = await agent.delete('/v1/users/')
 
         expect(res).to.have.status(200)
         expect(res.body).to.have.property('user')
@@ -1598,33 +1598,31 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
         const deletedUser = await UserModel.findById(userA._id).exec() as IUser | null
 
         expect(deletedUser).to.be.null
-
     })
 
     it('should remove the user from their attended event', async function () {
-        await agent.delete(`/v1/users/`)
+        await agent.delete('/v1/users/')
 
         const updatedEvent1 = await EventModel.findById(event1._id).exec() as IEvent
 
         // Validate that userA is no longer part of the event
-        expect(updatedEvent1.participants).to.not.include(userA._id);
+        expect(updatedEvent1.participants).to.not.include(userA._id)
     })
 
     it('should not remove non-empty event', async function () {
-        await agent.delete(`/v1/users/`)
+        await agent.delete('/v1/users/')
 
         const updatedEvent1 = await EventModel.findById(event1._id).exec() as IEvent
 
-        expect(updatedEvent1).to.not.be.null;
+        expect(updatedEvent1).to.not.be.null
     })
 
     it('should not delete the not empty event after deletion', async function () {
-        await agent.delete(`/v1/users/`)
+        await agent.delete('/v1/users/')
 
         const notDeletedEvent = await EventModel.findById(event1._id).exec() as IEvent | null
 
         expect(notDeletedEvent).to.not.be.null
-
     })
 
     it('should be removed from the followings followers array after deletion', async function () {
@@ -1634,11 +1632,11 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
             UserModel.findByIdAndUpdate(userB.id, { $push: { followers: { $each: [userA.id] } } }).exec()
         ])
 
-        await agent.delete(`/v1/users/`)
+        await agent.delete('/v1/users/')
 
         const updatedUserB = await UserModel.findById(userB._id).exec() as IUser
 
-        expect(updatedUserB.followers).to.not.include(userA._id);
+        expect(updatedUserB.followers).to.not.include(userA._id)
     })
 
     it('should be removed from the followers following array after deletion', async function () {
@@ -1648,12 +1646,11 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
             UserModel.findByIdAndUpdate(userA.id, { $push: { followers: { $each: [userB.id] } } }).exec()
         ])
 
-        await agent.delete(`/v1/users/`)
+        await agent.delete('/v1/users/')
 
         const updatedUserB = await UserModel.findById(userB._id).exec() as IUser
 
-        expect(updatedUserB.following).to.not.include(userA._id);
-
+        expect(updatedUserB.following).to.not.include(userA._id)
     })
 
     it('should be removed from the followers following array after deletion', async function () {
@@ -1663,12 +1660,11 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
             UserModel.findByIdAndUpdate(userA.id, { $push: { followers: { $each: [userB.id] } } }).exec()
         ])
 
-        await agent.delete(`/v1/users/`)
+        await agent.delete('/v1/users/')
 
         const updatedUserB = await UserModel.findById(userB._id).exec() as IUser
 
-        expect(updatedUserB.following).to.not.include(userA._id);
-
+        expect(updatedUserB.following).to.not.include(userA._id)
     })
 
     it('should remove the users availabilities', async function () {
