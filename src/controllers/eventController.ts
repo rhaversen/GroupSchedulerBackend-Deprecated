@@ -9,7 +9,9 @@ import {
     MissingFieldsError,
     UserNotAdminError,
     EventNotFoundError,
-    InvalidEventIdOrCode
+    InvalidEventIdOrCode,
+    OwnerCantLeaveError,
+    CantKickAdminOrOwner
 } from '../utils/errors.js'
 import EventModel, { type IEvent } from '../models/Event.js'
 import UserModel, { type IUser } from '../models/User.js'
@@ -86,20 +88,13 @@ export const createEvent = asyncErrorHandler(async (req: Request, res: Response,
         eventDescription,
         startDate,
         endDate,
-        isLocked
+        adminLocked
     } = req.body
+    const user = req.user as IUser
 
     // Checks if eventName, startDate, and endDate are not falsy (e.g., undefined, null, empty string)
-    // and if isLocked is not undefined
-    if (!eventName || !startDate || !endDate || isLocked === undefined) {
-        next(new MissingFieldsError('Missing required fields')); return
-    }
-
-    const participants = req.user
-
-    let admins
-    if (isLocked === 'true') {
-        admins = participants
+    if (!eventName || !startDate || !endDate) {
+        next(new MissingFieldsError('Missing required fields: eventName, startDate or endDate')); return
     }
 
     const newEvent = new EventModel({
@@ -107,11 +102,14 @@ export const createEvent = asyncErrorHandler(async (req: Request, res: Response,
         eventDescription,
         startDate,
         endDate,
-        participants,
-        admins
+        participants: user._id,
+        owner: user._id,
+        adminLocked
     })
-
     await newEvent.save()
+
+    user.events.push(newEvent._id)
+    await user.save()
 
     res.status(201).json(newEvent)
 })
@@ -152,27 +150,14 @@ export const joinEvent = asyncErrorHandler(async (req: Request, res: Response, n
     res.status(200).json(event)
 })
 
-export const leaveEventOrKick = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const eventIdOrCode = req.params.eventIdOrCode
-    const event = await getEventByIdOrCode(eventIdOrCode)
+export const leaveEvent = asyncErrorHandler(async (req: IRequestWithEvent, res: Response, next: NextFunction): Promise<void> => {
+    const event = req.event
     const user = req.user as IUser
 
-    // The optional userId param is for kicking users out of events
-    const removedUserId = req.params.userId // Kicked users will be able to join again if the event code isn't changed
-    if (removedUserId) { // User deletion requested
-        if (!(event.isLocked() && !event.isAdmin(user._id))) { // The event is either not locked, or the user is admin
-            const removedUser = await UserModel.findById(removedUserId).exec()
-            if (removedUser) {
-                await UserModel.findByIdAndUpdate(removedUserId, { $pull: { events: event._id } }).exec()
-            }
-            await EventModel.findByIdAndUpdate(event._id, { $pull: { participants: removedUserId } }).exec()
-
-            res.status(204); return
-        } // Event is locked and user is not admin
-        next(new UserNotAdminError('Only admins can kick users')); return
+    if (event.isOwner(user.id)) {
+        next(new OwnerCantLeaveError('The owner cant leave the event. The event should instead be deleted')); return
     }
 
-    // Remove event from user's events, and user from event's participants
     await Promise.all([
         UserModel.findByIdAndUpdate(user._id, { $pull: { events: { $in: [event._id] } } }).exec(),
         EventModel.findByIdAndUpdate(event._id, { $pull: { participants: { $in: [user._id] } } }).exec()
@@ -183,7 +168,31 @@ export const leaveEventOrKick = asyncErrorHandler(async (req: Request, res: Resp
         await EventModel.findByIdAndUpdate(event._id, { $pull: { admins: user._id } }).exec()
     }
 
-    res.status(204)
+    res.status(200).json(event)
+})
+
+export const kickUserFromEvent = asyncErrorHandler(async (req: IRequestWithEvent, res: Response, next: NextFunction): Promise<void> => {
+    const event = req.event
+    const user = req.user as IUser
+    const removedUserId = req.params.userId
+
+    // Check if the user to be kicked is admin or owner
+    if (event.isAdmin(user.id) || event.isOwner(user.id)) {
+        next(new UserNotAdminError('Only admins and owners can kick users')); return
+    }
+
+    // Check if the user to be kicked is admin or owner
+    if (event.isAdmin(removedUserId) || event.isOwner(removedUserId)) {
+        next(new CantKickAdminOrOwner('The user to be kicked is either an admin or owner, and cant be kicked'))
+    }
+
+    // Remove event from user's events, and user from event's participants
+    await Promise.all([
+        UserModel.findByIdAndUpdate(removedUserId, { $pull: { events: { $in: [event._id] } } }).exec(),
+        EventModel.findByIdAndUpdate(event._id, { $pull: { participants: { $in: [removedUserId] } } }).exec()
+    ])
+
+    res.status(200).json(event)
 })
 
 export const deleteEvent = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {

@@ -7,7 +7,7 @@ import passport from 'passport'
 // Own modules
 import {
     checkUserInEvent,
-    checkUserIsAdmin
+    checkUserIsAuthenticatedToEdit
 } from '../middleware/eventUserChecks.js'
 import {
     sanitizeInput
@@ -21,7 +21,8 @@ import {
     createEvent,
     updateEvent,
     joinEvent,
-    leaveEventOrKick,
+    leaveEvent,
+    kickUserFromEvent,
     deleteEvent
 } from '../controllers/eventController.js'
 
@@ -38,7 +39,7 @@ router.post('/:eventIdOrCode/new-code',
     sanitizeInput,
     getEventAndAttach,
     checkUserInEvent,
-    checkUserIsAdmin,
+    checkUserIsAuthenticatedToEdit,
     newCode
 )
 
@@ -57,7 +58,7 @@ router.get('/:eventIdOrCode',
 
 /**
  * @route POST api/v1/events
- * @desc Create a new event, add user to event, add event to user, add user to admins if only owner can edit event
+ * @desc Create a new event, add user to event, add event to user
  * @access AUTHENTICATED
  */
 router.post('/',
@@ -76,7 +77,7 @@ router.patch('/:eventIdOrCode',
     sanitizeInput,
     getEventAndAttach,
     checkUserInEvent,
-    checkUserIsAdmin,
+    checkUserIsAuthenticatedToEdit,
     updateEvent
 )
 
@@ -93,16 +94,30 @@ router.put('/:eventIdOrCode/users',
 )
 
 /**
- * @route DELETE api/v1/events/:eventIdOrCode/users
- * @desc Leave event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
+ * @route DELETE api/v1/events/:eventIdOrCode/users/:userId
+ * @desc Kick user from event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
  * @access AUTHENTICATED
  */
 router.delete('/:eventIdOrCode/users/:userId?',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     getEventAndAttach,
+    checkUserIsAuthenticatedToEdit,
     checkUserInEvent,
-    leaveEventOrKick
+    kickUserFromEvent
+)
+
+/**
+ * @route DELETE api/v1/events/:eventIdOrCode/users
+ * @desc Leave event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
+ * @access AUTHENTICATED
+ */
+router.delete('/:eventIdOrCode/users',
+    passport.authenticate('jwt', { session: false }),
+    sanitizeInput,
+    getEventAndAttach,
+    checkUserInEvent,
+    leaveEvent
 )
 
 /**
@@ -115,7 +130,7 @@ router.delete('/:eventIdOrCode',
     sanitizeInput,
     getEventAndAttach,
     checkUserInEvent,
-    checkUserIsAdmin,
+    checkUserIsAuthenticatedToEdit,
     deleteEvent
 )
 

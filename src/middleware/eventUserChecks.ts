@@ -19,10 +19,12 @@ export function checkUserInEvent (req: Request, res: Response, next: NextFunctio
 }
 
 // Throw error if the event is locked and user is NOT admin
-export function checkUserIsAdmin (req: Request, res: Response, next: NextFunction): void {
+export function checkUserIsAuthenticatedToEdit (req: Request, res: Response, next: NextFunction): void {
     const requestWithEvent = req as IRequestWithEvent
-    if (requestWithEvent.event.isLocked() && !requestWithEvent.event.isAdmin((req.user as IUser)._id)) {
-        next(new UserNotAdminError('User not authorized to edit this event')); return
+    const userId = (req.user as IUser)._id
+    if (requestWithEvent.event.adminLocked && !(requestWithEvent.event.isOwner(userId) || requestWithEvent.event.isAdmin(userId))) {
+        next(new UserNotAdminError('User not authorized to edit this event'))
+    } else {
+        next()
     }
-    next()
 }

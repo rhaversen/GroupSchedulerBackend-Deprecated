@@ -42,6 +42,8 @@ export class InvalidEventIdOrCode extends ValidationError {}
 export class EventError extends CustomError {}
 export class EventCodeError extends EventError {}
 export class EventNotFoundError extends EventError {}
+export class OwnerCantLeaveError extends EventError {}
+export class CantKickAdminOrOwner extends EventError {}
 
 // Server errors
 export class ServerError extends CustomError {
