@@ -113,7 +113,7 @@ const deleteLogic = async function (this: IEvent & { constructor: Model<IEvent> 
             }
 
             // Remove the event from the user's events array
-            await EventModel.findOneAndDelete({ _id: this._id }).exec()
+            await EventModel.deleteOne({ _id: this._id }).exec()
 
             logger.silly('Event removed')
         }
@@ -131,7 +131,6 @@ const deleteLogic = async function (this: IEvent & { constructor: Model<IEvent> 
 }
 
 eventSchema.pre('deleteOne', { document: true, query: false }, deleteLogic)
-eventSchema.pre('findOneAndDelete', { document: true, query: false }, deleteLogic)
 eventSchema.pre('deleteMany', { document: true, query: false }, deleteLogic)
 
 // Compile the schema into a model
