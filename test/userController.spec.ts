@@ -52,8 +52,6 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
     })
 
     afterEach(async function () {
-        await EventModel.findByIdAndDelete(testEvent.id).exec()
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
         agent.close()
     })
 
@@ -101,8 +99,6 @@ describe('User Registration Endpoint POST /v1/users', function () {
     })
 
     afterEach(async function () {
-        // Remove test user if exists before running tests
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
         agent.close()
     })
 
@@ -242,8 +238,6 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
     })
 
     afterEach(async function () {
-        // Remove test user if exists before running tests
-        await UserModel.findOneAndDelete({ email: 'ToBeConfirmed@gmail.com' }).exec()
         agent.close()
     })
 
@@ -325,8 +319,6 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
     })
 
     afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
         agent.close()
     })
 
@@ -527,7 +519,6 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
     })
 
     afterEach(async function () {
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
         agent.close() // Close the agent after tests
     })
 
@@ -608,9 +599,6 @@ describe('Get User Events Endpoint GET /v1/users/events', function () {
     })
 
     afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
-        await EventModel.findByIdAndDelete(testEvent._id).exec()
         agent.close()
     })
 
@@ -660,8 +648,6 @@ describe('Generate New User Code Endpoint PUT /v1/users/new-code', function () {
     })
 
     afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'CodeTestUser@gmail.com' }).exec()
         agent.close()
     })
 
@@ -714,9 +700,6 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
     })
 
     afterEach(async function () {
-        // Cleanup: remove test users
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
         agent.close()
     })
 
@@ -833,10 +816,6 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
     })
 
     afterEach(async function () {
-        // Cleanup: remove test users
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userC@gmail.com' }).exec()
         agent.close()
     })
 
@@ -929,8 +908,6 @@ describe('Update Password Endpoint PATCH /update-password', function () {
     })
 
     afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
         agent.close()
     })
 
@@ -1049,8 +1026,6 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
     })
 
     afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
         agent.close()
     })
 
@@ -1140,8 +1115,6 @@ describe('Update Username Endpoint PATCH /update-username', function () {
     })
 
     afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
         agent.close()
     })
 
@@ -1242,10 +1215,6 @@ describe('Get Followers Endpoint GET /v1/users/followers', function () {
     })
 
     afterEach(async function () {
-        // Clean up by removing test users
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userC@gmail.com' }).exec()
         agent.close()
     })
 
@@ -1325,10 +1294,6 @@ describe('Get Following Endpoint GET /v1/users/following', function () {
     })
 
     afterEach(async function () {
-        // Clean up by removing test users
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userC@gmail.com' }).exec()
         agent.close()
     })
 
@@ -1435,13 +1400,6 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
     })
 
     afterEach(async function () {
-        // Clean up by removing test users and events
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userC@gmail.com' }).exec()
-        await EventModel.findByIdAndDelete(event1._id).exec()
-        await EventModel.findByIdAndDelete(event2._id).exec()
-        await EventModel.findByIdAndDelete(event3._id).exec()
         agent.close()
     })
 
@@ -1545,11 +1503,6 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
     })
 
     afterEach(async function () {
-        // Clean up by removing test users and events
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await EventModel.findByIdAndDelete(event1._id).exec()
-        await EventModel.findByIdAndDelete(event2._id).exec()
         agent.close()
     })
 

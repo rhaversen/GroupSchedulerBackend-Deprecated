@@ -82,11 +82,6 @@ const expressPort = getExpressPort()
     })
 
     afterEach(async function () {
-        // Clean up by removing test users and events
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await EventModel.findByIdAndDelete(event1._id).exec()
-        await EventModel.findByIdAndDelete(event2._id).exec()
         agent.close()
     })
 
