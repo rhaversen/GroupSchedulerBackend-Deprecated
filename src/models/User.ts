@@ -256,6 +256,21 @@ const deleteLogic = async function (this: IUser & { constructor: Model<IUser> },
             }, { session }).exec() // Use the session
         }
 
+        // Remove user from following followers array
+        for (const followingId of this.following) {
+            // Get the user
+            const user = await UserModel.findById(followingId).exec()
+
+            if (!user) {
+                throw new UserNotFoundError('User not found')
+            }
+
+            // Remove this user from the following followers array
+            await UserModel.findByIdAndUpdate(followingId, {
+                $pull: { followers: this._id }
+            }, { session }).exec()
+        }
+
         // Remove user from events
         for (const eventId of this.events) {
             await EventModel.findByIdAndUpdate(eventId, {
