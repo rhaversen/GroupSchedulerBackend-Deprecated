@@ -209,7 +209,6 @@ export const addUserToEventAdmins = asyncErrorHandler(async (req: IRequestWithEv
     await EventModel.findByIdAndUpdate(event._id, { $push: { admins: { $in: [addedUserId] } } }).exec()
 
     res.status(200).json(event)
-
 })
 
 export const removeUserFromEventAdmins = asyncErrorHandler(async (req: IRequestWithEvent, res: Response, next: NextFunction): Promise<void> => {
