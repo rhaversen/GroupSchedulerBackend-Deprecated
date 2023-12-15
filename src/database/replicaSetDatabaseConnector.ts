@@ -6,9 +6,7 @@ import { MongoMemoryReplSet } from 'mongodb-memory-server'
 
 // Own modules
 import logger from '../utils/logger.js'
-import {
-    getMongooseOptions
-} from '../utils/setupConfig.js'
+import { getMongooseOptions } from '../utils/setupConfig.js'
 
 // Config
 let mongooseConnection: Mongoose

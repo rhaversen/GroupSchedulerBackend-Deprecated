@@ -3,21 +3,14 @@
 // Third-party libraries
 import bcryptjsPkg from 'bcryptjs'
 import { customAlphabet } from 'nanoid'
-import mongoose, { type Document, type Types, model, type Model } from 'mongoose'
+import mongoose, { type Document, model, type Model, type Types } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
 import AvailabilityModel, { type IAvailability } from './Availability.js'
 import EventModel, { type IEvent } from './Event.js'
-import {
-    getSaltRounds,
-    getNanoidAlphabet,
-    getNanoidLength,
-    getUserExpiry
-} from '../utils/setupConfig.js'
-import {
-    UserNotFoundError
-} from '../utils/errors.js'
+import { getNanoidAlphabet, getNanoidLength, getSaltRounds, getUserExpiry } from '../utils/setupConfig.js'
+import { UserNotFoundError } from '../utils/errors.js'
 
 // Destructuring and global variables
 const { compare, hash } = bcryptjsPkg
@@ -117,7 +110,7 @@ userSchema.methods.follows = async function (candidateUser: IUser): Promise<void
         await session.abortTransaction() // If there's an error, abort the transaction
         throw error // Propagate the error
     } finally {
-        session.endSession() // End the session
+        await session.endSession() // End the session
     }
 }
 
@@ -147,12 +140,15 @@ userSchema.methods.unFollows = async function (candidateUser: IUser): Promise<vo
         await session.abortTransaction() // If there's an error, abort the transaction
         throw error // Propagate the error
     } finally {
-        session.endSession() // End the session
+        await session.endSession() // End the session
     }
 }
 
 type CodeFields = 'userCode' | 'confirmationCode' | 'passwordResetCode'
-async function generateUniqueCodeForField (this: IUser & { constructor: Model<IUser> }, field: CodeFields): Promise<string> {
+
+async function generateUniqueCodeForField (this: IUser & {
+    constructor: Model<IUser>
+}, field: CodeFields): Promise<string> {
     let generatedCode: string
     let existingUser: IUser | null
     const query: Record<string, unknown> = {}
@@ -171,11 +167,15 @@ userSchema.methods.generateNewUserCode = async function (this: IUser & { constru
     return await generateUniqueCodeForField.call(this, 'userCode')
 }
 
-userSchema.methods.generateNewConfirmationCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
+userSchema.methods.generateNewConfirmationCode = async function (this: IUser & {
+    constructor: Model<IUser>
+}): Promise<string> {
     return await generateUniqueCodeForField.call(this, 'confirmationCode')
 }
 
-userSchema.methods.generateNewPasswordResetCode = async function (this: IUser & { constructor: Model<IUser> }): Promise<string> {
+userSchema.methods.generateNewPasswordResetCode = async function (this: IUser & {
+    constructor: Model<IUser>
+}): Promise<string> {
     return await generateUniqueCodeForField.call(this, 'passwordResetCode')
 }
 
@@ -209,8 +209,8 @@ userSchema.pre('save', async function (next) {
     }
 
     if (this.confirmed) {
-        delete this.expirationDate
-        delete this.confirmationCode
+        this.expirationDate = undefined // Unset the expiration date to cancel auto-deletion
+        this.confirmationCode = undefined // Unset the confirmation code
     }
 
     if (this.isModified('email')) {
@@ -222,7 +222,8 @@ userSchema.pre('save', async function (next) {
         try {
             this.password = await hash(this.password, saltRounds) // Using a custom salt for each user
             delete this.passwordResetCode
-            next(); return
+            next()
+            return
         } catch (error) {
             if (error instanceof Error) {
                 next(error)
@@ -236,7 +237,9 @@ userSchema.pre('save', async function (next) {
     logger.silly('User saved')
 })
 
-const deleteLogic = async function (this: IUser & { constructor: Model<IUser> }, next: mongoose.CallbackWithoutResultAndOptionalError): Promise<void> {
+const deleteLogic = async function (this: IUser & {
+    constructor: Model<IUser>
+}, next: mongoose.CallbackWithoutResultAndOptionalError): Promise<void> {
     const session = await mongoose.startSession()
     session.startTransaction()
 
@@ -254,6 +257,21 @@ const deleteLogic = async function (this: IUser & { constructor: Model<IUser> },
             await UserModel.findByIdAndUpdate(followerId, {
                 $pull: { following: this._id }
             }, { session }).exec() // Use the session
+        }
+
+        // Remove user from following followers array
+        for (const followingId of this.following) {
+            // Get the user
+            const user = await UserModel.findById(followingId).exec()
+
+            if (!user) {
+                throw new UserNotFoundError('User not found')
+            }
+
+            // Remove this user from the following followers array
+            await UserModel.findByIdAndUpdate(followingId, {
+                $pull: { followers: this._id }
+            }, { session }).exec()
         }
 
         // Remove user from events
@@ -275,12 +293,11 @@ const deleteLogic = async function (this: IUser & { constructor: Model<IUser> },
         await session.abortTransaction() // Abort the transaction
         next(error)
     } finally {
-        session.endSession() // Close the session
+        await session.endSession() // Close the session
     }
 }
 
 userSchema.pre('deleteOne', { document: true, query: false }, deleteLogic)
-userSchema.pre('findOneAndDelete', { document: true, query: false }, deleteLogic)
 userSchema.pre('deleteMany', { document: true, query: false }, deleteLogic)
 
 const UserModel = model<IUser>('User', userSchema)

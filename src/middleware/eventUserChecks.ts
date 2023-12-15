@@ -1,11 +1,8 @@
 // Third-party libraries
-import { type Request, type Response, type NextFunction } from 'express'
+import { type NextFunction, type Request, type Response } from 'express'
 
 // Own modules
-import {
-    UserNotInEventError,
-    UserNotAdminError
-} from '../utils/errors.js'
+import { UserNotAdminError, UserNotInEventError } from '../utils/errors.js'
 import { type IRequestWithEvent } from '../controllers/eventController.js'
 import { type IUser } from '../models/User.js'
 
@@ -13,16 +10,19 @@ import { type IUser } from '../models/User.js'
 export function checkUserInEvent (req: Request, res: Response, next: NextFunction): void {
     const requestWithEvent = req as IRequestWithEvent
     if (!requestWithEvent.event.participants.includes((req.user as IUser)._id)) {
-        next(new UserNotInEventError('User not authorized to view this event')); return
+        next(new UserNotInEventError('User not authorized to view this event'))
+        return
     }
     next()
 }
 
 // Throw error if the event is locked and user is NOT admin
-export function checkUserIsAdmin (req: Request, res: Response, next: NextFunction): void {
+export function checkUserIsAuthenticatedToEdit (req: Request, res: Response, next: NextFunction): void {
     const requestWithEvent = req as IRequestWithEvent
-    if (requestWithEvent.event.isLocked() && !requestWithEvent.event.isAdmin((req.user as IUser)._id)) {
-        next(new UserNotAdminError('User not authorized to edit this event')); return
+    const userId = (req.user as IUser)._id
+    if (requestWithEvent.event.adminLocked && !(requestWithEvent.event.isOwner(userId) || requestWithEvent.event.isAdmin(userId))) {
+        next(new UserNotAdminError('User not authorized to edit this event'))
+    } else {
+        next()
     }
-    next()
 }

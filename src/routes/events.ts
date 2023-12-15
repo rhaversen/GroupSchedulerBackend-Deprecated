@@ -2,27 +2,25 @@
 
 // Third-party libraries
 import Router from 'express'
-import passport from 'passport'
 
 // Own modules
-import {
-    checkUserInEvent,
-    checkUserIsAdmin
-} from '../middleware/eventUserChecks.js'
-import {
-    sanitizeInput
-} from '../middleware/sanitizer.js'
+import { checkUserInEvent, checkUserIsAuthenticatedToEdit } from '../middleware/eventUserChecks.js'
+import { sanitizeInput } from '../middleware/sanitizer.js'
+import { ensureAuthenticated } from '../utils/passportConfig.js'
 
 // Controller functions
 import {
-    newCode,
-    getEventAndSend,
-    getEventAndAttach,
+    addUserToEventAdmins,
     createEvent,
-    updateEvent,
+    deleteEvent,
+    getEventAndAttach,
+    getEventAndSend,
     joinEvent,
-    leaveEventOrKick,
-    deleteEvent
+    kickUserFromEvent,
+    leaveEvent,
+    newCode,
+    removeUserFromEventAdmins,
+    updateEvent
 } from '../controllers/eventController.js'
 
 // Destructuring and global variables
@@ -31,25 +29,25 @@ const router = Router()
 /**
  * @route POST api/v1/events/:eventIdOrCode/new-code
  * @desc Update event with a random event code
- * @access AUTHENTICATED
-*/
+ * @access Authenticated
+ */
 router.post('/:eventIdOrCode/new-code',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserInEvent,
-    checkUserIsAdmin,
+    checkUserIsAuthenticatedToEdit,
     newCode
 )
 
 /**
  * @route GET api/v1/events/:eventId
  * @desc Get event from eventId
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.get('/:eventIdOrCode',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach, // TODO: Fix double call to find event
     checkUserInEvent,
     getEventAndSend
@@ -57,66 +55,108 @@ router.get('/:eventIdOrCode',
 
 /**
  * @route POST api/v1/events
- * @desc Create a new event, add user to event, add event to user, add user to admins if only owner can edit event
- * @access AUTHENTICATED
+ * @desc Create a new event, add user to event, add event to user
+ * @access Authenticated
  */
 router.post('/',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     createEvent
 )
 
 /**
  * @route PATCH api/v1/events/:eventIdOrCode
  * @desc Update event with provided info
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.patch('/:eventIdOrCode',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserInEvent,
-    checkUserIsAdmin,
+    checkUserIsAuthenticatedToEdit,
     updateEvent
 )
 
 /**
  * @route PUT /api/v1/events/:eventIdOrCode/users
  * @desc Join event. Add userId to event, add eventId to user
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.put('/:eventIdOrCode/users',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     joinEvent
 )
 
 /**
+ * @route DELETE api/v1/events/:eventIdOrCode/users/:userId
+ * @desc Kick user from event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
+ * @access Authenticated
+ */
+router.delete('/:eventIdOrCode/users/:userId',
+    sanitizeInput,
+    ensureAuthenticated,
+    getEventAndAttach,
+    checkUserIsAuthenticatedToEdit,
+    checkUserInEvent,
+    kickUserFromEvent
+)
+
+/**
  * @route DELETE api/v1/events/:eventIdOrCode/users
  * @desc Leave event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
- * @access AUTHENTICATED
+ * @access Authenticated
  */
-router.delete('/:eventIdOrCode/users/:userId?',
-    passport.authenticate('jwt', { session: false }),
+router.delete('/:eventIdOrCode/users',
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserInEvent,
-    leaveEventOrKick
+    leaveEvent
 )
 
 /**
  * @route DELETE api/v1/events/:eventIdOrCode
  * @desc Remove event for all users
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.delete('/:eventIdOrCode',
-    passport.authenticate('jwt', { session: false }),
     sanitizeInput,
+    ensureAuthenticated,
     getEventAndAttach,
     checkUserInEvent,
-    checkUserIsAdmin,
+    checkUserIsAuthenticatedToEdit,
     deleteEvent
+)
+
+/**
+ * @route PUT api/v1/events/:eventIdOrCode/admins/:userId
+ * @desc Add admin to event
+ * @access Authenticated
+ */
+router.put('/:eventIdOrCode/admins/:userId',
+    sanitizeInput,
+    ensureAuthenticated,
+    getEventAndAttach,
+    checkUserInEvent,
+    checkUserIsAuthenticatedToEdit,
+    addUserToEventAdmins
+)
+
+/**
+ * @route DELETE api/v1/events/:eventIdOrCode/admins/:userId
+ * @desc Remove admin from event
+ * @access Authenticated
+ */
+router.delete('/:eventIdOrCode/admins/:userId',
+    sanitizeInput,
+    ensureAuthenticated,
+    getEventAndAttach,
+    checkUserInEvent,
+    checkUserIsAuthenticatedToEdit,
+    removeUserFromEventAdmins
 )
 
 export default router

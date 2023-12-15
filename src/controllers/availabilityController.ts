@@ -1,14 +1,12 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { type Request, type Response, type NextFunction } from 'express'
+import { type NextFunction, type Request, type Response } from 'express'
 
 // Own modules
 import AvailabilityModel, { type IAvailability } from '../models/Availability.js'
-import UserModel, { type IUserPopulated, type IUser } from '../models/User.js'
-import {
-    MissingFieldsError
-} from '../utils/errors.js'
+import UserModel, { type IUser, type IUserPopulated } from '../models/User.js'
+import { MissingFieldsError } from '../utils/errors.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Destructuring and global variables
@@ -26,7 +24,8 @@ export const newOrUpdateAvailability = asyncErrorHandler(async (req: Request, re
 
     // Checks if description, date, status and preference are not falsy (e.g., undefined, null, empty string)
     if (!availabilityId || !startDate || !endDate || !status) {
-        next(new MissingFieldsError('Missing required field(s): "availabilityId", "startDate", "endDate" or "status" ')); return
+        next(new MissingFieldsError('Missing required field(s): "availabilityId", "startDate", "endDate" or "status" '))
+        return
     }
 
     // Check if user already has a availability set for this date
@@ -42,7 +41,8 @@ export const newOrUpdateAvailability = asyncErrorHandler(async (req: Request, re
         existingAvailability.status = status
         existingAvailability.preference = preference || existingAvailability.preference
         const savedAvailability = await existingAvailability.save()
-        res.status(201).json(savedAvailability); return
+        res.status(201).json(savedAvailability)
+        return
     } // Availability is new, all fields are therefore required
 
     const newAvailability = new AvailabilityModel({

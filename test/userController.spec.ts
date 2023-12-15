@@ -12,11 +12,7 @@ import { parse } from 'cookie'
 import logger from '../src/utils/logger.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
-import {
-    getSessionExpiry,
-    getSessionPersistentExpiry,
-    getExpressPort
-} from '../src/utils/setupConfig.js'
+import { getExpressPort, getSessionExpiry, getSessionPersistentExpiry } from '../src/utils/setupConfig.js'
 import { isMemoryDatabase } from '../src/database/databaseHandler.js'
 
 chai.use(chaiHttp)
@@ -38,7 +34,9 @@ async function getCSRFToken (agent: ChaiHttp.Agent) {
 async function cleanDatabase () {
     /// ////////////////////////////////////////////
     /// ///////////////////////////////////////////
-    if (!isMemoryDatabase()) { return }
+    if (!isMemoryDatabase()) {
+        return
+    }
     /// ////////////////////////////////////////////
     /// ///////////////////////////////////////////
     try {
@@ -128,7 +126,12 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
 })
 
 describe('User Registration Endpoint POST /v1/users', function () {
-    const testUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword' }
+    const testUser = {
+        username: 'Test User',
+        email: 'testuser@gmail.com',
+        password: 'testpassword',
+        confirmPassword: 'testpassword'
+    }
     let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
@@ -1516,5 +1519,158 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
         expect(res.body.error).to.equal('Invalid user ID format')
+    })
+})
+
+describe('Delete User Endpoint DELETE /v1/users/', function () {
+    let userA: IUser, userB: IUser
+    let event1: IEvent, event2: IEvent
+    let agent: ChaiHttp.Agent
+
+    beforeEach(async function () {
+        agent = chai.request.agent(server.app)
+
+        // Create two test users: A and B
+        userA = new UserModel({
+            username: 'UserA',
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        })
+        userA.confirmUser()
+        await userA.save()
+
+        userB = new UserModel({
+            username: 'UserB',
+            email: 'userB@gmail.com',
+            password: 'passwordB'
+        })
+        userB.confirmUser()
+        await userB.save()
+
+        // Create three test events
+        event1 = new EventModel({
+            eventName: 'Event 1',
+            startDate: new Date('2023-01-01'),
+            endDate: new Date('2023-01-02')
+        })
+        await event1.save()
+
+        event2 = new EventModel({
+            eventName: 'Event 2',
+            startDate: new Date('2023-01-01'),
+            endDate: new Date('2023-01-02')
+        })
+        await event2.save()
+
+        // Assign events to users
+        await Promise.all([
+            // UserA and UserB attends Event 1
+            UserModel.findByIdAndUpdate(userA._id, { $push: { events: { $each: [event1._id] } } }).exec(),
+            UserModel.findByIdAndUpdate(userB._id, { $push: { events: { $each: [event1._id] } } }).exec(),
+            EventModel.findByIdAndUpdate(event1._id, { $push: { participants: { $each: [userA._id] } } }).exec(),
+            EventModel.findByIdAndUpdate(event1._id, { $push: { participants: { $each: [userB._id] } } }).exec(),
+
+            // UserA attends Event 2
+            UserModel.findByIdAndUpdate(userA._id, { $push: { events: { $each: [event2._id] } } }).exec(),
+            EventModel.findByIdAndUpdate(event2._id, { $push: { participants: { $each: [userA._id] } } }).exec()
+        ])
+
+        // Login as userA
+        await agent.post('/v1/users/login-local').send({
+            email: 'userA@gmail.com',
+            password: 'passwordA'
+        })
+    })
+
+    afterEach(async function () {
+        // Clean up by removing test users and events
+        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
+        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
+        await EventModel.findByIdAndDelete(event1._id).exec()
+        await EventModel.findByIdAndDelete(event2._id).exec()
+        agent.close()
+    })
+
+    it('should successfully delete the user', async function () {
+        const res = await agent.delete('/v1/users/')
+
+        expect(res).to.have.status(200)
+        expect(res.body).to.have.property('user')
+        expect(res.body.user._id).to.be.equal(userA.id)
+
+        const deletedUser = await UserModel.findById(userA._id).exec() as IUser | null
+
+        expect(deletedUser).to.be.null
+    })
+
+    it('should remove the user from their attended event', async function () {
+        await agent.delete('/v1/users/')
+
+        const updatedEvent1 = await EventModel.findById(event1._id).exec() as IEvent
+
+        // Validate that userA is no longer part of the event
+        expect(updatedEvent1.participants).to.not.include(userA._id)
+    })
+
+    it('should not remove non-empty event', async function () {
+        await agent.delete('/v1/users/')
+
+        const updatedEvent1 = await EventModel.findById(event1._id).exec() as IEvent
+
+        expect(updatedEvent1).to.not.be.null
+    })
+
+    it('should not delete the not empty event after deletion', async function () {
+        await agent.delete('/v1/users/')
+
+        const notDeletedEvent = await EventModel.findById(event1._id).exec() as IEvent | null
+
+        expect(notDeletedEvent).to.not.be.null
+    })
+
+    it('should be removed from the followings followers array after deletion', async function () {
+        // userA follows userB
+        await Promise.all([
+            UserModel.findByIdAndUpdate(userA._id, { $push: { following: { $each: [userB.id] } } }).exec(),
+            UserModel.findByIdAndUpdate(userB.id, { $push: { followers: { $each: [userA.id] } } }).exec()
+        ])
+
+        await agent.delete('/v1/users/')
+
+        const updatedUserB = await UserModel.findById(userB._id).exec() as IUser
+
+        expect(updatedUserB.followers).to.not.include(userA._id)
+    })
+
+    it('should be removed from the followers following array after deletion', async function () {
+        // userB follows userA
+        await Promise.all([
+            UserModel.findByIdAndUpdate(userB._id, { $push: { following: { $each: [userA.id] } } }).exec(),
+            UserModel.findByIdAndUpdate(userA.id, { $push: { followers: { $each: [userB.id] } } }).exec()
+        ])
+
+        await agent.delete('/v1/users/')
+
+        const updatedUserB = await UserModel.findById(userB._id).exec() as IUser
+
+        expect(updatedUserB.following).to.not.include(userA._id)
+    })
+
+    it('should be removed from the followers following array after deletion', async function () {
+        // userB follows userA
+        await Promise.all([
+            UserModel.findByIdAndUpdate(userB._id, { $push: { following: { $each: [userA.id] } } }).exec(),
+            UserModel.findByIdAndUpdate(userA.id, { $push: { followers: { $each: [userB.id] } } }).exec()
+        ])
+
+        await agent.delete('/v1/users/')
+
+        const updatedUserB = await UserModel.findById(userB._id).exec() as IUser
+
+        expect(updatedUserB.following).to.not.include(userA._id)
+    })
+
+    it('should remove the users availabilities', async function () {
+        // TODO:
     })
 })

@@ -19,9 +19,9 @@ module.exports = {
     },
     "settings": {
         'import/resolver': {
-          node: {
-            paths: ['./eslint-rules']
-          }
+            node: {
+                paths: ['./eslint-rules']
+            }
         },
-    }    
+    }
 }

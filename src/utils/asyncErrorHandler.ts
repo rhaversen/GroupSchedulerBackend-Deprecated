@@ -1,5 +1,5 @@
 // Third-party libraries
-import { type RequestHandler, type Request, type Response, type NextFunction } from 'express'
+import { type NextFunction, type Request, type RequestHandler, type Response } from 'express'
 
 type AsyncMiddleware<TRequest = Request> = (req: TRequest, res: Response, next: NextFunction) => Promise<void>
 

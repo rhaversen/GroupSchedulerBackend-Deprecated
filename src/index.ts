@@ -10,21 +10,20 @@ import helmet from 'helmet'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
-import MongoStore from 'connect-mongo'
 
 // Own modules
 import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
-import { initializeDatabaseConnection, closeDatabaseConnection, mongoose } from './database/databaseHandler.js'
+import { closeDatabaseConnection, initializeDatabaseConnection } from './database/databaseHandler.js'
 // import csrfProtection from './utils/csrfProtection.js';
 import {
+    getCorsOptions,
+    getExpressPort,
     getHelmetCSP,
     getHelmetHSTS,
-    getCorsOptions,
     getRelaxedApiLimiterConfig,
-    getSensitiveApiLimiterConfig,
-    getExpressPort
+    getSensitiveApiLimiterConfig
 } from './utils/setupConfig.js'
 import loadVaultSecrets from './utils/vault.js'
 

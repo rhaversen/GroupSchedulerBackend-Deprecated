@@ -3,7 +3,7 @@ import logger from './logger.js'
 
 async function deleteEmptyEvents (): Promise<void> {
     try {
-    // Find and delete events with no participants (adjust the condition as needed)
+        // Find and delete events with no participants (adjust the condition as needed)
         await EventModel.deleteMany({ participants: { $size: 0 } }).exec()
         logger.info('Empty events deleted successfully')
     } catch (error) {

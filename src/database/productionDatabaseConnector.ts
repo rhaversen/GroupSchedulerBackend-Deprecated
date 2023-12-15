@@ -5,11 +5,7 @@ import mongoose, { type Mongoose } from 'mongoose'
 
 // Own modules
 import logger from '../utils/logger.js'
-import {
-    getMongooseOptions,
-    getMaxRetryAttempts,
-    getRetryInterval
-} from '../utils/setupConfig.js'
+import { getMaxRetryAttempts, getMongooseOptions, getRetryInterval } from '../utils/setupConfig.js'
 
 // Config
 let mongooseConnection: Mongoose

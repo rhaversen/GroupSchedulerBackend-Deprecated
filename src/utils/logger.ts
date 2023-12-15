@@ -1,5 +1,5 @@
 // Node.js built-in modules
-import { join, dirname } from 'path'
+import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { Logtail } from '@logtail/node'
 
@@ -53,25 +53,25 @@ function logToWinston (level: string, ...messages: any[]) {
     switch (level) {
         case 'error':
             winstonLogger.error(combinedMessage)
-        break;
+            break;
         case 'warn':
             winstonLogger.warn(combinedMessage)
-        break;
+            break;
         case 'info':
             winstonLogger.info(combinedMessage)
-        break;
+            break;
         case 'http':
             winstonLogger.http(combinedMessage)
-        break;
+            break;
         case 'verbose':
             winstonLogger.verbose(combinedMessage)
-        break;
+            break;
         case 'debug':
             winstonLogger.debug(combinedMessage)
-        break;
+            break;
         case 'silly':
             winstonLogger.silly(combinedMessage)
-        break;
+            break;
     }
 }
 
@@ -88,30 +88,45 @@ function logToBetterStack (level: string, ...messages: any[]) {
     switch (level) {
         case 'error':
             betterStackLogger.error(combinedMessage)
-        break;
+            break;
         case 'warn':
             betterStackLogger.warn(combinedMessage)
-        break;
+            break;
         case 'info':
             betterStackLogger.info(combinedMessage)
-        break;
+            break;
         default:
             betterStackLogger.debug(combinedMessage)
     }
 }
+
 function log (level: string, ...messages: any[]) {
     logToBetterStack(level, messages)
     logToWinston(level, messages)
 }
 
 const logger = {
-    error: (...messages: any[]) => { log('error', ...messages) },
-    warn: (...messages: any[]) => { log('warn', ...messages) },
-    info: (...messages: any[]) => { log('info', ...messages) },
-    http: (...messages: any[]) => { log('http', ...messages) },
-    verbose: (...messages: any[]) => { log('verbose', ...messages) },
-    debug: (...messages: any[]) => { log('debug', ...messages) },
-    silly: (...messages: any[]) => { log('silly', ...messages) }
+    error: (...messages: any[]) => {
+        log('error', ...messages)
+    },
+    warn: (...messages: any[]) => {
+        log('warn', ...messages)
+    },
+    info: (...messages: any[]) => {
+        log('info', ...messages)
+    },
+    http: (...messages: any[]) => {
+        log('http', ...messages)
+    },
+    verbose: (...messages: any[]) => {
+        log('verbose', ...messages)
+    },
+    debug: (...messages: any[]) => {
+        log('debug', ...messages)
+    },
+    silly: (...messages: any[]) => {
+        log('silly', ...messages)
+    }
 }
 
 export default logger
