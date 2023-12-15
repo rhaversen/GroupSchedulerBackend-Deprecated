@@ -26,7 +26,7 @@ router.put('/',
 
 /**
  * @route GET api/v1/users/availabilities/:fromDate/:toDate
- * @desc Get the user's availability between and including the specified dates
+ * @desc Get the user's availabilities between and including the specified dates
  * @access Authenticated
  */
 router.get('/:fromDate/:toDate',
@@ -34,6 +34,7 @@ router.get('/:fromDate/:toDate',
     ensureAuthenticated,
     getAvailabilities
 )
+
 /**
  * @route DELETE api/v1/users/availabilities/:availabilityId
  * @desc Delete availability with the specified availabilityId
