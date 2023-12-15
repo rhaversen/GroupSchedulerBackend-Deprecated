@@ -37,7 +37,7 @@ const router = Router()
 /**
  * @route POST api/v1/events/:eventIdOrCode/new-code
  * @desc Update event with a random event code
- * @access AUTHENTICATED
+ * @access Authenticated
 */
 router.post('/:eventIdOrCode/new-code',
     sanitizeInput,
@@ -51,7 +51,7 @@ router.post('/:eventIdOrCode/new-code',
 /**
  * @route GET api/v1/events/:eventId
  * @desc Get event from eventId
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.get('/:eventIdOrCode',
     sanitizeInput,
@@ -64,7 +64,7 @@ router.get('/:eventIdOrCode',
 /**
  * @route POST api/v1/events
  * @desc Create a new event, add user to event, add event to user
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.post('/',
     sanitizeInput,
@@ -75,7 +75,7 @@ router.post('/',
 /**
  * @route PATCH api/v1/events/:eventIdOrCode
  * @desc Update event with provided info
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.patch('/:eventIdOrCode',
     sanitizeInput,
@@ -89,7 +89,7 @@ router.patch('/:eventIdOrCode',
 /**
  * @route PUT /api/v1/events/:eventIdOrCode/users
  * @desc Join event. Add userId to event, add eventId to user
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.put('/:eventIdOrCode/users',
     sanitizeInput,
@@ -101,7 +101,7 @@ router.put('/:eventIdOrCode/users',
 /**
  * @route DELETE api/v1/events/:eventIdOrCode/users/:userId
  * @desc Kick user from event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.delete('/:eventIdOrCode/users/:userId',
     sanitizeInput,
@@ -115,7 +115,7 @@ router.delete('/:eventIdOrCode/users/:userId',
 /**
  * @route DELETE api/v1/events/:eventIdOrCode/users
  * @desc Leave event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.delete('/:eventIdOrCode/users',
     sanitizeInput,
@@ -128,7 +128,7 @@ router.delete('/:eventIdOrCode/users',
 /**
  * @route DELETE api/v1/events/:eventIdOrCode
  * @desc Remove event for all users
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.delete('/:eventIdOrCode',
     sanitizeInput,
@@ -142,7 +142,7 @@ router.delete('/:eventIdOrCode',
 /**
  * @route PUT api/v1/events/:eventIdOrCode/admins/:userId
  * @desc Add admin to event
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.put('/:eventIdOrCode/admins/:userId',
     sanitizeInput,
@@ -156,7 +156,7 @@ router.put('/:eventIdOrCode/admins/:userId',
 /**
  * @route DELETE api/v1/events/:eventIdOrCode/admins/:userId
  * @desc Remove admin from event
- * @access AUTHENTICATED
+ * @access Authenticated
  */
 router.delete('/:eventIdOrCode/admins/:userId',
     sanitizeInput,

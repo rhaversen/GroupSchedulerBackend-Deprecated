@@ -24,7 +24,7 @@ const router = Router()
 /**
  * @route PUT api/v1/users/availabilities
  * @desc Create a new availability or update existing if the date is the same.
- * @access AUTHENTICATED
+ * @access Authenticated
 */
 router.put('/',
     sanitizeInput,
@@ -35,7 +35,7 @@ router.put('/',
 /**
  * @route GET api/v1/users/availabilities
  * @desc Get all the users availabilities
- * @access AUTHENTICATED
+ * @access Authenticated
 */
 router.get('/',
     sanitizeInput,

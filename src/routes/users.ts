@@ -34,7 +34,7 @@ const router = Router()
 /**
  * @route GET api/v1/users/current-user
  * @desc Get user document
- * @access Public
+ * @access Authenticated
  */
 router.get('/current-user',
     sanitizeInput,
