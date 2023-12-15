@@ -1,17 +1,14 @@
 // Third-party libraries
-import chai from 'chai'
-import chaiHttp from 'chai-http'
 import { parse } from 'cookie'
 
 // Own modules
-import logger from '../src/utils/logger.js'
-import server from './testSetup.js'
+import server, { agent, chai } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
 import { getExpressPort, getSessionExpiry, getSessionPersistentExpiry } from '../src/utils/setupConfig.js'
+import logger from '../src/utils/logger.js'
 
 // Global variables and setup
-chai.use(chaiHttp)
 const { expect } = chai
 
 // Configs
