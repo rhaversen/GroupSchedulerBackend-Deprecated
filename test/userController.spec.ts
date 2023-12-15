@@ -1,63 +1,25 @@
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
 // Third-party libraries
 import chai from 'chai'
 import chaiHttp from 'chai-http'
 import { parse } from 'cookie'
 
 // Own modules
-import logger from '../src/utils/logger.js'
+import server from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
 import { getExpressPort, getSessionExpiry, getSessionPersistentExpiry } from '../src/utils/setupConfig.js'
-import { isMemoryDatabase } from '../src/database/databaseHandler.js'
 
+// Global variables and setup
 chai.use(chaiHttp)
 const { expect } = chai
-
-const server = await import('../src/index.js')
 
 // Configs
 const sessionExpiry = getSessionExpiry()
 const sessionPersistentExpiry = getSessionPersistentExpiry()
 const expressPort = getExpressPort()
-
-async function getCSRFToken (agent: ChaiHttp.Agent) {
-    const res = await agent.get('/csrf-token')
-    logger.silly(res.body.csrfToken)
-    return res.body.csrfToken
-}
-
-async function cleanDatabase () {
-    /// ////////////////////////////////////////////
-    /// ///////////////////////////////////////////
-    if (!isMemoryDatabase()) {
-        return
-    }
-    /// ////////////////////////////////////////////
-    /// ///////////////////////////////////////////
-    try {
-        await UserModel.collection.dropIndexes()
-        await EventModel.collection.dropIndexes()
-        logger.silly('Indexes dropped successfully')
-    } catch (error: any) {
-        logger.error('Error dropping indexes:', error ? error.message || error : 'Unknown error')
-    }
-}
-
-beforeEach(async function () {
-})
-
-afterEach(async function () {
-    await cleanDatabase()
-})
-
-after(function () {
-    server.shutDown()
-})
 
 describe('Get Current User Endpoint GET /v1/users/current-user', function () {
     let agent: ChaiHttp.Agent
