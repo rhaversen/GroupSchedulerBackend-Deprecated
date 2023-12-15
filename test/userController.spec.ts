@@ -214,7 +214,6 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
         })
         savedUser = await newUser.save()
         confirmationCode = savedUser.confirmationCode!
-
     })
 
     it('should confirm a user', async function () {
@@ -289,7 +288,6 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
         })
         registeredUser.confirmUser()
         await registeredUser.save()
-
     })
 
     it('should successfully login a user', async function () {
@@ -1094,7 +1092,6 @@ describe('Get Followers Endpoint GET /v1/users/followers', function () {
     let userA: IUser, userB: IUser, userC: IUser
 
     beforeEach(async function () {
-
         // Create three test users: A, B, and C
         userA = new UserModel({
             username: 'UserA',
@@ -1167,7 +1164,6 @@ describe('Get Following Endpoint GET /v1/users/following', function () {
     let userA: IUser, userB: IUser, userC: IUser
 
     beforeEach(async function () {
-
         // Create three test users: A, B, and C
         userA = new UserModel({
             username: 'UserA',
@@ -1241,7 +1237,6 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
     let event1: IEvent, event2: IEvent, event3: IEvent
 
     beforeEach(async function () {
-
         // Create two test users: A and B
         userA = new UserModel({
             username: 'UserA',
@@ -1355,7 +1350,6 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
     let event1: IEvent, event2: IEvent
 
     beforeEach(async function () {
-
         // Create two test users: A and B
         userA = new UserModel({
             username: 'UserA',
