@@ -110,7 +110,7 @@ userSchema.methods.follows = async function (candidateUser: IUser): Promise<void
         await session.abortTransaction() // If there's an error, abort the transaction
         throw error // Propagate the error
     } finally {
-        session.endSession() // End the session
+        await session.endSession() // End the session
     }
 }
 
@@ -140,7 +140,7 @@ userSchema.methods.unFollows = async function (candidateUser: IUser): Promise<vo
         await session.abortTransaction() // If there's an error, abort the transaction
         throw error // Propagate the error
     } finally {
-        session.endSession() // End the session
+        await session.endSession() // End the session
     }
 }
 
@@ -293,7 +293,7 @@ const deleteLogic = async function (this: IUser & {
         await session.abortTransaction() // Abort the transaction
         next(error)
     } finally {
-        session.endSession() // Close the session
+        await session.endSession() // Close the session
     }
 }
 
