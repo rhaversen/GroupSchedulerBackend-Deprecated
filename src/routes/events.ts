@@ -98,7 +98,7 @@ router.put('/:eventIdOrCode/users',
  * @desc Kick user from event. Remove user from event, remove event from user. Empty events are deleted automatically in Event.js
  * @access AUTHENTICATED
  */
-router.delete('/:eventIdOrCode/users/:userId?',
+router.delete('/:eventIdOrCode/users/:userId',
     passport.authenticate('jwt', { session: false }),
     sanitizeInput,
     getEventAndAttach,
