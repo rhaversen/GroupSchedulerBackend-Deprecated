@@ -96,6 +96,20 @@ eventSchema.pre('save', async function (this: IEvent & { constructor: Model<IEve
         this.eventCode = eventCode
     }
 
+    try {
+        if (this.participants.length === 0) {
+          await this.deleteOne();
+        }
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            next(error)
+        } else {
+            // Log or handle the error as it's not of type Error
+            logger.error('An unexpected error occurred:', error)
+            next() // You can call next without an argument, as the error is optional
+        }
+    }
+
     logger.silly('Event saved')
     next()
 })
