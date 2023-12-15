@@ -199,5 +199,24 @@ export const deleteEvent = asyncErrorHandler(async (req: Request, res: Response,
     const eventIdOrCode = req.params.eventIdOrCode
     const event = await getEventByIdOrCode(eventIdOrCode)
     EventModel.findByIdAndDelete(event._id)
-    res.status(204)
+    res.status(204).json(event)
+})
+
+export const addUserToEventAdmins = asyncErrorHandler(async (req: IRequestWithEvent, res: Response, next: NextFunction): Promise<void> => {
+    const event = req.event
+    const addedUserId = req.params.userId
+
+    await EventModel.findByIdAndUpdate(event._id, { $push: { admins: { $in: [addedUserId] } } }).exec()
+
+    res.status(200).json(event)
+
+})
+
+export const removeUserFromEventAdmins = asyncErrorHandler(async (req: IRequestWithEvent, res: Response, next: NextFunction): Promise<void> => {
+    const event = req.event
+    const removedUserId = req.params.userId
+
+    await EventModel.findByIdAndUpdate(event._id, { $pull: { admins: { $in: [removedUserId] } } }).exec()
+
+    res.status(200).json(event)
 })

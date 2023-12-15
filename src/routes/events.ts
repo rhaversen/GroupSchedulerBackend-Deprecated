@@ -23,7 +23,9 @@ import {
     joinEvent,
     leaveEvent,
     kickUserFromEvent,
-    deleteEvent
+    deleteEvent,
+    addUserToEventAdmins,
+    removeUserFromEventAdmins
 } from '../controllers/eventController.js'
 
 // Destructuring and global variables
@@ -132,6 +134,34 @@ router.delete('/:eventIdOrCode',
     checkUserInEvent,
     checkUserIsAuthenticatedToEdit,
     deleteEvent
+)
+
+/**
+ * @route PUT api/v1/events/:eventIdOrCode/admins/:userId
+ * @desc Add admin to event
+ * @access AUTHENTICATED
+ */
+router.put('/:eventIdOrCode/admins/:userId',
+    passport.authenticate('jwt', { session: false }),
+    sanitizeInput,
+    getEventAndAttach,
+    checkUserInEvent,
+    checkUserIsAuthenticatedToEdit,
+    addUserToEventAdmins
+)
+
+/**
+ * @route DELETE api/v1/events/:eventIdOrCode/admins/:userId
+ * @desc Remove admin from event
+ * @access AUTHENTICATED
+ */
+router.delete('/:eventIdOrCode/admins/:userId',
+    passport.authenticate('jwt', { session: false }),
+    sanitizeInput,
+    getEventAndAttach,
+    checkUserInEvent,
+    checkUserIsAuthenticatedToEdit,
+    removeUserFromEventAdmins
 )
 
 export default router
