@@ -5,7 +5,7 @@ import { type NextFunction, type Request, type Response } from 'express'
 
 // Own modules
 import {
-    CantKickAdminOrOwner,
+    CantKickAdminOrOwnerError,
     EventNotFoundError,
     InvalidEventIdOrCode,
     MissingFieldsError,
@@ -183,7 +183,7 @@ export const kickUserFromEvent = asyncErrorHandler(async (req: IRequestWithEvent
 
     // Check if the user to be kicked is admin or owner
     if (event.isAdmin(removedUserId) || event.isOwner(removedUserId)) {
-        next(new CantKickAdminOrOwner('The user to be kicked is either an admin or owner, and cant be kicked'))
+        next(new CantKickAdminOrOwnerError('The user to be kicked is either an admin or owner, and cant be kicked'))
     }
 
     // Remove event from user's events, and user from event's participants

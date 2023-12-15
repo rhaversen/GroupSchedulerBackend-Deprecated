@@ -73,7 +73,7 @@ export class EventNotFoundError extends EventError {
 export class OwnerCantLeaveError extends EventError {
 }
 
-export class CantKickAdminOrOwner extends EventError {
+export class CantKickAdminOrOwnerError extends EventError {
 }
 
 // Server errors
