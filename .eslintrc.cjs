@@ -13,7 +13,7 @@ module.exports = {
         "project": "./tsconfig.json"
     },
     "rules": {
-        "indent": ["error", 4],
+        "indent": ["error", 4, { "SwitchCase": 1 }],
         "@typescript-eslint/indent": ["error", 4],
         "@typescript-eslint/no-unused-expressions": "off",
         "@typescript-eslint/no-unused-vars": "warn"
