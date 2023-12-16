@@ -37,8 +37,14 @@ async function cleanDatabase () {
         await EventModel.deleteMany({})
         await AvailabilityModel.deleteMany({})
         logger.silly('Indexes dropped successfully')
-    } catch (error: any) {
-        logger.error('Error dropping indexes:', error ? error.message || error : 'Unknown error')
+    } catch (err) {
+        if (err instanceof Error) {
+            logger.error(`Error dropping indexes: ${err.message}`)
+        } else {
+            logger.error('Error dropping indexes: An unknown error occurred')
+        }
+        logger.error('Shutting down')
+        process.exit(1)
     }
 }
 

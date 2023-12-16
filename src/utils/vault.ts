@@ -63,7 +63,11 @@ export default async function loadVaultSecrets () {
             logger.info('All secrets successfully loaded from vault!')
         }
     } catch (err) {
-        logger.error(`Failed to load secrets: ${err}`)
+        if (err instanceof Error) {
+            logger.error(`Failed to load secrets: ${err.message}`)
+        } else {
+            logger.error('Failed to load secrets: An unknown error occurred')
+        }
         logger.error('Shutting down')
         process.exit(1)
     }
