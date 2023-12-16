@@ -6,7 +6,6 @@ module.exports = {
     "extends": [
         "standard-with-typescript",
     ],
-
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": "latest",
@@ -14,8 +13,10 @@ module.exports = {
         "project": "./tsconfig.json"
     },
     "rules": {
-        "indent": ["error", 4], // Standard ESLint indent rule
-        "@typescript-eslint/indent": ["error", 4] // TypeScript-specific indent rule
+        "indent": ["error", 4],
+        "@typescript-eslint/indent": ["error", 4],
+        "@typescript-eslint/no-unused-expressions": "off",
+        "@typescript-eslint/no-unused-vars": "warn"
     },
     "settings": {
         'import/resolver': {
