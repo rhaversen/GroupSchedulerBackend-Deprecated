@@ -10,7 +10,7 @@ const vault = nodeVault({
     token
 })
 
-export default async function loadVaultSecrets () {
+export default async function loadVaultSecrets (): Promise<void> {
     if (process.env.NODE_ENV !== 'production') {
         logger.info('Env is not production, not loading secrets from vault')
         return
@@ -32,21 +32,17 @@ export default async function loadVaultSecrets () {
             const secretPath = `secret/data/backend/${key}`
             logger.debug('Fetching secret key at path: ' + secretPath)
 
-            try {
-                const response = await vault.read(secretPath)
-                const secretValue = response.data.data[key]
+            const response = await vault.read(secretPath)
+            const secretValue = response.data.data[key]
 
-                // Save the key-value pair to runtime env
-                process.env[key] = secretValue
+            // Save the key-value pair to runtime env
+            process.env[key] = secretValue
 
-                // Check if it is saved successfully
-                if (process.env[key] === secretValue) {
-                    logger.debug('Saved to env: ' + key)
-                } else {
-                    logger.error('Failed to save to env: ' + key)
-                }
-            } catch (error: any) {
-                logger.error(`Error fetching secret for ${key}: ${error.message}`)
+            // Check if it is saved successfully
+            if (process.env[key] === secretValue) {
+                logger.debug('Saved to env: ' + key)
+            } else {
+                logger.error('Failed to save to env: ' + key)
             }
         }
 
