@@ -8,7 +8,12 @@ import { sanitizeInput } from '../middleware/sanitizer.js'
 import { ensureAuthenticated } from '../utils/passportConfig.js'
 
 // Controller functions
-import { getAvailabilities, newAvailability, updateAvailability, deleteAvailability } from '../controllers/availabilityController.js'
+import {
+    deleteAvailability,
+    getAvailabilities,
+    newAvailability,
+    updateAvailability
+} from '../controllers/availabilityController.js'
 
 // Destructuring and global variables
 const router = Router()
