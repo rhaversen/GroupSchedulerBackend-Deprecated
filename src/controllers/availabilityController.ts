@@ -89,9 +89,18 @@ export const updateAvailability = asyncErrorHandler(async (req: Request, res: Re
         return
     }
 
-    // Check if the availability is owned by the user
+    // Populate the user's availabilities
     const populatedUser = await user.populate('availabilities') as IUserPopulated
-    const userIsOwner = populatedUser.availabilities.includes(existingAvailability)
+
+    // Check if the new date is being occupied by an existing availability
+    const availabilityOnNewDate = populatedUser.availabilities.find(av => new Date(av.date).toDateString() === dateObj.toDateString())
+    if (dateObj !== existingAvailability.date && availabilityOnNewDate) {
+        next(new InvalidParametersError('Can not move availability to occupied date'))
+        return
+    }
+
+    // Check if the availability is owned by the user
+    const userIsOwner = populatedUser.availabilities.some(av => av.id === existingAvailability.id)
     if (!userIsOwner) {
         next(new UserNotOwnerError('User not owner of availability'))
         return
