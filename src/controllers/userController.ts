@@ -119,7 +119,7 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
         email,
         password
     })
-    const savedUser = await newUser.save()
+    const savedUser = await newUser.save() as IUser
 
     const confirmationLink = generateConfirmationLink(savedUser.confirmationCode!)
     await sendConfirmationEmail(email, confirmationLink)

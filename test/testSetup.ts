@@ -14,7 +14,7 @@ import AvailabilityModel from '../src/models/Availability.js'
 const server = await import('../src/index.js')
 chai.use(chaiHttp)
 
-async function getCSRFToken (agent: ChaiHttp.Agent) {
+async function getCSRFToken (agent: ChaiHttp.Agent): Promise<any> {
     const res = await agent.get('/csrf-token')
     logger.silly(res.body.csrfToken)
     return res.body.csrfToken

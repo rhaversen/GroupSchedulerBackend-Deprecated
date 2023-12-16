@@ -180,7 +180,7 @@ userSchema.methods.generateNewPasswordResetCode = async function (this: IUser & 
 }
 
 userSchema.pre(/^find/, function (next) {
-    const transformEmailToLowercase = (obj: any) => {
+    const transformEmailToLowercase = (obj: any): void => {
         for (const key in obj) {
             if (typeof obj[key] === 'object') {
                 transformEmailToLowercase(obj[key])

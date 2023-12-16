@@ -100,7 +100,7 @@ async function logToBetterStack (level: string, ...messages: any[]): Promise<voi
     }
 }
 
-function log (level: string, ...messages: any[]) {
+function log (level: string, ...messages: unknown[]): void {
     logToWinston(level, messages)
     logToBetterStack(level, messages)
         .catch((error) => {
@@ -109,25 +109,25 @@ function log (level: string, ...messages: any[]) {
 }
 
 const logger = {
-    error: (...messages: any[]) => {
+    error: (...messages: unknown[]) => {
         log('error', ...messages)
     },
-    warn: (...messages: any[]) => {
+    warn: (...messages: unknown[]) => {
         log('warn', ...messages)
     },
-    info: (...messages: any[]) => {
+    info: (...messages: unknown[]) => {
         log('info', ...messages)
     },
-    http: (...messages: any[]) => {
+    http: (...messages: unknown[]) => {
         log('http', ...messages)
     },
-    verbose: (...messages: any[]) => {
+    verbose: (...messages: unknown[]) => {
         log('verbose', ...messages)
     },
-    debug: (...messages: any[]) => {
+    debug: (...messages: unknown[]) => {
         log('debug', ...messages)
     },
-    silly: (...messages: any[]) => {
+    silly: (...messages: unknown[]) => {
         log('silly', ...messages)
     }
 }

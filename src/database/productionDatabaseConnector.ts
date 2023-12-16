@@ -39,7 +39,7 @@ const connectToDatabase = async (): Promise<void> => {
 const disconnectFromDatabase = async (): Promise<void> => {
     try {
         // Disconnect Mongoose for both test and production
-        if (mongooseConnection) {
+        if (mongooseConnection !== null && mongooseConnection !== undefined) {
             await mongooseConnection.disconnect()
             logger.info('Disconnected Mongoose connection')
         } else {

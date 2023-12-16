@@ -351,7 +351,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         // Check the expiration of the cookie
         const cookies = res.headers['set-cookie']
-        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid'))
+        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid')) as string
         const parsedCookie = parse(sessionCookie)
         const expiresDate = new Date(parsedCookie.Expires)
 
@@ -373,7 +373,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         // Check the expiration of the cookie
         const cookies = res.headers['set-cookie']
-        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid'))
+        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid')) as string
         const parsedCookie = parse(sessionCookie)
         const expiresDate = new Date(parsedCookie.Expires)
 
@@ -395,7 +395,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         // Check the expiration of the cookie
         const cookies = res.headers['set-cookie']
-        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid'))
+        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid')) as string
         const parsedCookie = parse(sessionCookie)
         const expiresDate = new Date(parsedCookie.Expires)
 
