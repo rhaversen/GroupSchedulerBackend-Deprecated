@@ -53,11 +53,11 @@ export default async function loadVaultSecrets () {
         // Check if all required keys are loaded
         const missingKeys = []
         for (const key of keys) {
-            if (!process.env[key]) {
+            if (process.env[key] === null || process.env[key] === undefined || process.env[key] === '') {
                 missingKeys.push(key)
             }
         }
-        if (missingKeys.length != 0) {
+        if (missingKeys.length !== 0) {
             throw new Error('Keys failed to load to env: ' + missingKeys.toString())
         } else {
             logger.info('All secrets successfully loaded from vault!')

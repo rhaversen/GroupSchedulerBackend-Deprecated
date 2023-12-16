@@ -36,7 +36,7 @@ const configurePassport = (passport: PassportStatic): void => {
                 UserModel.findOne({ email }).exec()
                     .then(async user => {
                         // Check if user exists
-                        if (!user) {
+                        if (user === null || user === undefined) {
                             done(new InvalidEmailError('A user with the email ' + email + ' was not found. Please check spelling or sign up'))
                             return
                         }
@@ -78,7 +78,7 @@ const configurePassport = (passport: PassportStatic): void => {
     passport.deserializeUser(function (id, done) {
         UserModel.findById(id).exec()
             .then(user => {
-                if (!user) {
+                if (user === null || user === undefined) {
                     done(new UserNotFoundError('User not found, it might have been deleted (Session failed to authenticate)'), false)
                 }
                 done(null, user)

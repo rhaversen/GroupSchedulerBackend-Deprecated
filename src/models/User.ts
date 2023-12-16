@@ -157,7 +157,7 @@ async function generateUniqueCodeForField (this: IUser & {
         generatedCode = nanoid()
         query[field] = generatedCode
         existingUser = await UserModel.findOne(query).exec()
-    } while (existingUser || this[field] === generatedCode)
+    } while ((existingUser !== null && existingUser !== undefined) || this[field] === generatedCode)
 
     this[field] = generatedCode
     return generatedCode
@@ -249,7 +249,7 @@ const deleteLogic = async function (this: IUser & {
             // Get the user
             const user = await UserModel.findById(followerId).exec()
 
-            if (!user) {
+            if (user === null || user === undefined) {
                 throw new UserNotFoundError('User not found')
             }
 
@@ -264,7 +264,7 @@ const deleteLogic = async function (this: IUser & {
             // Get the user
             const user = await UserModel.findById(followingId).exec()
 
-            if (!user) {
+            if (user === null || user === undefined) {
                 throw new UserNotFoundError('User not found')
             }
 

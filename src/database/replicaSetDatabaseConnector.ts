@@ -35,7 +35,7 @@ const connectToDatabase = async (): Promise<void> => {
 const disconnectFromDatabase = async (): Promise<void> => {
     try {
         // If using an in-memory database for development or tests
-        if (replSet) {
+        if (replSet !== null && replSet !== undefined) {
             await replSet.stop()
             logger.info('In-memory MongoDB replica set stopped')
         }

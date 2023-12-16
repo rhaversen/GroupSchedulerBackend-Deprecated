@@ -86,7 +86,7 @@ eventSchema.methods.generateNewEventCode = async function (this: IEvent & {
     do {
         eventCode = nanoid()
         existingEvent = await EventModel.findOne({ eventCode }).exec()
-    } while (existingEvent)
+    } while (existingEvent !== null && existingEvent !== undefined)
 
     this.eventCode = eventCode
     await this.save()
@@ -108,7 +108,7 @@ eventSchema.pre('save', async function (this: IEvent & { constructor: Model<IEve
         do {
             eventCode = nanoid()
             existingEvent = await EventModel.findOne({ eventCode }).exec()
-        } while (existingEvent)
+        } while (existingEvent !== null && existingEvent !== undefined)
 
         this.eventCode = eventCode
     }
@@ -141,7 +141,7 @@ const deleteLogic = async function (this: IEvent & {
             // Get the user
             const user = await UserModel.findById(participantId).exec()
 
-            if (!user) {
+            if (user === null || user === undefined) {
                 next(new UserNotFoundError('User not found'))
                 return
             }
