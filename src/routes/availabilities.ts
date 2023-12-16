@@ -8,20 +8,31 @@ import { sanitizeInput } from '../middleware/sanitizer.js'
 import { ensureAuthenticated } from '../utils/passportConfig.js'
 
 // Controller functions
-import { getAvailabilities, newOrUpdateAvailability, deleteAvailability } from '../controllers/availabilityController.js'
+import { getAvailabilities, newAvailability, updateAvailability, deleteAvailability } from '../controllers/availabilityController.js'
 
 // Destructuring and global variables
 const router = Router()
 
 /**
- * @route PUT api/v1/users/availabilities
- * @desc Create a new availability or update existing if the date is the same.
+ * @route PUT api/v1/users/availabilities/:date
+ * @desc Create a new availability
  * @access Authenticated
  */
-router.put('/',
+router.put('/:date',
     sanitizeInput,
     ensureAuthenticated,
-    newOrUpdateAvailability
+    newAvailability
+)
+
+/**
+ * @route PATCH api/v1/users/availabilities/:availabilityId
+ * @desc Update existing availability availability
+ * @access Authenticated
+ */
+router.patch('/:availabilityId',
+    sanitizeInput,
+    ensureAuthenticated,
+    updateAvailability
 )
 
 /**
