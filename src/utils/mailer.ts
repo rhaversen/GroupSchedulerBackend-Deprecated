@@ -5,25 +5,30 @@ import nodemailer from 'nodemailer'
 
 // Own modules
 import { getEmailFrom, getTransporterPort } from './setupConfig.js'
+import logger from './logger.js'
 
 // Config
 const transporterPort = getTransporterPort()
 const emailFrom = getEmailFrom()
 
-// Configure transporter
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_SERVER,
-    port: transporterPort,
-    secure: false, // true for 465, false for other ports
-    auth: {
-        user: process.env.SMTP_LOGIN,
-        pass: process.env.SMTP_KEY
-    }
-})
-
 // Generic function to send email
 export const sendEmail = async (to: string, subject: string, text: string, html = ''): Promise<void> => {
     if (process.env.NODE_ENV === 'test') return
+
+    // Configure transporter
+    logger.debug('Creating email transporter')
+    const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_SERVER,
+        port: transporterPort,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: process.env.SMTP_LOGIN,
+            pass: process.env.SMTP_KEY
+        }
+    })
+
+    logger.debug('Created transporter:')
+    logger.debug(transporter)
 
     const mailOptions = {
         from: emailFrom,
@@ -33,7 +38,12 @@ export const sendEmail = async (to: string, subject: string, text: string, html 
         html
     }
 
+    logger.debug('Sending email')
     await transporter.sendMail(mailOptions)
+
+    logger.debug('Closing email transporter')
+    transporter.close()
+    logger.debug('Email transporter closed')
 }
 
 // Function to send confirmation email
