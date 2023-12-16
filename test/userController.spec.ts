@@ -1,66 +1,24 @@
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 
-// Node.js built-in modules
-
 // Third-party libraries
-import chai from 'chai'
-import chaiHttp from 'chai-http'
 import { parse } from 'cookie'
 
 // Own modules
-import logger from '../src/utils/logger.js'
+import server, { agent, chai } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
 import { getExpressPort, getSessionExpiry, getSessionPersistentExpiry } from '../src/utils/setupConfig.js'
-import { isMemoryDatabase } from '../src/database/databaseHandler.js'
 
-chai.use(chaiHttp)
+// Global variables and setup
 const { expect } = chai
-
-const server = await import('../src/index.js')
 
 // Configs
 const sessionExpiry = getSessionExpiry()
 const sessionPersistentExpiry = getSessionPersistentExpiry()
 const expressPort = getExpressPort()
 
-async function getCSRFToken (agent: ChaiHttp.Agent) {
-    const res = await agent.get('/csrf-token')
-    logger.silly(res.body.csrfToken)
-    return res.body.csrfToken
-}
-
-async function cleanDatabase () {
-    /// ////////////////////////////////////////////
-    /// ///////////////////////////////////////////
-    if (!isMemoryDatabase()) {
-        return
-    }
-    /// ////////////////////////////////////////////
-    /// ///////////////////////////////////////////
-    try {
-        await UserModel.collection.dropIndexes()
-        await EventModel.collection.dropIndexes()
-        logger.silly('Indexes dropped successfully')
-    } catch (error: any) {
-        logger.error('Error dropping indexes:', error ? error.message || error : 'Unknown error')
-    }
-}
-
-beforeEach(async function () {
-})
-
-afterEach(async function () {
-    await cleanDatabase()
-})
-
-after(function () {
-    server.shutDown()
-})
-
 describe('Get Current User Endpoint GET /v1/users/current-user', function () {
-    let agent: ChaiHttp.Agent
     let testUser: IUser
     let testEvent: IEvent
 
@@ -83,16 +41,9 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
         await UserModel.findByIdAndUpdate(testUser._id, { $push: { events: testEvent._id } }).exec()
 
         const user = { email: testUser.email, password: 'testpassword', stayLoggedIn: true }
-        agent = chai.request.agent(server.app) // Create an agent instance
 
         // Log the user in to get a token
         await agent.post('/v1/users/login-local').send(user)
-    })
-
-    afterEach(async function () {
-        await EventModel.findByIdAndDelete(testEvent.id).exec()
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
-        agent.close()
     })
 
     it('should fetch current user details successfully', async function () {
@@ -132,17 +83,6 @@ describe('User Registration Endpoint POST /v1/users', function () {
         password: 'testpassword',
         confirmPassword: 'testpassword'
     }
-    let agent: ChaiHttp.Agent
-
-    beforeEach(async function () {
-        agent = chai.request.agent(server.app) // Create an agent instance
-    })
-
-    afterEach(async function () {
-        // Remove test user if exists before running tests
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
-        agent.close()
-    })
 
     it('should successfully register a new user', async function () {
         //        const csrfToken = await getCSRFToken(agent);
@@ -264,7 +204,6 @@ describe('User Registration Endpoint POST /v1/users', function () {
 describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function () {
     let savedUser: IUser
     let confirmationCode: string
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
         // Create a user before running tests
@@ -275,14 +214,6 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
         })
         savedUser = await newUser.save()
         confirmationCode = savedUser.confirmationCode!
-
-        agent = chai.request.agent(server.app) // Create an agent instance
-    })
-
-    afterEach(async function () {
-        // Remove test user if exists before running tests
-        await UserModel.findOneAndDelete({ email: 'ToBeConfirmed@gmail.com' }).exec()
-        agent.close()
     })
 
     it('should confirm a user', async function () {
@@ -347,7 +278,6 @@ describe('User Confirmation Endpoint POST /v1/users/confirm/:userCode', function
 
 describe('User Login Endpoint POST /v1/users/login-local', function () {
     let registeredUser: IUser
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
         // Create a user for login tests
@@ -358,14 +288,6 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
         })
         registeredUser.confirmUser()
         await registeredUser.save()
-
-        agent = chai.request.agent(server.app) // Create an agent instance
-    })
-
-    afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
-        agent.close()
     })
 
     it('should successfully login a user', async function () {
@@ -544,7 +466,6 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 })
 
 describe('User Logout Endpoint DELETE /v1/users/logout', function () {
-    let agent: ChaiHttp.Agent
     let registeredUser
 
     beforeEach(async function () {
@@ -556,7 +477,6 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
         registeredUser.confirmUser()
         await registeredUser.save()
 
-        agent = chai.request.agent(server.app) // Create an agent instance
         await agent.post('/v1/users/login-local').send({
             email: 'TestUser@gmail.com',
             password: 'testpassword',
@@ -565,7 +485,6 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
     })
 
     afterEach(async function () {
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
         agent.close() // Close the agent after tests
     })
 
@@ -615,7 +534,6 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
 })
 
 describe('Get User Events Endpoint GET /v1/users/events', function () {
-    let agent: ChaiHttp.Agent
     let testUser: IUser
     let testEvent: IEvent
 
@@ -639,17 +557,9 @@ describe('Get User Events Endpoint GET /v1/users/events', function () {
         await EventModel.findByIdAndUpdate(testEvent._id, { $push: { participants: testUser._id } }).exec()
 
         const user = { email: testUser.email, password: 'testpassword', stayLoggedIn: true }
-        agent = chai.request.agent(server.app) // Create an agent instance
 
         // Log the user in to get a token
         await agent.post('/v1/users/login-local').send(user)
-    })
-
-    afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
-        await EventModel.findByIdAndDelete(testEvent._id).exec()
-        agent.close()
     })
 
     it('should fetch user events successfully', async function () {
@@ -678,7 +588,6 @@ describe('Get User Events Endpoint GET /v1/users/events', function () {
 
 describe('Generate New User Code Endpoint PUT /v1/users/new-code', function () {
     let testUser: IUser
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
         // Create a test user
@@ -690,17 +599,10 @@ describe('Generate New User Code Endpoint PUT /v1/users/new-code', function () {
         testUser.confirmUser()
         await testUser.save()
 
-        agent = chai.request.agent(server.app)
         await agent.post('/v1/users/login-local').send({
             email: 'CodeTestUser@gmail.com',
             password: 'TestPasswordForCode'
         })
-    })
-
-    afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'CodeTestUser@gmail.com' }).exec()
-        agent.close()
     })
 
     it('should generate a new user code successfully', async function () {
@@ -723,7 +625,6 @@ describe('Generate New User Code Endpoint PUT /v1/users/new-code', function () {
 
 describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
     let userA: IUser, userB: IUser
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
         // Create two test users
@@ -744,18 +645,10 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
         await userB.save()
 
         // Login as userA
-        agent = chai.request.agent(server.app)
         await agent.post('/v1/users/login-local').send({
             email: 'userA@gmail.com',
             password: 'passwordA'
         })
-    })
-
-    afterEach(async function () {
-        // Cleanup: remove test users
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        agent.close()
     })
 
     it('should allow userA to follow userB', async function () {
@@ -836,7 +729,6 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
 
 describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
     let userA: IUser, userB: IUser
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
         // Create two test users
@@ -863,19 +755,10 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
         ])
 
         // Login as userA
-        agent = chai.request.agent(server.app)
         await agent.post('/v1/users/login-local').send({
             email: 'userA@gmail.com',
             password: 'passwordA'
         })
-    })
-
-    afterEach(async function () {
-        // Cleanup: remove test users
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userC@gmail.com' }).exec()
-        agent.close()
     })
 
     it('should allow userA to unfollow userB', async function () {
@@ -947,7 +830,6 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
 
 describe('Update Password Endpoint PATCH /update-password', function () {
     let testUser: IUser
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
         // Create a test user
@@ -959,17 +841,10 @@ describe('Update Password Endpoint PATCH /update-password', function () {
         testUser.confirmUser()
         await testUser.save()
 
-        agent = chai.request.agent(server.app)
         await agent.post('/v1/users/login-local').send({
             email: 'TestUser@gmail.com',
             password: 'TestPassword'
         })
-    })
-
-    afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
-        agent.close()
     })
 
     it('should update TestUser password successfully', async function () {
@@ -1066,7 +941,6 @@ describe('Update Password Endpoint PATCH /update-password', function () {
 
 describe('Reset Password Endpoint PATCH /reset-password', function () {
     let testUser: IUser
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
         // Create a test user
@@ -1079,17 +953,10 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         testUser.confirmUser()
         await testUser.save()
 
-        agent = chai.request.agent(server.app)
         await agent.post('/v1/users/login-local').send({
             email: 'TestUser@gmail.com',
             password: 'TestPassword'
         })
-    })
-
-    afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
-        agent.close()
     })
 
     it('should reset the password successfully', async function () {
@@ -1158,7 +1025,6 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
 
 describe('Update Username Endpoint PATCH /update-username', function () {
     let testUser: IUser
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
         // Create a test user
@@ -1170,17 +1036,10 @@ describe('Update Username Endpoint PATCH /update-username', function () {
         testUser.confirmUser()
         await testUser.save()
 
-        agent = chai.request.agent(server.app)
         await agent.post('/v1/users/login-local').send({
             email: 'TestUser@gmail.com',
             password: 'TestPassword'
         })
-    })
-
-    afterEach(async function () {
-        // Cleanup: remove test user
-        await UserModel.findOneAndDelete({ email: 'TestUser@gmail.com' }).exec()
-        agent.close()
     })
 
     it('should update TestUser username successfully', async function () {
@@ -1231,11 +1090,8 @@ describe('Update Username Endpoint PATCH /update-username', function () {
 
 describe('Get Followers Endpoint GET /v1/users/followers', function () {
     let userA: IUser, userB: IUser, userC: IUser
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
-        agent = chai.request.agent(server.app)
-
         // Create three test users: A, B, and C
         userA = new UserModel({
             username: 'UserA',
@@ -1279,14 +1135,6 @@ describe('Get Followers Endpoint GET /v1/users/followers', function () {
         })
     })
 
-    afterEach(async function () {
-        // Clean up by removing test users
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userC@gmail.com' }).exec()
-        agent.close()
-    })
-
     it('should successfully get the followers of userA', async function () {
         const res = await agent.get('/v1/users/followers')
 
@@ -1314,11 +1162,8 @@ describe('Get Followers Endpoint GET /v1/users/followers', function () {
 
 describe('Get Following Endpoint GET /v1/users/following', function () {
     let userA: IUser, userB: IUser, userC: IUser
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
-        agent = chai.request.agent(server.app)
-
         // Create three test users: A, B, and C
         userA = new UserModel({
             username: 'UserA',
@@ -1362,14 +1207,6 @@ describe('Get Following Endpoint GET /v1/users/following', function () {
         })
     })
 
-    afterEach(async function () {
-        // Clean up by removing test users
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userC@gmail.com' }).exec()
-        agent.close()
-    })
-
     it('should successfully get the users that userA is following', async function () {
         const res = await agent.get('/v1/users/following')
 
@@ -1398,11 +1235,8 @@ describe('Get Following Endpoint GET /v1/users/following', function () {
 describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', function () {
     let userA: IUser, userB: IUser, userC: IUser
     let event1: IEvent, event2: IEvent, event3: IEvent
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
-        agent = chai.request.agent(server.app)
-
         // Create two test users: A and B
         userA = new UserModel({
             username: 'UserA',
@@ -1472,17 +1306,6 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
         })
     })
 
-    afterEach(async function () {
-        // Clean up by removing test users and events
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userC@gmail.com' }).exec()
-        await EventModel.findByIdAndDelete(event1._id).exec()
-        await EventModel.findByIdAndDelete(event2._id).exec()
-        await EventModel.findByIdAndDelete(event3._id).exec()
-        agent.close()
-    })
-
     it('should successfully get the common events between userA and userB', async function () {
         const res = await agent.get(`/v1/users/${userB._id}/common-events`)
 
@@ -1525,11 +1348,8 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
 describe('Delete User Endpoint DELETE /v1/users/', function () {
     let userA: IUser, userB: IUser
     let event1: IEvent, event2: IEvent
-    let agent: ChaiHttp.Agent
 
     beforeEach(async function () {
-        agent = chai.request.agent(server.app)
-
         // Create two test users: A and B
         userA = new UserModel({
             username: 'UserA',
@@ -1580,15 +1400,6 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
             email: 'userA@gmail.com',
             password: 'passwordA'
         })
-    })
-
-    afterEach(async function () {
-        // Clean up by removing test users and events
-        await UserModel.findOneAndDelete({ email: 'userA@gmail.com' }).exec()
-        await UserModel.findOneAndDelete({ email: 'userB@gmail.com' }).exec()
-        await EventModel.findByIdAndDelete(event1._id).exec()
-        await EventModel.findByIdAndDelete(event2._id).exec()
-        agent.close()
     })
 
     it('should successfully delete the user', async function () {

@@ -1,39 +1,20 @@
-/* import dotenv from 'dotenv'
+// Third-party libraries
+import { parse } from 'cookie'
 
-import chai from 'chai'
-import chaiHttp from 'chai-http'
+// Own modules
+import server, { agent, chai } from './testSetup.js'
+import UserModel, { type IUser } from '../src/models/User.js'
+import EventModel, { type IEvent } from '../src/models/Event.js'
+import { getExpressPort, getSessionExpiry, getSessionPersistentExpiry } from '../src/utils/setupConfig.js'
+import logger from '../src/utils/logger.js'
 
-import { deleteAllDocumentsFromAllCollections } from '../utils/database.js'
-import logger from '../utils/logger.js'
-import UserModel, { type IUser } from '../models/User.js'
-import error from '../utils/errors.js'
-import { AppType, ShutDownType } from '../index.js'
-
-// Controller functions
-import {
-    registerUser,
-    loginUser,
-    getEvents,
-    newCode,
-    followUser,
-    unfollowUser,
-    getUser,
-    updateUser
-} from '../controllers/userController'
-dotenv.config()
-
-chai.use(chaiHttp)
+// Global variables and setup
 const { expect } = chai
 
-const {
-    ServerError
-} = error
-
-// Types
-type ServerType = {
-    app: AppType
-    shutDown: ShutDownType
-};
+// Configs
+const sessionExpiry = getSessionExpiry()
+const sessionPersistentExpiry = getSessionPersistentExpiry()
+const expressPort = getExpressPort()
 
 // Helper functions
 async function establishFollowing (followingUser: IUser, followedUser: IUser) {
@@ -44,16 +25,7 @@ async function establishFollowing (followingUser: IUser, followedUser: IUser) {
     logger.silly('User followed')
 }
 
-let server: ServerType
-
-describe('Server Tests', () => {
-    before(async function () {
-        this.timeout(10000) // Set the timeout to 10 seconds.
-        server = await import('../index.js')
-        // Wipe database before testing
-        await deleteAllDocumentsFromAllCollections()
-    })
-
+describe('Server Tests', function () {
     beforeEach(async function () {
         this.timeout(10000) // Set the timeout to 10 seconds.
         // Define users
@@ -108,9 +80,6 @@ describe('Server Tests', () => {
             const newUser = new UserModel({ username, email, password })
             try {
                 const savedUser = await newUser.save()
-                if (!savedUser) {
-                    throw new ServerError('Error saving user')
-                }
                 savedUserArray[i] = savedUser
                 logger.silly('User created')
             } catch (err) {
@@ -183,41 +152,4 @@ describe('Server Tests', () => {
             await establishFollowing(followingUser, followedUser)
         }
     })
-
-    afterEach(async function () {
-        this.timeout(10000) // Set the timeout to 10 seconds.
-        // Wipe database after each test
-        await deleteAllDocumentsFromAllCollections()
-    })
-
-    after(async function () {
-        this.timeout(10000) // Set the timeout to 10 seconds.
-        await server.shutDown()
-    })
-
-    it('POST /v1/users should create a new user', async function () {
-        this.timeout(10000) // Set the timeout to 10 seconds.
-
-        const newUser = { username: 'Test User', email: 'testuser@gmail.com', password: 'testpassword', confirmPassword: 'testpassword', stayLoggedIn: false }
-
-        const res = await chai.request(server.app).post('/v1/users').send(newUser)
-
-        expect(res).to.have.status(201)
-        expect(res.body).to.be.a('object')
-        expect(res.body).to.have.property('message')
-        expect(res.body.message).to.be.string('Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.')
-
-        const savedUser = await UserModel.findOne({email: newUser.email}).exec() as IUser
-
-        expect(savedUser.confirmed).to.be.false
-
-        await savedUser.confirmUser()
-        await savedUser.save()
-
-        expect(savedUser.confirmed).to.be.true
-
-        expect(savedUser.username).to.be.a.string(newUser.username)
-
-    })
 })
- */

@@ -114,6 +114,7 @@ app.use('/v1/events', relaxedApiLimiter, eventRoutes)
 app.use('/v1/users/update-password', sensitiveApiLimiter)
 app.use('/v1/users/login', sensitiveApiLimiter)
 app.use('/v1/users/signup', sensitiveApiLimiter)
+app.use('/v1/users/', sensitiveApiLimiter)
 
 app.get('/', (req, res) => {
     logger.debug('pong')
@@ -140,7 +141,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
     shutDown().catch(error => {
         // If 'error' is an Error object, log its stack trace; otherwise, convert to string
-        const errorDetail = error instanceof Error ? error.stack || error.message : String(error)
+        const errorDetail = error instanceof Error ? error.stack ?? error.message : String(error)
         logger.error(`An error occurred during shutdown: ${errorDetail}`)
         process.exit(1)
     })

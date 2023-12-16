@@ -1,22 +1,22 @@
 {
-  "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "strict": true,
-    "outDir": "./dist",
-    "allowJs": true,
-    "checkJs": false
-  },
-  "include": [
-    "**/*.ts",
-    "test/**/*.spec.ts",
-    "*.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist/",
-    "eslint-rules/*"
-  ]
+    "compilerOptions": {
+        "module": "ESNext",
+        "target": "ESNext",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "strict": true,
+        "outDir": "./dist",
+        "allowJs": true,
+        "checkJs": false
+    },
+    "include": [
+        "**/*.ts",
+        "test/**/*.spec.ts",
+        "*.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist/",
+        "eslint-rules/*"
+    ]
 }

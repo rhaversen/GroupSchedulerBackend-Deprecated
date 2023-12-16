@@ -36,7 +36,13 @@ export class MissingFieldsError extends ValidationError {
 export class InvalidQueryError extends ValidationError {
 }
 
+export class InvalidParametersError extends ValidationError {
+}
+
 export class UserNotConfirmedError extends ValidationError {
+}
+
+export class UserNotOwnerError extends ValidationError {
 }
 
 export class UserNotInEventError extends ValidationError {
@@ -67,7 +73,7 @@ export class EventNotFoundError extends EventError {
 export class OwnerCantLeaveError extends EventError {
 }
 
-export class CantKickAdminOrOwner extends EventError {
+export class CantKickAdminOrOwnerError extends EventError {
 }
 
 // Server errors
