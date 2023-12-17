@@ -15,7 +15,7 @@ import session from 'express-session'
 import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
-import { closeDatabaseConnection, initializeDatabaseConnection } from './database/databaseHandler.js'
+import { closeDatabaseConnection, initializeDatabaseConnection, mongoose } from './database/databaseHandler.js'
 // import csrfProtection from './utils/csrfProtection.js';
 import {
     getCorsOptions,
@@ -31,6 +31,7 @@ import loadVaultSecrets from './utils/vault.js'
 import userRoutes from './routes/users.js'
 import eventRoutes from './routes/events.js'
 import blockedDatesRoutes from './routes/blockedDates.js'
+import MongoStore from 'connect-mongo'
 
 // Load environment
 await loadVaultSecrets()
@@ -67,16 +68,13 @@ if (typeof helmetHSTS === 'object' && helmetHSTS !== null) {
 await initializeDatabaseConnection()
 
 // Configuration for session
-const sessionMiddleware = session({
-    secret: process.env.SESSION_SECRET ?? 'default_secret_key', // Ideally from an environment variable
+const sessionMiddleware =
+session({
     resave: false,
+    secret: process.env.SESSION_SECRET as string,
     saveUninitialized: true,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true
-    }
-    // store: MongoStore.create({ client: mongoose.connection.getClient() })
-
+    store: MongoStore.create({ client: mongoose.connection.getClient() as any }), // Property 'serverMonitoringMode' is missing in options for mongoose version of mongodb but is required in mongodb used by connect-mongo. it is not needed, therefore type assertion "any"
+    cookie: { secure: false }
 })
 
 // Global middleware

@@ -10,6 +10,9 @@ import UserModel from '../src/models/User.js'
 import EventModel from '../src/models/Event.js'
 import { isMemoryDatabase } from '../src/database/databaseHandler.js'
 
+// Test env
+process.env.SESSION_SECRET = 'test_secret_key'
+
 const server = await import('../src/index.js')
 chai.use(chaiHttp)
 
