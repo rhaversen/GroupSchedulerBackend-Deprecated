@@ -30,7 +30,7 @@ import loadVaultSecrets from './utils/vault.js'
 // Import routes
 import userRoutes from './routes/users.js'
 import eventRoutes from './routes/events.js'
-import availabilityRoutes from './routes/availabilities.js'
+import blockedDatesRoutes from './routes/blockedDates.js'
 
 // Load environment
 await loadVaultSecrets()
@@ -107,7 +107,7 @@ const sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter)
 
 // Use all routes and with relaxed limiter
 app.use('/v1/users', relaxedApiLimiter, userRoutes)
-app.use('/v1/users/availabilities', relaxedApiLimiter, availabilityRoutes)
+app.use('/v1/users/blockedDates', relaxedApiLimiter, blockedDatesRoutes)
 app.use('/v1/events', relaxedApiLimiter, eventRoutes)
 
 // Apply stricter rate limiters to routes

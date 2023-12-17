@@ -17,7 +17,7 @@ const sessionPersistentExpiry = getSessionPersistentExpiry()
 const expressPort = getExpressPort()
 
 // Helper functions
-async function establishFollowing (followingUser: IUser, followedUser: IUser) {
+async function establishFollowing (followingUser: IUser, followedUser: IUser): Promise<void> {
     await Promise.all([
         UserModel.findByIdAndUpdate(followingUser._id, { $push: { following: followedUser._id } }).exec(),
         UserModel.findByIdAndUpdate(followedUser._id, { $push: { followers: followingUser._id._id } }).exec()

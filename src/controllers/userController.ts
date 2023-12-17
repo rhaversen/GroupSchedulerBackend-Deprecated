@@ -74,7 +74,7 @@ export const getCurrentUser =
             username: user.username,
             email: user.email,
             events: user.events,
-            availabilities: user.availabilities,
+            blockedDates: user.blockedDates,
             following: user.following,
             followers: user.followers,
             userCode: user.userCode,
@@ -108,7 +108,7 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
 
     const existingUser = await UserModel.findOne({ email }).exec()
 
-    if (existingUser) { // TODO: It should not reveal whether the email exists in the database. Log the user in instead
+    if (existingUser !== null && existingUser !== undefined) { // TODO: It should not reveal whether the email exists in the database. Log the user in instead
         next(new EmailAlreadyExistsError('Email already exists, please sign in instead'))
         return
     }
@@ -119,7 +119,7 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
         email,
         password
     })
-    const savedUser = await newUser.save()
+    const savedUser = await newUser.save() as IUser
 
     const confirmationLink = generateConfirmationLink(savedUser.confirmationCode!)
     await sendConfirmationEmail(email, confirmationLink)
@@ -134,7 +134,7 @@ export const requestPasswordResetEmail = asyncErrorHandler(async (req: Request, 
 
     const user = await UserModel.findOne({ email }).exec()
 
-    if (user) {
+    if (user !== null && user !== undefined) {
         const passwordResetCode = await user.generateNewPasswordResetCode()
         const confirmationLink = generatePasswordResetLink(passwordResetCode)
         await sendPasswordResetEmail(email, confirmationLink)
@@ -157,7 +157,7 @@ export const confirmUser = asyncErrorHandler(async (req: Request, res: Response,
     // Find the user with the corresponding confirmation code
     const user = await UserModel.findOne({ confirmationCode }).exec()
 
-    if (!user) {
+    if (user === null || user === undefined) {
         next(new InvalidQueryError('The confirmation code is invalid or the user has already been confirmed'))
         return
     }
@@ -241,7 +241,7 @@ export const followUser = asyncErrorHandler(async (req: Request, res: Response, 
     const candidateUser = await UserModel.findById(candidateUserId).exec()
     const user = req.user as IUser
 
-    if (!candidateUser) {
+    if (candidateUser === null || candidateUser === undefined) {
         next(new UserNotFoundError('The user to be followed could not be found'))
         return
     }
@@ -252,7 +252,9 @@ export const followUser = asyncErrorHandler(async (req: Request, res: Response, 
     }
 
     const followingArray = user.following as Array<{ _id: Types.ObjectId }>
-    if (followingArray.find(u => u._id.toString() === candidateUser._id.toString())) {
+    const isFollowing = followingArray.find(u => u._id.toString() === candidateUser._id.toString()) !== undefined
+
+    if (isFollowing) {
         res.status(200).json({ message: 'User is already followed' })
         return
     }
@@ -267,7 +269,7 @@ export const unfollowUser = asyncErrorHandler(async (req: Request, res: Response
     const user = req.user as IUser
 
     const candidateUser = await UserModel.findById(candidateUserId).exec()
-    if (!candidateUser) {
+    if (candidateUser === null || candidateUser === undefined) {
         next(new UserNotFoundError('The user to be un-followed could not be found'))
         return
     }
@@ -278,7 +280,9 @@ export const unfollowUser = asyncErrorHandler(async (req: Request, res: Response
     }
 
     const followingArray = user.following as Array<{ _id: Types.ObjectId }>
-    if (!followingArray.find(u => u._id.toString() === candidateUser._id.toString())) {
+    const isNotFollowing = followingArray.find(u => u._id.toString() === candidateUser._id.toString()) === undefined
+
+    if (isNotFollowing) {
         res.status(400).json({ error: 'User is not followed' })
         return
     }
@@ -315,7 +319,7 @@ export const getCommonEvents = asyncErrorHandler(async (req: Request, res: Respo
 
     const candidateUser = await UserModel.findById(candidateUserId).exec()
 
-    if (!candidateUser) {
+    if (candidateUser === null || candidateUser === undefined) {
         next(new UserNotFoundError('The user to be found events in common with could not be found'))
         return
     }
@@ -375,7 +379,7 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
 
     const user = await UserModel.findOne({ passwordResetCode }).exec()
 
-    if (!user) {
+    if (user === undefined || user === null) {
         res.status(404).send()
         return
     }

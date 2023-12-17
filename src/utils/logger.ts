@@ -48,83 +48,86 @@ const winstonLogger = createLogger({
 // Instantiate betterStackLogger only in production
 let betterStackLogger: Logtail | null = null
 
-function logToWinston (level: string, ...messages: any[]) {
+function logToWinston (level: string, ...messages: any[]): void {
     const combinedMessage = messages.join(' ')
     switch (level) {
         case 'error':
             winstonLogger.error(combinedMessage)
-            break;
+            break
         case 'warn':
             winstonLogger.warn(combinedMessage)
-            break;
+            break
         case 'info':
             winstonLogger.info(combinedMessage)
-            break;
+            break
         case 'http':
             winstonLogger.http(combinedMessage)
-            break;
+            break
         case 'verbose':
             winstonLogger.verbose(combinedMessage)
-            break;
+            break
         case 'debug':
             winstonLogger.debug(combinedMessage)
-            break;
+            break
         case 'silly':
             winstonLogger.silly(combinedMessage)
-            break;
+            break
     }
 }
 
-function logToBetterStack (level: string, ...messages: any[]) {
-    if (!process.env.BETTERSTACK_LOG_TOKEN || process.env.NODE_ENV !== 'production') {
+async function logToBetterStack (level: string, ...messages: any[]): Promise<void> {
+    if (process.env.BETTERSTACK_LOG_TOKEN === null || process.env.BETTERSTACK_LOG_TOKEN === undefined || process.env.NODE_ENV !== 'production') {
         return
     }
 
-    if (!betterStackLogger) {
+    if (betterStackLogger === null || betterStackLogger === undefined) {
         betterStackLogger = new Logtail(process.env.BETTERSTACK_LOG_TOKEN)
     }
 
     const combinedMessage = messages.join(' ')
     switch (level) {
         case 'error':
-            betterStackLogger.error(combinedMessage)
-            break;
+            await betterStackLogger.error(combinedMessage)
+            break
         case 'warn':
-            betterStackLogger.warn(combinedMessage)
-            break;
+            await betterStackLogger.warn(combinedMessage)
+            break
         case 'info':
-            betterStackLogger.info(combinedMessage)
-            break;
+            await betterStackLogger.info(combinedMessage)
+            break
         default:
-            betterStackLogger.debug(combinedMessage)
+            await betterStackLogger.debug(combinedMessage)
     }
 }
 
-function log (level: string, ...messages: any[]) {
-    logToBetterStack(level, messages)
+function log (level: string, ...messages: unknown[]): void {
     logToWinston(level, messages)
+    logToBetterStack(level, messages)
+        .catch((error) => {
+            logToWinston(error, 'Error logging to BetterStack:' + error)
+        })
 }
 
 const logger = {
-    error: (...messages: any[]) => {
+    error: (...messages: unknown[]) => {
         log('error', ...messages)
     },
-    warn: (...messages: any[]) => {
+    warn: (...messages: unknown[]) => {
         log('warn', ...messages)
     },
-    info: (...messages: any[]) => {
+    info: (...messages: unknown[]) => {
         log('info', ...messages)
     },
-    http: (...messages: any[]) => {
+    http: (...messages: unknown[]) => {
         log('http', ...messages)
     },
-    verbose: (...messages: any[]) => {
+    verbose: (...messages: unknown[]) => {
         log('verbose', ...messages)
     },
-    debug: (...messages: any[]) => {
+    debug: (...messages: unknown[]) => {
         log('debug', ...messages)
     },
-    silly: (...messages: any[]) => {
+    silly: (...messages: unknown[]) => {
         log('silly', ...messages)
     }
 }

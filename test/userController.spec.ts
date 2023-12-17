@@ -58,9 +58,9 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
         expect(res.body).to.have.property('events')
         expect(res.body.events).to.be.a('array')
         expect(res.body.events[0]).to.be.equal(testEvent.id)
-        expect(res.body).to.have.property('availabilities')
-        expect(res.body.availabilities).to.be.a('array')
-        expect(res.body.availabilities).to.be.empty
+        expect(res.body).to.have.property('blockedDates')
+        expect(res.body.blockedDates).to.be.a('array')
+        expect(res.body.blockedDates).to.be.empty
         expect(res.body.confirmed).to.be.true
         expect(res.body).to.not.have.property('expirationDate')
     })
@@ -351,7 +351,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         // Check the expiration of the cookie
         const cookies = res.headers['set-cookie']
-        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid'))
+        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid')) as string
         const parsedCookie = parse(sessionCookie)
         const expiresDate = new Date(parsedCookie.Expires)
 
@@ -373,7 +373,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         // Check the expiration of the cookie
         const cookies = res.headers['set-cookie']
-        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid'))
+        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid')) as string
         const parsedCookie = parse(sessionCookie)
         const expiresDate = new Date(parsedCookie.Expires)
 
@@ -395,7 +395,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         // Check the expiration of the cookie
         const cookies = res.headers['set-cookie']
-        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid'))
+        const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid')) as string
         const parsedCookie = parse(sessionCookie)
         const expiresDate = new Date(parsedCookie.Expires)
 

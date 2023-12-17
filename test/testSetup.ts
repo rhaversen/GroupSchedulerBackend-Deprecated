@@ -9,12 +9,11 @@ import logger from '../src/utils/logger.js'
 import UserModel from '../src/models/User.js'
 import EventModel from '../src/models/Event.js'
 import { isMemoryDatabase } from '../src/database/databaseHandler.js'
-import AvailabilityModel from '../src/models/Availability.js'
 
 const server = await import('../src/index.js')
 chai.use(chaiHttp)
 
-async function getCSRFToken (agent: ChaiHttp.Agent) {
+async function getCSRFToken (agent: ChaiHttp.Agent): Promise<any> {
     const res = await agent.get('/csrf-token')
     logger.silly(res.body.csrfToken)
     return res.body.csrfToken
@@ -35,10 +34,15 @@ async function cleanDatabase () {
     try {
         await UserModel.deleteMany({})
         await EventModel.deleteMany({})
-        await AvailabilityModel.deleteMany({})
         logger.silly('Indexes dropped successfully')
-    } catch (error: any) {
-        logger.error('Error dropping indexes:', error ? error.message || error : 'Unknown error')
+    } catch (err) {
+        if (err instanceof Error) {
+            logger.error(`Error dropping indexes: ${err.message}`)
+        } else {
+            logger.error('Error dropping indexes: An unknown error occurred')
+        }
+        logger.error('Shutting down')
+        process.exit(1)
     }
 }
 

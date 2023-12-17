@@ -37,10 +37,8 @@ async function initializeDatabaseConnection (): Promise<void> {
 }
 
 async function closeDatabaseConnection (): Promise<void> {
-    if (disconnect) {
-        await disconnect()
-        logger.info('Database connection closed')
-    }
+    await disconnect()
+    logger.info('Database connection closed')
 }
 
 function isMemoryDatabase (): boolean {
