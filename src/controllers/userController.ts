@@ -74,7 +74,7 @@ export const getCurrentUser =
             username: user.username,
             email: user.email,
             events: user.events,
-            availabilities: user.availabilities,
+            blockedDates: user.blockedDates,
             following: user.following,
             followers: user.followers,
             userCode: user.userCode,

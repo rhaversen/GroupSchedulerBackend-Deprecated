@@ -9,7 +9,6 @@ import logger from '../src/utils/logger.js'
 import UserModel from '../src/models/User.js'
 import EventModel from '../src/models/Event.js'
 import { isMemoryDatabase } from '../src/database/databaseHandler.js'
-import AvailabilityModel from '../src/models/Availability.js'
 
 const server = await import('../src/index.js')
 chai.use(chaiHttp)
@@ -35,7 +34,6 @@ async function cleanDatabase () {
     try {
         await UserModel.deleteMany({})
         await EventModel.deleteMany({})
-        await AvailabilityModel.deleteMany({})
         logger.silly('Indexes dropped successfully')
     } catch (err) {
         if (err instanceof Error) {

@@ -7,7 +7,6 @@ import mongoose, { type Document, model, type Model, type Types } from 'mongoose
 
 // Own modules
 import logger from '../utils/logger.js'
-import AvailabilityModel, { type IAvailability } from './Availability.js'
 import EventModel, { type IEvent } from './Event.js'
 import { getNanoidAlphabet, getNanoidLength, getSaltRounds, getUserExpiry } from '../utils/setupConfig.js'
 import { UserNotFoundError } from '../utils/errors.js'
@@ -27,7 +26,6 @@ const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
 
 export interface IUserPopulated extends IUser {
     events: IEvent[]
-    availabilities: IAvailability[]
     following: IUser[]
     followers: IUser[]
 }
@@ -37,7 +35,7 @@ export interface IUser extends Document {
     email: string
     password: string
     events: Types.ObjectId[] | IEvent[]
-    availabilities: Types.ObjectId[] | IAvailability[]
+    blockedDates: Date[]
     following: Types.ObjectId[] | IUser[]
     followers: Types.ObjectId[] | IUser[]
     userCode: string
@@ -61,7 +59,7 @@ const userSchema = new Schema<IUser>({
     email: { type: String, required: true, unique: true }, // This is how you will log in, no users will be able to see this
     password: { type: String, required: true },
     events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
-    availabilities: [{ type: Schema.Types.ObjectId, ref: 'Availability' }],
+    blockedDates: [{ type: Date }],
     following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     userCode: { type: String, unique: true },
@@ -279,11 +277,6 @@ const deleteLogic = async function (this: IUser & {
             await EventModel.findByIdAndUpdate(eventId, {
                 $pull: { participants: this._id }
             }, { session }).exec() // Use the session
-        }
-
-        // Remove the users availabilities
-        for (const availabilityId of this.availabilities) {
-            await AvailabilityModel.deleteMany({ _id: availabilityId }, { session }).exec() // Use the session
         }
 
         logger.silly('User removed')
