@@ -10,6 +10,7 @@ import helmet from 'helmet'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
+import lusca from 'lusca'
 
 // Own modules
 import logger from './utils/logger.js'
@@ -90,7 +91,10 @@ app.use(cors({
     ...confCorsOptions,
     credentials: true
 }))
-// app.use(csrfProtection);
+
+/* app.use(lusca.csrf({
+    secret: process.env.CSRF_TOKEN
+})) */
 
 // Create rate limiters
 const relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
