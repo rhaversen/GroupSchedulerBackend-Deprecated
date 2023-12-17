@@ -199,7 +199,7 @@ export const loginUserLocal = asyncErrorHandler(async (req: Request, res: Respon
                     next(err); return
                 }
                 // Set maxAge for persistent sessions if requested
-                if (req.body.stayLoggedIn === 'true') {
+                if (req.body.stayLoggedIn === 'false') {
                     req.session.cookie.maxAge = sessionExpiry * 1000
                 }
                 return res.status(200).json({ auth: true, user })
