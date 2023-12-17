@@ -6,6 +6,7 @@ import { type HelmetOptions } from 'helmet'
 import { type CorsOptions } from 'cors'
 import { type Options as RateLimitOptions } from 'express-rate-limit'
 import { type ConnectOptions } from 'mongoose'
+import { type CookieOptions } from 'express'
 
 // Types
 type ContentSecurityPolicyOptions = HelmetOptions['contentSecurityPolicy']
@@ -75,14 +76,14 @@ export function getSessionExpiry (): number {
     return config.get('session.expiry')
 }
 
-export function getSessionPersistentExpiry (): number {
-    return config.get('session.persistentExpiry')
-}
-
 export function getNextJsPort (): number {
     return config.get('ports.nextJs')
 }
 
 export function getFrontendDomain (): string {
     return config.get('frontend.domain')
+}
+
+export function getCookieOptions (): CookieOptions {
+    return config.get('cookieOptions')
 }

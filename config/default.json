@@ -26,8 +26,7 @@
         "options": {}
     },
     "session": {
-        "expiry": 86400,
-        "persistentExpiry": 2592000
+        "expiry": 86400
     },
     "helmet": {
         "CSP": {
