@@ -71,7 +71,7 @@ await initializeDatabaseConnection()
 const sessionMiddleware =
 session({
     resave: false,
-    secret: process.env.SESSION_SECRET ?? 'default_secret_key', // Ideally from an environment variable    resave: false,
+    secret: process.env.SESSION_SECRET as string,
     saveUninitialized: true,
     store: MongoStore.create({ client: mongoose.connection.getClient() as any }), // Property 'serverMonitoringMode' is missing in options for mongoose version of mongodb but is required in mongodb used by connect-mongo. it is not needed, therefore type assertion "any"
     cookie: { secure: false }
