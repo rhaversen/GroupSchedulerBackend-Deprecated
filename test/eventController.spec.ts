@@ -8,14 +8,13 @@ import { parse } from 'cookie'
 import server, { agent, chai } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
-import { getExpressPort, getSessionExpiry, getSessionPersistentExpiry } from '../src/utils/setupConfig.js'
+import { getExpressPort, getSessionExpiry } from '../src/utils/setupConfig.js'
 
 // Global variables and setup
 const { expect } = chai
 
 // Configs
 const sessionExpiry = getSessionExpiry()
-const sessionPersistentExpiry = getSessionPersistentExpiry()
 const expressPort = getExpressPort()
 
 /* describe('Delete User Endpoint DELETE /v1/users/', function () {

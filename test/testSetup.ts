@@ -11,7 +11,8 @@ import EventModel from '../src/models/Event.js'
 import { isMemoryDatabase } from '../src/database/databaseHandler.js'
 
 // Test env
-process.env.SESSION_SECRET = 'test_secret_key'
+process.env.SESSION_SECRET = 'TEST_SESSION_SECRET'
+process.env.CSRF_TOKEN = 'TEST_CSRF_TOKEN'
 
 const server = await import('../src/index.js')
 chai.use(chaiHttp)

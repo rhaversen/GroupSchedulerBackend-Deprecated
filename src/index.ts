@@ -10,6 +10,7 @@ import helmet from 'helmet'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
+import lusca from 'lusca'
 
 // Own modules
 import logger from './utils/logger.js'
@@ -23,7 +24,8 @@ import {
     getHelmetCSP,
     getHelmetHSTS,
     getRelaxedApiLimiterConfig,
-    getSensitiveApiLimiterConfig
+    getSensitiveApiLimiterConfig,
+    getCookieOptions
 } from './utils/setupConfig.js'
 import loadVaultSecrets from './utils/vault.js'
 
@@ -47,6 +49,7 @@ const confCorsOptions = getCorsOptions()
 const confRelaxedApiLimiter = getRelaxedApiLimiterConfig()
 const confSensitiveApiLimiter = getSensitiveApiLimiterConfig()
 const expressPort = getExpressPort()
+const cookieOptions = getCookieOptions()
 
 // Function invocations
 configurePassport(passport)
@@ -67,30 +70,29 @@ if (typeof helmetHSTS === 'object' && helmetHSTS !== null) {
 // Connect to MongoDB (Automatically connect to in-memory replica set if not production environment)
 await initializeDatabaseConnection()
 
-// Configuration for session
-const sessionMiddleware =
-session({
-    resave: false,
-    secret: process.env.SESSION_SECRET as string,
-    saveUninitialized: true,
-    store: MongoStore.create({ client: mongoose.connection.getClient() as any }), // Property 'serverMonitoringMode' is missing in options for mongoose version of mongodb but is required in mongodb used by connect-mongo. it is not needed, therefore type assertion "any"
-    cookie: { secure: false }
-})
-
 // Global middleware
-app.use(helmet())
+app.use(helmet()) // Security headers
 app.use(express.json()) // for parsing application/json
 app.use(cookieParser()) // For parsing cookies
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
-app.use(mongoSanitize())
-app.use(sessionMiddleware)
-app.use(passport.initialize())
-app.use(passport.session())
+app.use(session({ // Session management
+    resave: false,
+    secret: process.env.SESSION_SECRET!,
+    saveUninitialized: true,
+    store: MongoStore.create({ client: mongoose.connection.getClient() as any }), // Property 'serverMonitoringMode' is missing in options for mongoose version of mongodb but is required in mongodb used by connect-mongo. it is not needed, therefore type assertion "any"
+    cookie: cookieOptions
+}))
+app.use(passport.initialize()) // Initialize Passport
+app.use(passport.session()) // Passport session handling
+app.use(mongoSanitize()) // Sanitize MongoDB queries
 app.use(cors({
     ...confCorsOptions,
     credentials: true
 }))
-// app.use(csrfProtection);
+
+/* app.use(lusca.csrf({
+    secret: process.env.CSRF_TOKEN
+})) */
 
 // Create rate limiters
 const relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
