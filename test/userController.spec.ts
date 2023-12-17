@@ -339,23 +339,23 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
     it('should successfully login a user with session cookie if stayLoggedIn is false', async function () {
         const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword', stayLoggedIn: false }
-    
+
         const res = await agent.post('/v1/users/login-local').send(loginUser)
-    
+
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('auth')
         expect(res).to.have.cookie('connect.sid') // Expecting the default session cookie name.
         expect(res.body.auth).to.be.true
-    
+
         // Check the session cookie type (session cookie vs. persistent cookie)
         const cookies = res.headers['set-cookie']
         const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid')) as string
         const parsedCookie = parse(sessionCookie)
-        
+
         // Session cookie should not have a specific expiration time when stayLoggedIn is false
-        expect(parsedCookie).to.not.have.property('Expires');
-    });    
+        expect(parsedCookie).to.not.have.property('Expires')
+    })
 
     it('should successfully login a user with session expiration if stayLoggedIn is true', async function () {
         const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword', stayLoggedIn: true }
@@ -394,9 +394,9 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
         const cookies = res.headers['set-cookie']
         const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid')) as string
         const parsedCookie = parse(sessionCookie)
-        
+
         // Session cookie should not have a specific expiration time when stayLoggedIn is false
-        expect(parsedCookie).to.not.have.property('Expires');
+        expect(parsedCookie).to.not.have.property('Expires')
     })
 
     it('should fail due to missing email', async function () {
