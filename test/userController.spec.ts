@@ -337,29 +337,27 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
         expect(res.body.auth).to.be.true
     })
 
-    it('should successfully login a user with short session expiration if stayLoggedIn is false', async function () {
+    it('should successfully login a user with session cookie if stayLoggedIn is false', async function () {
         const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword', stayLoggedIn: false }
-
+    
         const res = await agent.post('/v1/users/login-local').send(loginUser)
-
+    
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('auth')
         expect(res).to.have.cookie('connect.sid') // Expecting the default session cookie name.
         expect(res.body.auth).to.be.true
-
-        // Check the expiration of the cookie
+    
+        // Check the session cookie type (session cookie vs. persistent cookie)
         const cookies = res.headers['set-cookie']
         const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid')) as string
         const parsedCookie = parse(sessionCookie)
-        const expiresDate = new Date(parsedCookie.Expires)
+        
+        // Session cookie should not have a specific expiration time when stayLoggedIn is false
+        expect(parsedCookie).to.not.have.property('Expires');
+    });    
 
-        const expectedExpiryDate = new Date(Date.now() + sessionExpiry * 1000)
-
-        expect(expiresDate.getTime()).to.be.closeTo(expectedExpiryDate.getTime(), 10000) // Allowing a 5-second window
-    })
-
-    it('should successfully login a user with long session expiration if stayLoggedIn is true', async function () {
+    it('should successfully login a user with session expiration if stayLoggedIn is true', async function () {
         const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword', stayLoggedIn: true }
 
         const res = await agent.post('/v1/users/login-local').send(loginUser)
@@ -376,12 +374,12 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
         const parsedCookie = parse(sessionCookie)
         const expiresDate = new Date(parsedCookie.Expires)
 
-        const expectedExpiryDate = new Date(Date.now() + sessionPersistentExpiry * 1000)
+        const expectedExpiryDate = new Date(Date.now() + sessionExpiry * 1000)
 
         expect(expiresDate.getTime()).to.be.closeTo(expectedExpiryDate.getTime(), 5000) // Allowing a 5-second window
     })
 
-    it('should successfully login a user with short session expiration if stayLoggedIn is not defined', async function () {
+    it('should successfully login a user with session cookie if stayLoggedIn is not defined', async function () {
         const loginUser = { email: 'TestUser@gmail.com', password: 'testpassword' }
 
         const res = await agent.post('/v1/users/login-local').send(loginUser)
@@ -392,15 +390,13 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
         expect(res).to.have.cookie('connect.sid') // Expecting the default session cookie name.
         expect(res.body.auth).to.be.true
 
-        // Check the expiration of the cookie
+        // Check the session cookie type (session cookie vs. persistent cookie)
         const cookies = res.headers['set-cookie']
         const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('connect.sid')) as string
         const parsedCookie = parse(sessionCookie)
-        const expiresDate = new Date(parsedCookie.Expires)
-
-        const expectedExpiryDate = new Date(Date.now() + sessionExpiry * 1000)
-
-        expect(expiresDate.getTime()).to.be.closeTo(expectedExpiryDate.getTime(), 5000) // Allowing a 5-second window
+        
+        // Session cookie should not have a specific expiration time when stayLoggedIn is false
+        expect(parsedCookie).to.not.have.property('Expires');
     })
 
     it('should fail due to missing email', async function () {
