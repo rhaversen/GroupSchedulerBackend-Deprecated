@@ -8,10 +8,7 @@ import { sanitizeInput } from '../middleware/sanitizer.js'
 import { ensureAuthenticated } from '../utils/passportConfig.js'
 
 // Controller functions
-import {
-    newBlockedDate,
-    deleteBlockedDate
-} from '../controllers/blockedDatesController.js'
+import { deleteBlockedDate, newBlockedDate } from '../controllers/blockedDatesController.js'
 
 // Destructuring and global variables
 const router = Router()

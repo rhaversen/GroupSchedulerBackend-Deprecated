@@ -39,7 +39,7 @@ async function initializeDatabaseConnection (): Promise<void> {
 async function closeDatabaseConnection (): Promise<void> {
     await disconnect()
     logger.info('Database connection closed')
-    }
+}
 
 function isMemoryDatabase (): boolean {
     return dbConnectionType === 'replicaSet'
