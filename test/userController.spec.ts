@@ -1032,6 +1032,18 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
 
         expect(res.body.error).to.be.equal('Missing confirmNewPassword')
     })
+
+    it('should remove the passwordResetCode', async function () {
+        const resetDetails = {
+            newPassword: 'NewPassword123',
+            confirmNewPassword: 'NewPassword123'
+        }
+        await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(resetDetails)
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
+
+        expect(updatedTestUser.passwordResetCode).to.be.undefined
+    })
 })
 
 describe('Update Username Endpoint PATCH /update-username', function () {

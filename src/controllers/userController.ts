@@ -405,6 +405,7 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
     }
 
     user.password = newPassword
+    user.passwordResetCode = undefined
 
     await user.save()
 
