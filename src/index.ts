@@ -73,7 +73,8 @@ app.use(express.json()) // for parsing application/json
 app.use(cookieParser()) // For parsing cookies
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.use(session({ // Session management
-    resave: false,
+    resave: true, // Save the updated session back to the store
+    rolling: true, // Reset the cookie max-age on every request
     secret: process.env.SESSION_SECRET!,
     saveUninitialized: true,
     store: MongoStore.create({ client: mongoose.connection.getClient() as any }), // Property 'serverMonitoringMode' is missing in options for mongoose version of mongodb but is required in mongodb used by connect-mongo. it is not needed, therefore type assertion "any"

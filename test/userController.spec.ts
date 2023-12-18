@@ -11,6 +11,7 @@ import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
 import { getExpressPort, getSessionExpiry } from '../src/utils/setupConfig.js'
 import { compare } from 'bcrypt'
+import { type InternalSessionType, type ParsedSessionData, Session } from '../src/controllers/userController.js'
 
 // Global variables and setup
 const { expect } = chai
@@ -476,7 +477,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 })
 
 describe('User Logout Endpoint DELETE /v1/users/logout', function () {
-    let registeredUser
+    let registeredUser: IUser
 
     beforeEach(async function () {
         registeredUser = new UserModel({
@@ -540,6 +541,30 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
         expect(res.body.message).to.be.equal('Unauthorized')
 
         newAgent.close()
+    })
+
+    it('should destroy the session in the session store', async function () {
+        const sessionsBefore = await Session.find({}).exec() as InternalSessionType[]
+
+        const userSessionsBefore = sessionsBefore.filter(sessionDocument => {
+            const sessionData = JSON.parse(sessionDocument.session) as ParsedSessionData
+            return sessionData.passport?.user === registeredUser.id
+        })
+
+        expect(userSessionsBefore).to.be.a('array')
+        expect(userSessionsBefore.length).to.be.equal(1)
+
+        await agent.delete('/v1/users/logout')
+
+        const sessionsAfter = await Session.find({}).exec() as InternalSessionType[]
+
+        const userSessionsAfter = sessionsAfter.filter(sessionDocument => {
+            const sessionData = JSON.parse(sessionDocument.session) as ParsedSessionData
+            return sessionData.passport?.user === registeredUser.id
+        })
+
+        expect(userSessionsAfter).to.be.a('array')
+        expect(userSessionsAfter.length).to.be.equal(0)
     })
 })
 
@@ -1533,5 +1558,51 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
 
     it('should remove the users availabilities', async function () {
         // TODO:
+    })
+})
+
+describe('Get active sessions GET /v1/users/sessions', function () {
+    let testUser: IUser
+
+    beforeEach(async function () {
+        // Create a test user
+        testUser = new UserModel({
+            username: 'TestUser',
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
+        })
+        testUser.confirmUser()
+        await testUser.save()
+
+        await agent.post('/v1/users/login-local').send({
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
+        })
+    })
+
+    it('Should show one active session when logged in once', async function () {
+        const res = await agent.get('/v1/users/sessions')
+
+        // Checking the length of the sessions array
+        expect(res).to.have.status(200)
+        expect(res.body).to.be.an('array')
+        expect(res.body.length).to.be.equal(1) // Expecting one session
+    })
+
+    it('Should show two active sessions when logged in twice', async function () {
+        const newAgent = chai.request.agent(server.app)
+        await newAgent.post('/v1/users/login-local').send({
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
+        })
+
+        const res = await agent.get('/v1/users/sessions')
+
+        // Checking the length of the sessions array
+        expect(res).to.have.status(200)
+        expect(res.body).to.be.an('array')
+        expect(res.body.length).to.be.equal(2) // Expecting two sessions
+
+        newAgent.close()
     })
 })

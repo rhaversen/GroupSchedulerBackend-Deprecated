@@ -7,10 +7,17 @@ import { type CorsOptions } from 'cors'
 import { type Options as RateLimitOptions } from 'express-rate-limit'
 import { type ConnectOptions } from 'mongoose'
 import { type CookieOptions } from 'express'
+import logger from './logger.js'
 
 // Types
 type ContentSecurityPolicyOptions = HelmetOptions['contentSecurityPolicy']
 type HstsOptions = HelmetOptions['hsts']
+
+// Convert config object to a plain object and then stringify it
+const configString = JSON.stringify(config.util.toObject(config), null, 4);
+
+// Log the configs used
+logger.info(`Using configs:\n${configString}`);
 
 export function getSaltRounds (): number {
     return config.get('bcrypt.saltRounds')
