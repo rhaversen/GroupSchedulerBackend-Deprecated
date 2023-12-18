@@ -98,6 +98,19 @@ describe('User Registration Endpoint POST /v1/users', function () {
         expect(res.body.message).to.be.equal('Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.')
     })
 
+    it('should successfully login the new user', async function () {
+        const res = await agent.post('/v1/users').send(testUser)
+
+        expect(res.body).to.have.property('auth')
+        expect(res).to.have.cookie('connect.sid')
+        expect(res.body.auth).to.be.true
+
+        const registeredUser = await UserModel.findOne({ email: testUser.email }) as IUser
+
+        expect(res.body).to.have.property('user')
+        expect(res.body.user._id).to.be.equal(registeredUser.id)
+    })
+
     it('should fail due to missing fields (email)', async function () {
         const incompleteUser = { username: 'Test User', password: 'testpassword', confirmPassword: 'testpassword' }
 

@@ -124,9 +124,20 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
     const confirmationLink = generateConfirmationLink(savedUser.confirmationCode!)
     await sendConfirmationEmail(email, confirmationLink)
 
-    res.status(201).json({
-        message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.'
-    })
+    passport.authenticate('local', (err: Error, user: Express.User, info: { message: string }) => {
+        if (err) {
+            return res.status(500).json({ auth: false, error: err.message })
+        }
+        if (!user) {
+            return res.status(401).json({ auth: false, error: info.message })
+        }
+        req.logIn(user, loginErr => {
+            if (loginErr) {
+                return res.status(500).json({ auth: false, error: loginErr.message })
+            }
+            return res.status(201).json({ auth: true, user, message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.' })
+        })
+    })(req, res, next)
 })
 
 export const requestPasswordResetEmail = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
