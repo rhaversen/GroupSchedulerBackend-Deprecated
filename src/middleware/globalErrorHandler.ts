@@ -5,7 +5,7 @@ import { type NextFunction, type Request, type Response } from 'express'
 import { EventError, ServerError, ValidationError } from '../utils/errors.js'
 import logger from '../utils/logger.js'
 
-export default (function (err: any, req: Request, res: Response, next: NextFunction): void {
+export default (function (err: Error, req: Request, res: Response, next: NextFunction): void {
     if (err instanceof ValidationError || err instanceof EventError) {
         // These are client-safe errors that can be directly sent to the client.
         logger.silly(err.message)
