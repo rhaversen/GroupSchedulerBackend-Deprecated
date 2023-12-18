@@ -39,7 +39,7 @@ const configurePassport = (passport: PassportStatic): void => {
                     .then(async user => {
                         // Check if user exists
                         if (user === null || user === undefined) {
-                            done(new InvalidEmailError('A user with the email ' + email + ' was not found. Please check spelling or sign up'))
+                            done(null, false, { message: 'A user with the email ' + email + ' was not found. Please check spelling or sign up' })
                             return
                         }
 
