@@ -81,7 +81,7 @@ const configurePassport = (passport: PassportStatic): void => {
         UserModel.findById(id).exec()
             .then(user => {
                 if (user === null || user === undefined) {
-                    done(new UserNotFoundError('User not found, it might have been deleted (Session failed to authenticate)'), false)
+                    done(new UserNotFoundError('User not found, it might have been deleted (User failed to deserialize)'), false)
                 }
                 done(null, user)
             })

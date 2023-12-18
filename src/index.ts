@@ -17,7 +17,7 @@ import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { closeDatabaseConnection, initializeDatabaseConnection, mongoose } from './database/databaseHandler.js'
-// import csrfProtection from './utils/csrfProtection.js';
+// import csrfProtection from './utils/csrfProtection.js'
 import {
     getCorsOptions,
     getExpressPort,
