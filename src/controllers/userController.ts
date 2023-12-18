@@ -350,7 +350,7 @@ export const updatePassword = asyncErrorHandler(async (req: Request, res: Respon
         next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match'))
         return
     }
-    const passwordsMatch = await compare(user.password, currentPassword)
+    const passwordsMatch = await compare(currentPassword, user.password)
     if (passwordsMatch) {
         user.password = newPassword
     } else {

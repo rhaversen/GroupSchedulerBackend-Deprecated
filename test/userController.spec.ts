@@ -389,7 +389,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
         const parsedCookie = parse(sessionCookie)
         const expiresDate = new Date(parsedCookie.Expires)
 
-        const expectedExpiryDate = new Date(Date.now() + sessionExpiry * 1000)
+        const expectedExpiryDate = new Date(Date.now() + sessionExpiry)
 
         expect(expiresDate.getTime()).to.be.closeTo(expectedExpiryDate.getTime(), 5000) // Allowing a 5-second window
     })
@@ -870,7 +870,7 @@ describe('Update Password Endpoint PATCH /update-password', function () {
         // Fetch the updated user from the database
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
 
-        const passwordsMatch = await compare(updatedTestUser.password, 'UpdatedPassword')
+        const passwordsMatch = await compare('UpdatedPassword', updatedTestUser.password)
         expect(passwordsMatch).to.be.true
 
         expect(updatedTestUser.confirmed).to.be.true
@@ -963,11 +963,6 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         })
         testUser.confirmUser()
         await testUser.save()
-
-        await agent.post('/v1/users/login-local').send({
-            email: 'TestUser@gmail.com',
-            password: 'TestPassword'
-        })
     })
 
     it('should reset the password successfully', async function () {
@@ -980,7 +975,8 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         expect(res).to.have.status(201)
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
-        const passwordsMatch = await compare(updatedTestUser.password, 'UpdatedPassword')
+        const passwordsMatch = await compare('NewPassword123', updatedTestUser.password)
+
         expect(passwordsMatch).to.be.true
     })
 
