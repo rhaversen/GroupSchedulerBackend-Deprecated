@@ -23,17 +23,17 @@ import { getFrontendDomain, getNextJsPort, getSessionExpiry } from '../utils/set
 import { compare } from 'bcrypt'
 
 // Destructuring and global variables
-const Session = mongoose.model('Session', new mongoose.Schema({}, { strict: false }), 'sessions');
+export const Session = mongoose.model('Session', new mongoose.Schema({}, { strict: false }), 'sessions');
 
 // Interfaces
-interface InternalSessionType extends mongoose.Document {
+export interface InternalSessionType extends mongoose.Document {
     _id: string;
     session: string
     expires?: Date;
     lastModified?: Date;
 };
 
-interface ParsedSessionData {
+export interface ParsedSessionData {
     cookie: {
         originalMaxAge: any,
         expires: any,

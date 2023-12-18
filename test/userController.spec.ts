@@ -11,6 +11,7 @@ import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
 import { getExpressPort, getSessionExpiry } from '../src/utils/setupConfig.js'
 import { compare } from 'bcrypt'
+import { type InternalSessionType, type ParsedSessionData, Session } from '../src/controllers/userController.js'
 
 // Global variables and setup
 const { expect } = chai
@@ -476,7 +477,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 })
 
 describe('User Logout Endpoint DELETE /v1/users/logout', function () {
-    let registeredUser
+    let registeredUser: IUser
 
     beforeEach(async function () {
         registeredUser = new UserModel({
@@ -540,6 +541,30 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
         expect(res.body.message).to.be.equal('Unauthorized')
 
         newAgent.close()
+    })
+
+    it('should destroy the session in the session store', async function () {
+        const sessionsBefore = await Session.find({}).exec() as InternalSessionType[]
+
+        const userSessionsBefore = sessionsBefore.filter(sessionDocument => {
+            const sessionData = JSON.parse(sessionDocument.session) as ParsedSessionData
+            return sessionData.passport?.user === registeredUser.id
+        })
+
+        expect(userSessionsBefore).to.be.a('array')
+        expect(userSessionsBefore.length).to.be.equal(1)
+
+        await agent.delete('/v1/users/logout')
+
+        const sessionsAfter = await Session.find({}).exec() as InternalSessionType[]
+
+        const userSessionsAfter = sessionsAfter.filter(sessionDocument => {
+            const sessionData = JSON.parse(sessionDocument.session) as ParsedSessionData
+            return sessionData.passport?.user === registeredUser.id
+        })
+
+        expect(userSessionsAfter).to.be.a('array')
+        expect(userSessionsAfter.length).to.be.equal(0)
     })
 })
 
