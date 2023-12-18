@@ -17,7 +17,7 @@ import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
 import { closeDatabaseConnection, initializeDatabaseConnection, mongoose } from './database/databaseHandler.js'
-// import csrfProtection from './utils/csrfProtection.js';
+// import csrfProtection from './utils/csrfProtection.js'
 import {
     getCorsOptions,
     getExpressPort,
@@ -51,9 +51,6 @@ const confSensitiveApiLimiter = getSensitiveApiLimiterConfig()
 const expressPort = getExpressPort()
 const cookieOptions = getCookieOptions()
 
-// Function invocations
-configurePassport(passport)
-
 // Helmet security
 /* if (typeof helmetCSP === 'object' && helmetCSP !== null) {
     app.use(helmet.contentSecurityPolicy(helmetCSP))
@@ -84,6 +81,7 @@ app.use(session({ // Session management
 }))
 app.use(passport.initialize()) // Initialize Passport
 app.use(passport.session()) // Passport session handling
+configurePassport(passport) // Use passportConfig
 app.use(mongoSanitize()) // Sanitize MongoDB queries
 app.use(cors({
     ...confCorsOptions,

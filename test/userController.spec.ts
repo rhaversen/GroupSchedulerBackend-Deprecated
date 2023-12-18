@@ -1,5 +1,6 @@
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
 // Third-party libraries
 import { parse } from 'cookie'
@@ -9,6 +10,7 @@ import server, { agent, chai } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
 import { getExpressPort, getSessionExpiry } from '../src/utils/setupConfig.js'
+import { compare } from 'bcrypt'
 
 // Global variables and setup
 const { expect } = chai
@@ -94,6 +96,19 @@ describe('User Registration Endpoint POST /v1/users', function () {
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('message')
         expect(res.body.message).to.be.equal('Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.')
+    })
+
+    it('should successfully login the new user', async function () {
+        const res = await agent.post('/v1/users').send(testUser)
+
+        expect(res.body).to.have.property('auth')
+        expect(res).to.have.cookie('connect.sid')
+        expect(res.body.auth).to.be.true
+
+        const registeredUser = await UserModel.findOne({ email: testUser.email }).exec() as IUser
+
+        expect(res.body).to.have.property('user')
+        expect(res.body.user._id).to.be.equal(registeredUser.id)
     })
 
     it('should fail due to missing fields (email)', async function () {
@@ -374,7 +389,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
         const parsedCookie = parse(sessionCookie)
         const expiresDate = new Date(parsedCookie.Expires)
 
-        const expectedExpiryDate = new Date(Date.now() + sessionExpiry * 1000)
+        const expectedExpiryDate = new Date(Date.now() + sessionExpiry)
 
         expect(expiresDate.getTime()).to.be.closeTo(expectedExpiryDate.getTime(), 5000) // Allowing a 5-second window
     })
@@ -404,9 +419,9 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(incompleteUser)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('Missing email')
+        expect(res.body.error).to.be.equal('Missing credentials')
     })
 
     it('should fail due to missing password', async function () {
@@ -414,9 +429,9 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(incompleteUser)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('Missing password')
+        expect(res.body.error).to.be.equal('Missing credentials')
     })
 
     it('should fail due to missing email and password', async function () {
@@ -424,9 +439,9 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(incompleteUser)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('Missing email, password')
+        expect(res.body.error).to.be.equal('Missing credentials')
     })
 
     it('should fail due to invalid email format', async function () {
@@ -434,7 +449,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(invalidEmailUser)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
         expect(res.body.error).to.be.equal('Invalid email format')
     })
@@ -444,7 +459,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(notFoundUser)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
         expect(res.body.error).to.be.equal('A user with the email NotFound@gmail.com was not found. Please check spelling or sign up')
     })
@@ -454,7 +469,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(invalidCreds)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
         expect(res.body.error).to.be.equal('Invalid credentials')
     })
@@ -855,7 +870,8 @@ describe('Update Password Endpoint PATCH /update-password', function () {
         // Fetch the updated user from the database
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
 
-        expect(await updatedTestUser.comparePassword('UpdatedPassword')).to.be.true
+        const passwordsMatch = await compare('UpdatedPassword', updatedTestUser.password)
+        expect(passwordsMatch).to.be.true
 
         expect(updatedTestUser.confirmed).to.be.true
         expect(updatedTestUser.toObject()).to.not.have.property('expirationDate')
@@ -947,11 +963,6 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         })
         testUser.confirmUser()
         await testUser.save()
-
-        await agent.post('/v1/users/login-local').send({
-            email: 'TestUser@gmail.com',
-            password: 'TestPassword'
-        })
     })
 
     it('should reset the password successfully', async function () {
@@ -959,12 +970,14 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'NewPassword123'
         }
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(resetDetails)
+        const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(resetDetails)
 
         expect(res).to.have.status(201)
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
-        expect(await updatedTestUser.comparePassword('NewPassword123')).to.be.true
+        const passwordsMatch = await compare('NewPassword123', updatedTestUser.password)
+
+        expect(passwordsMatch).to.be.true
     })
 
     it('should not update the reset password code passwords do not match', async function () {
@@ -972,7 +985,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'WrongPassword123'
         }
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(mismatchingPasswords)
+        const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(mismatchingPasswords)
 
         expect(res).to.have.status(400)
 
@@ -985,7 +998,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'WrongPassword123'
         }
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(mismatchingPasswords)
+        const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(mismatchingPasswords)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -999,8 +1012,12 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             confirmNewPassword: 'NewPassword123'
         }
 
-        const res = await agent.patch('/v1/users/reset-password/InvalidResetCode').send(resetDetails)
-        expect(res).to.have.status(404)
+        const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/InvalidResetCode').send(resetDetails)
+
+        expect(res).to.have.status(400)
+        expect(res.body).to.be.a('object')
+        expect(res.body).to.have.property('error')
+        expect(res.body.error).to.be.equal('The password reset code is not correct')
     })
 
     it('should return an error if not all fields are provided', async function () {
@@ -1008,13 +1025,51 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'PartialPassword'
         }
 
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(partialPasswordDetails) // Missing reset code
+        const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(partialPasswordDetails) // Missing confirmNewPassword
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
         expect(res.body).to.have.property('error')
 
         expect(res.body.error).to.be.equal('Missing confirmNewPassword')
+    })
+
+    it('should not store the password unhashed', async function () {
+        const resetDetails = {
+            newPassword: 'NewPassword123',
+            confirmNewPassword: 'NewPassword123'
+        }
+        await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(resetDetails)
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
+
+        const passwordIsHashed = (updatedTestUser.password !== resetDetails.newPassword)
+
+        expect(passwordIsHashed).to.be.true
+    })
+
+    it('should not reset the password if passwordResetCode is incorrect', async function () {
+        const resetDetails = {
+            newPassword: 'NewPassword123',
+            confirmNewPassword: 'NewPassword123'
+        }
+        await agent.patch('/v1/users/reset-password/TestUser@gmail.com/InvalidResetCode').send(resetDetails)
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
+        const passwordsMatch = await compare('NewPassword123', updatedTestUser.password)
+        expect(passwordsMatch).to.be.false
+    })
+
+    it('should remove the passwordResetCode', async function () {
+        const resetDetails = {
+            newPassword: 'NewPassword123',
+            confirmNewPassword: 'NewPassword123'
+        }
+        await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(resetDetails)
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
+
+        expect(updatedTestUser.passwordResetCode).to.be.undefined
     })
 })
 

@@ -2,8 +2,10 @@
 
 // Third-party libraries
 import validator from 'validator'
+import { compare } from 'bcrypt'
 import { Strategy as LocalStrategy } from 'passport-local'
 // import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
+
 // Own modules
 import UserModel, { type IUser } from '../models/User.js'
 import { type PassportStatic } from 'passport'
@@ -29,7 +31,7 @@ const configurePassport = (passport: PassportStatic): void => {
             try {
                 // Validate email format
                 if (!validator.isEmail(email)) {
-                    done(new InvalidEmailError('Invalid email format'))
+                    done(null, false, { message: 'Invalid email format' })
                     return
                 }
                 // Find user by email
@@ -37,23 +39,23 @@ const configurePassport = (passport: PassportStatic): void => {
                     .then(async user => {
                         // Check if user exists
                         if (user === null || user === undefined) {
-                            done(new InvalidEmailError('A user with the email ' + email + ' was not found. Please check spelling or sign up'))
+                            done(null, false, { message: 'A user with the email ' + email + ' was not found. Please check spelling or sign up' })
                             return
                         }
 
                         // Check password
-                        const isMatch = await user.comparePassword(password)
+                        const isMatch = await compare(password, user.password)
                         if (!isMatch) {
-                            done(new InvalidCredentialsError('Invalid credentials'))
+                            done(null, false, { message: 'Invalid credentials' })
                             return
                         }
                         done(null, user)
                     })
                     .catch(err => {
-                        done(err)
+                        done(null, false)
                     })
             } catch (err) {
-                done(err)
+                done(null, false)
             }
         })
     )
@@ -79,7 +81,7 @@ const configurePassport = (passport: PassportStatic): void => {
         UserModel.findById(id).exec()
             .then(user => {
                 if (user === null || user === undefined) {
-                    done(new UserNotFoundError('User not found, it might have been deleted (Session failed to authenticate)'), false)
+                    done(new UserNotFoundError('User not found, it might have been deleted (User failed to deserialize)'), false)
                 }
                 done(null, user)
             })

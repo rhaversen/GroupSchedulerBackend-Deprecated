@@ -20,6 +20,7 @@ import UserModel, { type IUser, type IUserPopulated } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import logger from '../utils/logger.js'
 import { getFrontendDomain, getNextJsPort, getSessionExpiry } from '../utils/setupConfig.js'
+import { compare } from 'bcrypt'
 
 // Destructuring and global variables
 
@@ -123,9 +124,20 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
     const confirmationLink = generateConfirmationLink(savedUser.confirmationCode!)
     await sendConfirmationEmail(email, confirmationLink)
 
-    res.status(201).json({
-        message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.'
-    })
+    passport.authenticate('local', (err: Error, user: Express.User, info: { message: string }) => {
+        if (err) {
+            return res.status(500).json({ auth: false, error: err.message })
+        }
+        if (!user) {
+            return res.status(401).json({ auth: false, error: info.message })
+        }
+        req.logIn(user, loginErr => {
+            if (loginErr) {
+                return res.status(500).json({ auth: false, error: loginErr.message })
+            }
+            return res.status(201).json({ auth: true, user, message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.' })
+        })
+    })(req, res, next)
 })
 
 export const requestPasswordResetEmail = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -173,38 +185,25 @@ export const confirmUser = asyncErrorHandler(async (req: Request, res: Response,
 })
 
 export const loginUserLocal = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const requiredFieldsForLogin = ['email', 'password']
-    ensureFieldsPresent(req.body, requiredFieldsForLogin, next)
-
-    passport.authenticate('local', (err: Error, user: IUser, info: { message: string }) => {
+    passport.authenticate('local', (err: Error, user: Express.User, info: { message: string }) => {
         if (err) {
-            next(err); return
+            return res.status(500).json({ auth: false, error: err.message })
         }
-        if (user === null || user === undefined) {
-            // User not authenticated, destroy any initialized session
-            if (req.session) {
-                req.session.destroy((err) => {
-                    if (err) {
-                        next(err); return
-                    }
-                    return res.status(401).json({ auth: false, error: info.message })
-                })
-            } else {
-                return res.status(401).json({ auth: false, error: info.message })
+        if (!user) {
+            return res.status(401).json({ auth: false, error: info.message })
+        }
+        req.logIn(user, loginErr => {
+            if (loginErr) {
+                return res.status(500).json({ auth: false, error: loginErr.message })
             }
-        } else {
-            // Manually establish a session for the authenticated user
-            req.login(user, (err) => {
-                if (err) {
-                    next(err); return
-                }
-                // Set maxAge for persistent sessions if requested
-                if (req.body.stayLoggedIn === 'true') {
-                    req.session.cookie.maxAge = sessionExpiry * 1000
-                }
-                return res.status(200).json({ auth: true, user })
-            })
-        }
+
+            // Set maxAge for persistent sessions if requested
+            if (req.body.stayLoggedIn === 'true') {
+                req.session.cookie.maxAge = sessionExpiry
+            }
+
+            return res.status(200).json({ auth: true, user })
+        })
     })(req, res, next)
 })
 
@@ -351,8 +350,7 @@ export const updatePassword = asyncErrorHandler(async (req: Request, res: Respon
         next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match'))
         return
     }
-
-    const passwordsMatch = await user.comparePassword(currentPassword)
+    const passwordsMatch = await compare(currentPassword, user.password)
     if (passwordsMatch) {
         user.password = newPassword
     } else {
@@ -370,7 +368,7 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
         newPassword,
         confirmNewPassword
     } = req.body
-    const { passwordResetCode } = req.params
+    const { email, passwordResetCode } = req.params
 
     const requiredFields = ['newPassword', 'confirmNewPassword']
     ensureFieldsPresent(req.body, requiredFields, next)
@@ -380,14 +378,21 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
         return
     }
 
-    const user = await UserModel.findOne({ passwordResetCode }).exec()
+    const user = await UserModel.findOne({ email }).exec()
 
     if (user === undefined || user === null) {
-        res.status(404).send()
+        res.status(404).json({ error: 'The email could not be found' })
+        return
+    }
+
+    const correctPasswordResetCode = (user.passwordResetCode === passwordResetCode)
+    if (!correctPasswordResetCode) {
+        next(new InvalidCredentialsError('The password reset code is not correct'))
         return
     }
 
     user.password = newPassword
+    user.passwordResetCode = undefined
 
     await user.save()
 
