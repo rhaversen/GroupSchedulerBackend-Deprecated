@@ -105,7 +105,7 @@ describe('User Registration Endpoint POST /v1/users', function () {
         expect(res).to.have.cookie('connect.sid')
         expect(res.body.auth).to.be.true
 
-        const registeredUser = await UserModel.findOne({ email: testUser.email }) as IUser
+        const registeredUser = await UserModel.findOne({ email: testUser.email }).exec() as IUser
 
         expect(res.body).to.have.property('user')
         expect(res.body.user._id).to.be.equal(registeredUser.id)
