@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { hash } from 'bcryptjs'
+import { hash } from 'bcrypt'
 import { customAlphabet } from 'nanoid'
 import mongoose, { type Document, model, type Model, type Types } from 'mongoose'
 

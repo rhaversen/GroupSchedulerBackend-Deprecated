@@ -20,7 +20,7 @@ import UserModel, { type IUser, type IUserPopulated } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import logger from '../utils/logger.js'
 import { getFrontendDomain, getNextJsPort, getSessionExpiry } from '../utils/setupConfig.js'
-import { compare } from 'bcryptjs'
+import { compare } from 'bcrypt'
 
 // Destructuring and global variables
 

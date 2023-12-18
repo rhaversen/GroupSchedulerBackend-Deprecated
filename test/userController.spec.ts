@@ -2,7 +2,6 @@
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
 
-
 // Third-party libraries
 import { parse } from 'cookie'
 
@@ -11,7 +10,7 @@ import server, { agent, chai } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
 import { getExpressPort, getSessionExpiry } from '../src/utils/setupConfig.js'
-import { compare } from 'bcryptjs'
+import { compare } from 'bcrypt'
 
 // Global variables and setup
 const { expect } = chai

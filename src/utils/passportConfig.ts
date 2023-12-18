@@ -2,7 +2,7 @@
 
 // Third-party libraries
 import validator from 'validator'
-import { compare } from 'bcryptjs'
+import { compare } from 'bcrypt'
 import { Strategy as LocalStrategy } from 'passport-local'
 // import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 
