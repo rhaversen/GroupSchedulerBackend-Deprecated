@@ -185,38 +185,25 @@ export const confirmUser = asyncErrorHandler(async (req: Request, res: Response,
 })
 
 export const loginUserLocal = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const requiredFieldsForLogin = ['email', 'password']
-    ensureFieldsPresent(req.body, requiredFieldsForLogin, next)
-
-    passport.authenticate('local', (err: Error, user: IUser, info: { message: string }) => {
+    passport.authenticate('local', (err: Error, user: Express.User, info: { message: string }) => {
         if (err) {
-            next(err); return
+            return res.status(500).json({ auth: false, error: err.message })
         }
-        if (user === null || user === undefined) {
-            // User not authenticated, destroy any initialized session
-            if (req.session) {
-                req.session.destroy((err) => {
-                    if (err) {
-                        next(err); return
-                    }
-                    return res.status(401).json({ auth: false, error: info.message })
-                })
-            } else {
-                return res.status(401).json({ auth: false, error: info.message })
+        if (!user) {
+            return res.status(401).json({ auth: false, error: info.message })
+        }
+        req.logIn(user, loginErr => {
+            if (loginErr) {
+                return res.status(500).json({ auth: false, error: loginErr.message })
             }
-        } else {
-            // Manually establish a session for the authenticated user
-            req.login(user, (err) => {
-                if (err) {
-                    next(err); return
-                }
-                // Set maxAge for persistent sessions if requested
-                if (req.body.stayLoggedIn === 'true') {
-                    req.session.cookie.maxAge = sessionExpiry * 1000
-                }
-                return res.status(200).json({ auth: true, user })
-            })
-        }
+
+            // Set maxAge for persistent sessions if requested
+            if (req.body.stayLoggedIn === 'true') {
+                req.session.cookie.maxAge = sessionExpiry
+            }
+
+            return res.status(200).json({ auth: true, user })
+        })
     })(req, res, next)
 })
 
