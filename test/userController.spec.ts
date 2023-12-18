@@ -406,9 +406,9 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(incompleteUser)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('Missing email')
+        expect(res.body.error).to.be.equal('Missing credentials')
     })
 
     it('should fail due to missing password', async function () {
@@ -416,9 +416,9 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(incompleteUser)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('Missing password')
+        expect(res.body.error).to.be.equal('Missing credentials')
     })
 
     it('should fail due to missing email and password', async function () {
@@ -426,9 +426,9 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(incompleteUser)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
-        expect(res.body.error).to.be.equal('Missing email, password')
+        expect(res.body.error).to.be.equal('Missing credentials')
     })
 
     it('should fail due to invalid email format', async function () {
@@ -436,7 +436,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(invalidEmailUser)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
         expect(res.body.error).to.be.equal('Invalid email format')
     })
@@ -446,7 +446,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(notFoundUser)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
         expect(res.body.error).to.be.equal('A user with the email NotFound@gmail.com was not found. Please check spelling or sign up')
     })
@@ -456,7 +456,7 @@ describe('User Login Endpoint POST /v1/users/login-local', function () {
 
         const res = await agent.post('/v1/users/login-local').send(invalidCreds)
 
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.have.property('error')
         expect(res.body.error).to.be.equal('Invalid credentials')
     })

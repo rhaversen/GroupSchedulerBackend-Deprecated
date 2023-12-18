@@ -31,7 +31,7 @@ const configurePassport = (passport: PassportStatic): void => {
             try {
                 // Validate email format
                 if (!validator.isEmail(email)) {
-                    done(new InvalidEmailError('Invalid email format'))
+                    done(null, false, { message: 'Invalid email format' })
                     return
                 }
                 // Find user by email
@@ -46,16 +46,16 @@ const configurePassport = (passport: PassportStatic): void => {
                         // Check password
                         const isMatch = await compare(password, user.password)
                         if (!isMatch) {
-                            done(new InvalidCredentialsError('Invalid credentials'))
+                            done(null, false, { message: 'Invalid credentials' })
                             return
                         }
                         done(null, user)
                     })
                     .catch(err => {
-                        done(err)
+                        done(null, false)
                     })
             } catch (err) {
-                done(err)
+                done(null, false)
             }
         })
     )
