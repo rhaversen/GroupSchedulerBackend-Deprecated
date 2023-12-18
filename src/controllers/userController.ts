@@ -23,29 +23,28 @@ import { getFrontendDomain, getNextJsPort, getSessionExpiry } from '../utils/set
 import { compare } from 'bcrypt'
 
 // Destructuring and global variables
-export const Session = mongoose.model('Session', new mongoose.Schema({}, { strict: false }), 'sessions');
+export const Session = mongoose.model('Session', new mongoose.Schema({}, { strict: false }), 'sessions')
 
 // Interfaces
 export interface InternalSessionType extends mongoose.Document {
-    _id: string;
+    _id: string
     session: string
-    expires?: Date;
-    lastModified?: Date;
+    expires?: Date
+    lastModified?: Date
 };
 
 export interface ParsedSessionData {
     cookie: {
-        originalMaxAge: any,
-        expires: any,
-        secure: any,
-        httpOnly: any,
+        originalMaxAge: any
+        expires: any
+        secure: any
+        httpOnly: any
         path: any
     }
     passport?: {
         user: any
-    };
+    }
 }
-
 
 // Config
 const sessionExpiry = getSessionExpiry()
@@ -109,25 +108,25 @@ export const getCurrentUser =
     }
 
 export const getSessions = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const userId = (req.user as IUser).id;
+    const userId = (req.user as IUser).id
 
     // Use type assertion here
-    const sessions = await Session.find({}).exec() as InternalSessionType[];
+    const sessions = await Session.find({}).exec() as InternalSessionType[]
 
     const userSessions = sessions.filter(sessionDocument => {
         const sessionData = JSON.parse(sessionDocument.session) as ParsedSessionData
-        return sessionData.passport?.user === userId;
-    });
+        return sessionData.passport?.user === userId
+    })
 
     res.json(userSessions.map(sessionDocument => {
         const sessionData = JSON.parse(sessionDocument.session) as ParsedSessionData
         return {
             sessionExpires: sessionDocument.expires,
             lastModified: sessionDocument.lastModified,
-            sessionCookie: sessionData.cookie,
-        };
-    }));
-});
+            sessionCookie: sessionData.cookie
+        }
+    }))
+})
 
 export const registerUser = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { username, email, password, confirmPassword } = req.body

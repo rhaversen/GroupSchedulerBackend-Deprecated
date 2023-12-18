@@ -1580,9 +1580,9 @@ describe('Get active sessions GET /v1/users/sessions', function () {
         })
     })
 
-    it('Should show one active session when logged in once', async function () {    
+    it('Should show one active session when logged in once', async function () {
         const res = await agent.get('/v1/users/sessions')
-    
+
         // Checking the length of the sessions array
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
@@ -1595,15 +1595,14 @@ describe('Get active sessions GET /v1/users/sessions', function () {
             email: 'TestUser@gmail.com',
             password: 'TestPassword'
         })
-    
+
         const res = await agent.get('/v1/users/sessions')
-    
+
         // Checking the length of the sessions array
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
         expect(res.body.length).to.be.equal(2) // Expecting two sessions
 
-        newAgent.close();
+        newAgent.close()
     })
-
 })
