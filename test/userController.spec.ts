@@ -1017,6 +1017,11 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         }
 
         const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/InvalidResetCode').send(resetDetails)
+
+        expect(res).to.have.status(400)
+        expect(res.body).to.be.a('object')
+        expect(res.body).to.have.property('error')
+        expect(res.body.error).to.be.equal('The password reset code is not correct')
     })
 
     it('should return an error if not all fields are provided', async function () {
@@ -1031,6 +1036,32 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         expect(res.body).to.have.property('error')
 
         expect(res.body.error).to.be.equal('Missing confirmNewPassword')
+    })
+
+    it('should not store the password unhashed', async function () {
+        const resetDetails = {
+            newPassword: 'NewPassword123',
+            confirmNewPassword: 'NewPassword123'
+        }
+        await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(resetDetails)
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
+
+        const passwordIsHashed = (updatedTestUser.password !== resetDetails.newPassword)
+
+        expect(passwordIsHashed).to.be.true
+    })
+
+    it('should not reset the password if passwordResetCode is incorrect', async function () {
+        const resetDetails = {
+            newPassword: 'NewPassword123',
+            confirmNewPassword: 'NewPassword123'
+        }
+        await agent.patch('/v1/users/reset-password/TestUser@gmail.com/InvalidResetCode').send(resetDetails)
+
+        const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
+        const passwordsMatch = await compare('NewPassword123', updatedTestUser.password)
+        expect(passwordsMatch).to.be.false
     })
 
     it('should remove the passwordResetCode', async function () {
