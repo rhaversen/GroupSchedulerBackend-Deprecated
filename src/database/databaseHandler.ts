@@ -24,7 +24,7 @@ async function initializeDatabaseConnection (): Promise<void> {
         mongoose = replicaSetDatabaseConnector.mongoose
         dbConnectionType = 'replicaSet'
     } else {
-        logger.info('Connectiong to production database...')
+        logger.info('Connecting to production database...')
         const productionDatabaseConnector = await import('./productionDatabaseConnector.js')
         connect = productionDatabaseConnector.connectToDatabase
         disconnect = productionDatabaseConnector.disconnectFromDatabase
