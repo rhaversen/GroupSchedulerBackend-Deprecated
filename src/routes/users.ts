@@ -10,6 +10,7 @@ import { ensureAuthenticated } from '../utils/passportConfig.js'
 // Controller functions
 import {
     confirmUser,
+    getSessions,
     deleteUser,
     followUser,
     getCommonEvents,
@@ -40,6 +41,17 @@ router.get('/current-user',
     sanitizeInput,
     ensureAuthenticated,
     getCurrentUser
+)
+
+/**
+ * @route GET api/v1/users/sessions
+ * @desc Get users active sessions
+ * @access Authenticated
+ */
+router.get('/sessions',
+    sanitizeInput,
+    ensureAuthenticated,
+    getSessions
 )
 
 /**

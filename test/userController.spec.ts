@@ -1535,3 +1535,50 @@ describe('Delete User Endpoint DELETE /v1/users/', function () {
         // TODO:
     })
 })
+
+describe('Get active sessions GET /v1/users/sessions', function () {
+    let testUser: IUser
+
+    beforeEach(async function () {
+        // Create a test user
+        testUser = new UserModel({
+            username: 'TestUser',
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
+        })
+        testUser.confirmUser()
+        await testUser.save()
+
+        await agent.post('/v1/users/login-local').send({
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
+        })
+    })
+
+    it('Should show one active session when logged in once', async function () {    
+        const res = await agent.get('/v1/users/sessions')
+    
+        // Checking the length of the sessions array
+        expect(res).to.have.status(200)
+        expect(res.body).to.be.an('array')
+        expect(res.body.length).to.be.equal(1) // Expecting one session
+    })
+
+    it('Should show two active sessions when logged in twice', async function () {
+        const newAgent = chai.request.agent(server.app)
+        await newAgent.post('/v1/users/login-local').send({
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword'
+        })
+    
+        const res = await agent.get('/v1/users/sessions')
+    
+        // Checking the length of the sessions array
+        expect(res).to.have.status(200)
+        expect(res.body).to.be.an('array')
+        expect(res.body.length).to.be.equal(2) // Expecting two sessions
+
+        newAgent.close();
+    })
+
+})
