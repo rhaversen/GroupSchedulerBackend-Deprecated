@@ -63,11 +63,11 @@ router.post('/request-reset-password-email',
 )
 
 /**
- * @route PATCH api/v1/users/reset-password/:passwordResetCode
- * @desc Reset a users password given a correct password reset code (From a password reset email)
+ * @route PATCH api/v1/users/reset-password/:email/:passwordResetCode
+ * @desc Reset a users password given a email and correct password reset code (From a password reset email)
  * @access Public
  */
-router.patch('/reset-password/:passwordResetCode',
+router.patch('/reset-password/:email/:passwordResetCode',
     sanitizeInput,
     resetPassword
 )

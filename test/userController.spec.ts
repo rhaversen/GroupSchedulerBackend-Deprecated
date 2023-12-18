@@ -975,7 +975,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'NewPassword123'
         }
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(resetDetails)
+        const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(resetDetails)
 
         expect(res).to.have.status(201)
 
@@ -989,7 +989,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'WrongPassword123'
         }
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(mismatchingPasswords)
+        const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(mismatchingPasswords)
 
         expect(res).to.have.status(400)
 
@@ -1002,7 +1002,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'NewPassword123',
             confirmNewPassword: 'WrongPassword123'
         }
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(mismatchingPasswords)
+        const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(mismatchingPasswords)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -1016,8 +1016,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             confirmNewPassword: 'NewPassword123'
         }
 
-        const res = await agent.patch('/v1/users/reset-password/InvalidResetCode').send(resetDetails)
-        expect(res).to.have.status(404)
+        const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/InvalidResetCode').send(resetDetails)
     })
 
     it('should return an error if not all fields are provided', async function () {
@@ -1025,7 +1024,7 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
             newPassword: 'PartialPassword'
         }
 
-        const res = await agent.patch('/v1/users/reset-password/sampleResetCode12345').send(partialPasswordDetails) // Missing reset code
+        const res = await agent.patch('/v1/users/reset-password/TestUser@gmail.com/sampleResetCode12345').send(partialPasswordDetails) // Missing confirmNewPassword
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')

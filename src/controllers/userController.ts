@@ -381,7 +381,7 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
         newPassword,
         confirmNewPassword
     } = req.body
-    const { passwordResetCode } = req.params
+    const { email, passwordResetCode } = req.params
 
     const requiredFields = ['newPassword', 'confirmNewPassword']
     ensureFieldsPresent(req.body, requiredFields, next)
@@ -391,10 +391,16 @@ export const resetPassword = asyncErrorHandler(async (req: Request, res: Respons
         return
     }
 
-    const user = await UserModel.findOne({ passwordResetCode }).exec()
+    const user = await UserModel.findOne({ email }).exec()
 
     if (user === undefined || user === null) {
-        res.status(404).send()
+        res.status(404).json({ error: 'The email could not be found' })
+        return
+    }
+
+    const correctPasswordResetCode = (user.passwordResetCode === passwordResetCode)
+    if (!correctPasswordResetCode) {
+        next(new InvalidCredentialsError('The password reset code is not correct'))
         return
     }
 
