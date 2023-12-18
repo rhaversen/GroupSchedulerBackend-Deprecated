@@ -20,6 +20,7 @@ import UserModel, { type IUser, type IUserPopulated } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import logger from '../utils/logger.js'
 import { getFrontendDomain, getNextJsPort, getSessionExpiry } from '../utils/setupConfig.js'
+import { compare } from 'bcryptjs'
 
 // Destructuring and global variables
 
@@ -351,8 +352,7 @@ export const updatePassword = asyncErrorHandler(async (req: Request, res: Respon
         next(new InvalidCredentialsError('newPassword and confirmNewPassword does not match'))
         return
     }
-
-    const passwordsMatch = await user.comparePassword(currentPassword)
+    const passwordsMatch = await compare(user.password, currentPassword)
     if (passwordsMatch) {
         user.password = newPassword
     } else {

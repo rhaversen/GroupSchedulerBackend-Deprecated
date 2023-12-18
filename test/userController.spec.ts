@@ -1,5 +1,7 @@
 // file deepcode ignore NoHardcodedPasswords/test: Hardcoded credentials are only used for testing purposes
 // file deepcode ignore NoHardcodedCredentials/test: Hardcoded credentials are only used for testing purposes
+// file deepcode ignore HardcodedNonCryptoSecret/test: Hardcoded credentials are only used for testing purposes
+
 
 // Third-party libraries
 import { parse } from 'cookie'
@@ -9,6 +11,7 @@ import server, { agent, chai } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
 import { getExpressPort, getSessionExpiry } from '../src/utils/setupConfig.js'
+import { compare } from 'bcryptjs'
 
 // Global variables and setup
 const { expect } = chai
@@ -855,7 +858,8 @@ describe('Update Password Endpoint PATCH /update-password', function () {
         // Fetch the updated user from the database
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
 
-        expect(await updatedTestUser.comparePassword('UpdatedPassword')).to.be.true
+        const passwordsMatch = await compare(updatedTestUser.password, 'UpdatedPassword')
+        expect(passwordsMatch).to.be.true
 
         expect(updatedTestUser.confirmed).to.be.true
         expect(updatedTestUser.toObject()).to.not.have.property('expirationDate')
@@ -964,7 +968,8 @@ describe('Reset Password Endpoint PATCH /reset-password', function () {
         expect(res).to.have.status(201)
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
-        expect(await updatedTestUser.comparePassword('NewPassword123')).to.be.true
+        const passwordsMatch = await compare(updatedTestUser.password, 'UpdatedPassword')
+        expect(passwordsMatch).to.be.true
     })
 
     it('should not update the reset password code passwords do not match', async function () {

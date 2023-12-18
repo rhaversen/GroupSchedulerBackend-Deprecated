@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import bcryptjsPkg from 'bcryptjs'
+import { hash } from 'bcryptjs'
 import { customAlphabet } from 'nanoid'
 import mongoose, { type Document, model, type Model, type Types } from 'mongoose'
 
@@ -12,7 +12,6 @@ import { getNanoidAlphabet, getNanoidLength, getSaltRounds, getUserExpiry } from
 import { UserNotFoundError } from '../utils/errors.js'
 
 // Destructuring and global variables
-const { compare, hash } = bcryptjsPkg
 const { Schema } = mongoose
 
 // Config
@@ -46,7 +45,6 @@ export interface IUser extends Document {
     passwordResetCode?: string
 
     confirmUser: () => void
-    comparePassword: (candidatePassword: string) => Promise<boolean>
     generateNewUserCode: () => Promise<string>
     generateNewConfirmationCode: () => Promise<string>
     generateNewPasswordResetCode: () => Promise<string>
@@ -76,11 +74,6 @@ userSchema.methods.confirmUser = function () {
     this.confirmed = true // Update the user's status to confirmed
     this.expirationDate = undefined // Unset the expiration date to cancel auto-deletion
     this.confirmationCode = undefined // Unset the confirmation code
-}
-
-// Method for comparing parameter to this users password. Returns true if passwords match
-userSchema.methods.comparePassword = async function (this: IUser, candidatePassword: string): Promise<boolean> {
-    return await compare(candidatePassword, this.password)
 }
 
 // Method for having this user follow parameter user

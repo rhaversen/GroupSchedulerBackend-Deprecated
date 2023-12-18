@@ -2,8 +2,10 @@
 
 // Third-party libraries
 import validator from 'validator'
+import { compare } from 'bcryptjs'
 import { Strategy as LocalStrategy } from 'passport-local'
 // import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
+
 // Own modules
 import UserModel, { type IUser } from '../models/User.js'
 import { type PassportStatic } from 'passport'
@@ -42,7 +44,7 @@ const configurePassport = (passport: PassportStatic): void => {
                         }
 
                         // Check password
-                        const isMatch = await user.comparePassword(password)
+                        const isMatch = await compare(password, user.password)
                         if (!isMatch) {
                             done(new InvalidCredentialsError('Invalid credentials'))
                             return
