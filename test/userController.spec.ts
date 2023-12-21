@@ -975,6 +975,58 @@ describe('Update Password Endpoint PATCH /update-password', function () {
     })
 })
 
+describe('Request Reset Password Email Endpoint POST /request-password-reset-email', function () {
+    let testUser: IUser
+
+    beforeEach(async function () {
+        // Create a test user
+        testUser = new UserModel({
+            username: 'TestUser',
+            email: 'TestUser@gmail.com',
+            password: 'TestPassword',
+        })
+        testUser.confirmUser()
+        await testUser.save()
+    })
+
+    it('should set a passwordResetCode', async function () {
+        const resetDetails = {
+            email: 'TestUser@gmail.com',
+        }
+        const res = await agent.post('/v1/users/request-password-reset-email').send(resetDetails)
+
+        expect(res).to.have.status(200)
+
+        const passwordResetCode = (await UserModel.findById(testUser.id).exec() as IUser).passwordResetCode as string
+
+        expect(passwordResetCode).to.not.be.undefined
+    })
+
+    it('should change the passwordResetCode at multiple requests', async function () {
+        const resetDetails = {
+            email: 'TestUser@gmail.com',
+        }
+
+        await agent.post('/v1/users/request-password-reset-email').send(resetDetails)
+        const firstPasswordResetCode = (await UserModel.findById(testUser.id).exec() as IUser).passwordResetCode as string
+
+        const res = await agent.post('/v1/users/request-password-reset-email').send(resetDetails)
+        const secondPasswordResetCode = (await UserModel.findById(testUser.id).exec() as IUser).passwordResetCode as string
+
+        expect(res).to.have.status(200)
+        expect(firstPasswordResetCode === secondPasswordResetCode).to.be.false
+    })
+
+    it('should not reveal wether the email exists', async function () {
+        const resetDetails = {
+            email: 'NonRealEmail@gmail.com',
+        }
+        const res = await agent.post('/v1/users/request-password-reset-email').send(resetDetails)
+
+        expect(res).to.have.status(200)
+    })
+})
+
 describe('Reset Password Endpoint PATCH /reset-password', function () {
     let testUser: IUser
 
