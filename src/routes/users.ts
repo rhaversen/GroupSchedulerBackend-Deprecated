@@ -69,7 +69,7 @@ router.post('/',
  * @desc Request a password reset email
  * @access Public
  */
-router.post('/request-reset-password-email',
+router.post('/request-password-reset-email',
     sanitizeInput,
     requestPasswordResetEmail
 )
