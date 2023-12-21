@@ -10,7 +10,6 @@ import { ensureAuthenticated } from '../utils/passportConfig.js'
 // Controller functions
 import {
     confirmUser,
-    getSessions,
     deleteUser,
     followUser,
     getCommonEvents,
@@ -18,6 +17,7 @@ import {
     getEvents,
     getFollowers,
     getFollowing,
+    getSessions,
     loginUserLocal,
     logoutUser,
     newCode,
@@ -69,7 +69,7 @@ router.post('/',
  * @desc Request a password reset email
  * @access Public
  */
-router.post('/request-reset-password-email',
+router.post('/request-password-reset-email',
     sanitizeInput,
     requestPasswordResetEmail
 )

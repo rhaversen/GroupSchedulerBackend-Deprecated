@@ -31,7 +31,7 @@ export interface InternalSessionType extends mongoose.Document {
     session: string
     expires?: Date
     lastModified?: Date
-};
+}
 
 export interface ParsedSessionData {
     cookie: {
@@ -178,7 +178,11 @@ export const registerUser = asyncErrorHandler(async (req: Request, res: Response
             if (loginErr) {
                 return res.status(500).json({ auth: false, error: loginErr.message })
             }
-            return res.status(201).json({ auth: true, user, message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.' })
+            return res.status(201).json({
+                auth: true,
+                user,
+                message: 'Registration successful! Please check your email to confirm your account within 24 hours or your account will be deleted.'
+            })
         })
     })(req, res, next)
 })
@@ -190,8 +194,10 @@ export const requestPasswordResetEmail = asyncErrorHandler(async (req: Request, 
 
     if (user !== null && user !== undefined) {
         const passwordResetCode = await user.generateNewPasswordResetCode()
-        const confirmationLink = generatePasswordResetLink(passwordResetCode)
-        await sendPasswordResetEmail(email, confirmationLink)
+        user.passwordResetCode = passwordResetCode
+        await user.save()
+        const passwordResetLink = generatePasswordResetLink(passwordResetCode)
+        await sendPasswordResetEmail(email, passwordResetLink)
     }
 
     res.status(200).json({
