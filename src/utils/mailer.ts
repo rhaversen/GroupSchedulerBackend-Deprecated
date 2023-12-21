@@ -27,8 +27,7 @@ export const sendEmail = async (to: string, subject: string, text: string, html 
         }
     })
 
-    logger.debug('Created transporter:')
-    logger.debug(transporter)
+    logger.debug('Created transporter')
 
     const mailOptions = {
         from: emailFrom,
