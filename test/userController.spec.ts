@@ -983,7 +983,7 @@ describe('Request Reset Password Email Endpoint POST /request-password-reset-ema
         testUser = new UserModel({
             username: 'TestUser',
             email: 'TestUser@gmail.com',
-            password: 'TestPassword',
+            password: 'TestPassword'
         })
         testUser.confirmUser()
         await testUser.save()
@@ -991,27 +991,27 @@ describe('Request Reset Password Email Endpoint POST /request-password-reset-ema
 
     it('should set a passwordResetCode', async function () {
         const resetDetails = {
-            email: 'TestUser@gmail.com',
+            email: 'TestUser@gmail.com'
         }
         const res = await agent.post('/v1/users/request-password-reset-email').send(resetDetails)
 
         expect(res).to.have.status(200)
 
-        const passwordResetCode = (await UserModel.findById(testUser.id).exec() as IUser).passwordResetCode as string
+        const passwordResetCode = (await UserModel.findById(testUser.id).exec() as IUser).passwordResetCode!
 
         expect(passwordResetCode).to.not.be.undefined
     })
 
     it('should change the passwordResetCode at multiple requests', async function () {
         const resetDetails = {
-            email: 'TestUser@gmail.com',
+            email: 'TestUser@gmail.com'
         }
 
         await agent.post('/v1/users/request-password-reset-email').send(resetDetails)
-        const firstPasswordResetCode = (await UserModel.findById(testUser.id).exec() as IUser).passwordResetCode as string
+        const firstPasswordResetCode = (await UserModel.findById(testUser.id).exec() as IUser).passwordResetCode!
 
         const res = await agent.post('/v1/users/request-password-reset-email').send(resetDetails)
-        const secondPasswordResetCode = (await UserModel.findById(testUser.id).exec() as IUser).passwordResetCode as string
+        const secondPasswordResetCode = (await UserModel.findById(testUser.id).exec() as IUser).passwordResetCode!
 
         expect(res).to.have.status(200)
         expect(firstPasswordResetCode === secondPasswordResetCode).to.be.false
@@ -1019,7 +1019,7 @@ describe('Request Reset Password Email Endpoint POST /request-password-reset-ema
 
     it('should not reveal wether the email exists', async function () {
         const resetDetails = {
-            email: 'NonRealEmail@gmail.com',
+            email: 'NonRealEmail@gmail.com'
         }
         const res = await agent.post('/v1/users/request-password-reset-email').send(resetDetails)
 
