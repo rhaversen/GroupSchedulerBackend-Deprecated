@@ -10,7 +10,6 @@ import { ensureAuthenticated } from '../utils/passportConfig.js'
 // Controller functions
 import {
     confirmUser,
-    getSessions,
     deleteUser,
     followUser,
     getCommonEvents,
@@ -18,6 +17,7 @@ import {
     getEvents,
     getFollowers,
     getFollowing,
+    getSessions,
     loginUserLocal,
     logoutUser,
     newCode,
