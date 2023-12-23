@@ -14,8 +14,8 @@ import { deleteBlockedDate, newBlockedDate } from '../controllers/blockedDatesCo
 const router = Router()
 
 /**
- * @route PUT api/v1/users/blockedDates/:date
- * @desc Create a new blocked date at the specified date
+ * @route PUT api/v1/users/blockedDates/:fromDate/:toDate
+ * @desc Put blocked dates between and including the specified dates
  * @access Authenticated
  */
 router.put('/:fromDate/:toDate',
@@ -25,11 +25,11 @@ router.put('/:fromDate/:toDate',
 )
 
 /**
- * @route DELETE api/v1/users/blockedDates/:date
- * @desc Delete blocked date at the specified date
+ * @route DELETE api/v1/users/blockedDates/:fromDate/:toDate
+ * @desc Delete blocked dates between and including the specified dates
  * @access Authenticated
  */
-router.delete('/:date',
+router.delete('/:fromDate/:toDate',
     sanitizeInput,
     ensureAuthenticated,
     deleteBlockedDate

@@ -10,55 +10,79 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 
 // Destructuring and global variables
 
+// Helper Function to Generate Date Range
+function getDatesInRange (startDate: Date, endDate: Date): Date[] {
+    const dates = []
+    const currentDate = startDate
+
+    while (currentDate <= endDate) {
+        dates.push(new Date(currentDate))
+        currentDate.setDate(currentDate.getDate() + 1)
+    }
+
+    return dates
+}
+
 // Common validation function
-function validateDate (req: Request, next: NextFunction): Date | null {
-    const { date: dateString } = req.params
+function validateDateRange (req: Request, next: NextFunction): [Date | null, Date | null] {
+    const { fromDate: fromDateString, toDate: toDateString } = req.params
 
-    if (dateString === null || dateString === undefined) {
-        next(new MissingFieldsError('Missing required field: "date"'))
-        return null
+    if (!fromDateString || !toDateString) {
+        next(new MissingFieldsError('Missing required fields: "fromDate" and/or "toDate"'))
+        return [null, null]
     }
 
-    const dateObj = new Date(dateString)
-    if (Number.isNaN(dateObj.getTime())) {
-        next(new InvalidParametersError('Invalid date format. Please use a valid date'))
-        return null
+    const fromDate = new Date(fromDateString)
+    const toDate = new Date(toDateString)
+
+    if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+        next(new InvalidParametersError('Invalid date format. Please use valid dates'))
+        return [null, null]
     }
 
-    return dateObj
+    return [fromDate, toDate]
 }
 
 export const newBlockedDate = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
-    const dateObj = validateDate(req, next)
+    const [fromDate, toDate] = validateDateRange(req, next)
 
-    if (dateObj === null || dateObj === undefined) return
+    if (!fromDate || !toDate) return
 
-    const dateExists = user.blockedDates.some(date => date.toISOString() === dateObj.toISOString())
-    if (dateExists) {
-        next(new InvalidParametersError('Blocked date already exists'))
-        return
+    const dateRange = getDatesInRange(fromDate, toDate)
+    const updates = []
+
+    for (const date of dateRange) {
+        if (!user.blockedDates.some(d => d.toISOString() === date.toISOString())) {
+            updates.push(date)
+        }
     }
 
-    // Add blocked date to the user's blocked date array
-    await UserModel.findByIdAndUpdate(user._id, { $addToSet: { blockedDates: dateObj } }).exec()
-    res.status(201).json(dateObj)
+    if (updates.length > 0) {
+        await UserModel.findByIdAndUpdate(user._id, { $addToSet: { blockedDates: { $each: updates } } }).exec()
+    }
+
+    res.status(201).json({ message: 'Blocked dates added successfully.' })
 })
 
 export const deleteBlockedDate = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user as IUser
-    const dateObj = validateDate(req, next)
+    const [fromDate, toDate] = validateDateRange(req, next)
 
-    if (dateObj === null || dateObj === undefined) return
+    if (!fromDate || !toDate) return
 
-    const dateExists = user.blockedDates.some(date => date.toISOString() === dateObj.toISOString())
-    if (!dateExists) {
-        next(new InvalidParametersError('Blocked date does not exist'))
-        return
+    const dateRange = getDatesInRange(fromDate, toDate)
+    const updates = []
+
+    for (const date of dateRange) {
+        if (user.blockedDates.some(d => d.toISOString() === date.toISOString())) {
+            updates.push(date)
+        }
     }
 
-    // Remove the blocked date from the user's blocked date array
-    await UserModel.findByIdAndUpdate(user._id, { $pull: { blockedDates: dateObj } })
+    if (updates.length > 0) {
+        await UserModel.findByIdAndUpdate(user._id, { $pullAll: { blockedDates: updates } }).exec()
+    }
 
-    res.status(200).json({ message: 'Blocked date deleted successfully.' })
+    res.status(200).json({ message: 'Blocked dates deleted successfully.' })
 })
