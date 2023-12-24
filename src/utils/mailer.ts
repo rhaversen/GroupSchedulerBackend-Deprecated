@@ -57,8 +57,17 @@ export const sendConfirmationEmail = async (email: string, confirmationLink: str
 // Function to send password reset email
 export const sendPasswordResetEmail = async (email: string, passwordResetLink: string): Promise<void> => {
     const subject = 'Password reset requested'
-    const text = `Please reset your password by pasting this link into your browser: ${passwordResetLink} \n (Your email inbox does not support HTML)`
-    const html = `<a href="${passwordResetLink}">${passwordResetLink}</a> <br> <p>Please reset your password by clicking the link above.</p>`
+    const text = `Please reset your password by pasting this link into your browser: ${passwordResetLink} \n If you didn't request a password reset, it's safe to ignore this mail. Someone probably entered your email by mistake \n (Your email inbox does not support HTML)`
+    const html = `<a href="${passwordResetLink}">${passwordResetLink}</a> <br> <p>Please reset your password by clicking the link above.</p> <br> <p>If you didn't request a password reset, it's safe to ignore this mail. Someone probably entered your email by mistake.</p>`
+
+    await sendEmail(email, subject, text, html)
+}
+
+// Function to send email not registered email
+export const sendEmailNotRegisteredEmail = async (email: string): Promise<void> => {
+    const subject = 'Email not signed up'
+    const text = `A password reset has been requested for this email, but it has not been used to sign up for a user on raindate.net. Please sign up instead. \n If you didn't request a password reset, it's safe to ignore this mail. Someone probably entered your email by mistake.`
+    const html = `<p>A password reset has been requested for this email, but it has not been used to sign up for a user on raindate.net. Please sign up instead.</p> <br> <p>If you didn't request a password reset, it's safe to ignore this mail. Someone probably entered your email by mistake.</p>`
 
     await sendEmail(email, subject, text, html)
 }

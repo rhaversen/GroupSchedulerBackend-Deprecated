@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import { type NextFunction, type Request, type Response } from 'express'
+import { type NextFunction, type Request } from 'express'
 
 // Own modules
 import UserModel, { type IUser } from '../models/User.js'
@@ -11,12 +11,13 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 // Destructuring and global variables
 
 // Helper Function to Generate Date Range
-function getDatesInRange (startDate: Date, endDate: Date): Date[] {
+function getDatesInRange (startDate: Date, endDate: Date) {
     const dates = []
-    const currentDate = startDate
+    const currentDate = new Date(startDate)
 
     while (currentDate <= endDate) {
-        dates.push(new Date(currentDate))
+        // Normalize date to the start of the day
+        dates.push(new Date(currentDate.setHours(0, 0, 0, 0)))
         currentDate.setDate(currentDate.getDate() + 1)
     }
 
@@ -27,7 +28,8 @@ function getDatesInRange (startDate: Date, endDate: Date): Date[] {
 function validateDateRange (req: Request, next: NextFunction): [Date | null, Date | null] {
     const { fromDate: fromDateString, toDate: toDateString } = req.params
 
-    if (!fromDateString || !toDateString) {
+    if (fromDateString === null || fromDateString === undefined || toDateString === undefined) {
+        console.log('c')
         next(new MissingFieldsError('Missing required fields: "fromDate" and/or "toDate"'))
         return [null, null]
     }
@@ -40,48 +42,49 @@ function validateDateRange (req: Request, next: NextFunction): [Date | null, Dat
         return [null, null]
     }
 
+    if (fromDate.getTime() > toDate.getTime()) {
+        next(new InvalidParametersError('fromDate must be earlier than toDate'))
+        return [null, null]
+    }
+
     return [fromDate, toDate]
 }
 
-export const newBlockedDate = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const newBlockedDate = asyncErrorHandler(async (req, res, next) => {
     const user = req.user as IUser
     const [fromDate, toDate] = validateDateRange(req, next)
 
     if (!fromDate || !toDate) return
 
     const dateRange = getDatesInRange(fromDate, toDate)
-    const updates = []
-
-    for (const date of dateRange) {
-        if (!user.blockedDates.some(d => d.toISOString() === date.toISOString())) {
-            updates.push(date)
-        }
-    }
+    const updates = dateRange.filter(date =>
+        !user.blockedDates.some((d: string | number | Date) =>
+            new Date(d).setHours(0, 0, 0, 0) === date.getTime()
+        )
+    )
 
     if (updates.length > 0) {
-        await UserModel.findByIdAndUpdate(user._id, { $addToSet: { blockedDates: { $each: updates } } }).exec()
+        await UserModel.findByIdAndUpdate(user._id, { $addToSet: { blockedDates: { $each: updates } } })
     }
 
     res.status(201).json({ message: 'Blocked dates added successfully.' })
 })
 
-export const deleteBlockedDate = asyncErrorHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const deleteBlockedDate = asyncErrorHandler(async (req, res, next) => {
     const user = req.user as IUser
     const [fromDate, toDate] = validateDateRange(req, next)
 
     if (!fromDate || !toDate) return
 
     const dateRange = getDatesInRange(fromDate, toDate)
-    const updates = []
-
-    for (const date of dateRange) {
-        if (user.blockedDates.some(d => d.toISOString() === date.toISOString())) {
-            updates.push(date)
-        }
-    }
+    const updates = dateRange.filter(date =>
+        user.blockedDates.some((d: string | number | Date) =>
+            new Date(d).setHours(0, 0, 0, 0) === date.getTime()
+        )
+    )
 
     if (updates.length > 0) {
-        await UserModel.findByIdAndUpdate(user._id, { $pullAll: { blockedDates: updates } }).exec()
+        await UserModel.findByIdAndUpdate(user._id, { $pullAll: { blockedDates: updates } })
     }
 
     res.status(200).json({ message: 'Blocked dates deleted successfully.' })
