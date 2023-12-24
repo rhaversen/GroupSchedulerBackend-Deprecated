@@ -15,7 +15,7 @@ import {
     MissingFieldsError,
     UserNotFoundError
 } from '../utils/errors.js'
-import { sendConfirmationEmail, sendPasswordResetEmail } from '../utils/mailer.js'
+import { sendConfirmationEmail, sendEmailNotRegisteredEmail, sendPasswordResetEmail } from '../utils/mailer.js'
 import UserModel, { type IUser, type IUserPopulated } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import logger from '../utils/logger.js'
@@ -198,6 +198,8 @@ export const requestPasswordResetEmail = asyncErrorHandler(async (req: Request, 
         await user.save()
         const passwordResetLink = generatePasswordResetLink(passwordResetCode)
         await sendPasswordResetEmail(email, passwordResetLink)
+    } else {
+        await sendEmailNotRegisteredEmail(email)
     }
 
     res.status(200).json({
