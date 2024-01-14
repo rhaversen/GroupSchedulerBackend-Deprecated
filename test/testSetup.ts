@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import * as chai from 'chai';
+import * as chai from 'chai'
 import chaiHttp from 'chai-http'
 
 // Own modules
