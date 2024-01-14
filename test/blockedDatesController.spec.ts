@@ -4,11 +4,11 @@
 // Third-party libraries
 
 // Own modules
-import { agent, chai } from './testSetup.js'
+import { agent, chaiHttpObject } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 
 // Global variables and setup
-const { expect } = chai
+const { expect } = chaiHttpObject
 
 // Configs
 

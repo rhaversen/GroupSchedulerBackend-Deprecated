@@ -6,7 +6,7 @@
 import { parse } from 'cookie'
 
 // Own modules
-import server, { agent, chai } from './testSetup.js'
+import server, { agent, chaiHttpObject } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
 import { getExpressPort, getSessionExpiry } from '../src/utils/setupConfig.js'
@@ -14,7 +14,7 @@ import { compare } from 'bcrypt'
 import { type InternalSessionType, type ParsedSessionData, Session } from '../src/controllers/userController.js'
 
 // Global variables and setup
-const { expect } = chai
+const { expect } = chaiHttpObject
 
 // Configs
 const sessionExpiry = getSessionExpiry()
@@ -68,7 +68,7 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
     })
 
     it('should fail due to lack of authentication', async function () {
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
         const res = await newAgent.get('/v1/users/current-user')
 
         expect(res).to.have.status(401)
@@ -517,7 +517,7 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
 
     it('should not allow logout without logging in', async function () {
         // Using a new agent that hasn't logged in:
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
         const res = await newAgent.delete('/v1/users/logout')
 
         expect(res).to.have.status(401)
@@ -530,7 +530,7 @@ describe('User Logout Endpoint DELETE /v1/users/logout', function () {
 
     it('should not allow logout with an invalid session cookie', async function () {
         // Manipulating the session cookie (token) for the already logged-in user:
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
         newAgent.jar.setCookie('connect.sid=invalidSessionTokenHere', `localhost:${expressPort}`)
 
         const res = await newAgent.delete('/v1/users/logout')
@@ -611,7 +611,7 @@ describe('Get User Events Endpoint GET /v1/users/events', function () {
     })
 
     it('should fail due to lack of authentication', async function () {
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
         const res = await newAgent.get('/v1/users/events')
 
         expect(res).to.have.status(401)
@@ -706,7 +706,7 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
     })
 
     it('should not allow following if user is not authenticated', async function () {
-        const newAgent = chai.request.agent(server.app) // New agent without logging in
+        const newAgent = chaiHttpObject.request.agent(server.app) // New agent without logging in
         const res = await newAgent.put(`/v1/users/following/${userB._id}`)
 
         expect(res).to.have.status(401)
@@ -808,7 +808,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
     })
 
     it('should not allow unfollowing if user is not authenticated', async function () {
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
         const res = await newAgent.delete(`/v1/users/unfollow/${userB.id}`)
 
         expect(res).to.have.status(401)
@@ -846,7 +846,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
         userC.confirmUser()
         await userC.save()
 
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
         await newAgent.post('/v1/users/login-local').send({
             email: 'userC@gmail.com',
             password: 'passwordC'
@@ -906,7 +906,7 @@ describe('Update Password Endpoint PATCH /update-password', function () {
     })
 
     it('should not allow updating without authentication', async function () {
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
         const res = await newAgent.patch('/v1/users/update-password').send({ newUsername: 'newTestUser' })
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
@@ -1187,7 +1187,7 @@ describe('Update Username Endpoint PATCH /update-username', function () {
     })
 
     it('should not allow updating without authentication', async function () {
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
         const res = await newAgent.patch('/v1/users/update-username').send({ newUsername: 'newTestUser' })
 
         const updatedTestUser = await UserModel.findById(testUser._id).exec() as IUser
@@ -1272,7 +1272,7 @@ describe('Get Followers Endpoint GET /v1/users/followers', function () {
     })
 
     it('should return an empty array if the user has no followers', async function () {
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
 
         await newAgent.post('/v1/users/login-local').send({
             email: 'userC@gmail.com',
@@ -1344,7 +1344,7 @@ describe('Get Following Endpoint GET /v1/users/following', function () {
     })
 
     it('should return an empty array if the user is not following anyone', async function () {
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
 
         await newAgent.post('/v1/users/login-local').send({
             email: 'userC@gmail.com',
@@ -1642,7 +1642,7 @@ describe('Get active sessions GET /v1/users/sessions', function () {
     })
 
     it('Should show two active sessions when logged in twice', async function () {
-        const newAgent = chai.request.agent(server.app)
+        const newAgent = chaiHttpObject.request.agent(server.app)
         await newAgent.post('/v1/users/login-local').send({
             email: 'TestUser@gmail.com',
             password: 'TestPassword'

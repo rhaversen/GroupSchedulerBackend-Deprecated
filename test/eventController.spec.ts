@@ -5,13 +5,13 @@
 import { parse } from 'cookie'
 
 // Own modules
-import server, { agent, chai } from './testSetup.js'
+import server, { agent, chaiHttpObject } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
 import { getExpressPort, getSessionExpiry } from '../src/utils/setupConfig.js'
 
 // Global variables and setup
-const { expect } = chai
+const { expect } = chaiHttpObject
 
 // Configs
 const sessionExpiry = getSessionExpiry()
