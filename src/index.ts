@@ -133,7 +133,7 @@ process.on('unhandledRejection', (reason, promise) => {
     const promiseString = JSON.stringify(promise) || 'a promise'
 
     // Get a detailed string representation of the reason
-    const reasonDetail = reason instanceof Error ? reason.stack || reason.message : JSON.stringify(reason)
+    const reasonDetail = reason instanceof Error ? reason.stack ?? reason.message : JSON.stringify(reason)
 
     // Log the detailed error message
     logger.error(`Unhandled Rejection at: ${promiseString}, reason: ${reasonDetail}`)

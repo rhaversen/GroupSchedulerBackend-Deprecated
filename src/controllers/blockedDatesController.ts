@@ -13,12 +13,12 @@ import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 // Helper Function to Generate Date Range
 function getDatesInRange (startDate: Date, endDate: Date) {
     const dates = []
-    const currentDate = new Date(startDate)
+    const currentDate = new Date(startDate.getTime())
 
     while (currentDate <= endDate) {
         // Normalize date to the start of the day
-        dates.push(new Date(currentDate.setHours(0, 0, 0, 0)))
-        currentDate.setDate(currentDate.getDate() + 1)
+        dates.push(new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate())))
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1)
     }
 
     return dates
@@ -29,7 +29,6 @@ function validateDateRange (req: Request, next: NextFunction): [Date | null, Dat
     const { fromDate: fromDateString, toDate: toDateString } = req.params
 
     if (fromDateString === null || fromDateString === undefined || toDateString === undefined) {
-        console.log('c')
         next(new MissingFieldsError('Missing required fields: "fromDate" and/or "toDate"'))
         return [null, null]
     }
@@ -58,7 +57,7 @@ export const newBlockedDate = asyncErrorHandler(async (req, res, next) => {
 
     const dateRange = getDatesInRange(fromDate, toDate)
     const updates = dateRange.filter(date =>
-        !user.blockedDates.some((d: string | number | Date) =>
+        !user.blockedDates.some((d: Date) =>
             new Date(d).setHours(0, 0, 0, 0) === date.getTime()
         )
     )
@@ -77,11 +76,11 @@ export const deleteBlockedDate = asyncErrorHandler(async (req, res, next) => {
     if (!fromDate || !toDate) return
 
     const dateRange = getDatesInRange(fromDate, toDate)
-    const updates = dateRange.filter(date =>
-        user.blockedDates.some((d: string | number | Date) =>
-            new Date(d).setHours(0, 0, 0, 0) === date.getTime()
+    const updates = dateRange.filter(dateRangeItem =>
+        user.blockedDates.some(blockedDate =>
+            new Date(blockedDate).setHours(0, 0, 0, 0) === new Date(dateRangeItem).setHours(0, 0, 0, 0)
         )
-    )
+    )    
 
     if (updates.length > 0) {
         await UserModel.findByIdAndUpdate(user._id, { $pullAll: { blockedDates: updates } })

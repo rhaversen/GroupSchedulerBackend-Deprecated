@@ -1,7 +1,7 @@
 // Node.js built-in modules
 
 // Third-party libraries
-import chai from 'chai'
+import * as chai from 'chai'
 import chaiHttp from 'chai-http'
 
 // Own modules
@@ -10,12 +10,15 @@ import UserModel from '../src/models/User.js'
 import EventModel from '../src/models/Event.js'
 import { isMemoryDatabase } from '../src/database/databaseHandler.js'
 
-// Test env
+// Test environment settings
 process.env.SESSION_SECRET = 'TEST_SESSION_SECRET'
 process.env.CSRF_TOKEN = 'TEST_CSRF_TOKEN'
 
+// Importing the server
 const server = await import('../src/index.js')
-chai.use(chaiHttp)
+
+// Using chaiHttp with chai
+const chaiHttpObject = chai.use(chaiHttp)
 
 async function getCSRFToken (agent: ChaiHttp.Agent): Promise<any> {
     const res = await agent.get('/csrf-token')
@@ -51,7 +54,7 @@ async function cleanDatabase () {
 }
 
 beforeEach(async function () {
-    agent = chai.request.agent(server.app) // Create an agent instance
+    agent = chaiHttpObject.request.agent(server.app) // Create an agent instance
 })
 
 afterEach(async function () {
@@ -64,4 +67,4 @@ after(function () {
 })
 
 export default server
-export { agent, chai }
+export { agent, chaiHttpObject }
