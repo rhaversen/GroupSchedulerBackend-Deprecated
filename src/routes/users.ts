@@ -33,11 +33,11 @@ import {
 const router = Router()
 
 /**
- * @route GET api/v1/users/current-user
+ * @route GET api/v1/users
  * @desc Get user document
  * @access Authenticated
  */
-router.get('/current-user',
+router.get('/',
     sanitizeInput,
     ensureAuthenticated,
     getCurrentUser
@@ -182,11 +182,11 @@ router.get('/following',
 )
 
 /**
- * @route GET api/v1/users/:userId/common-events
+ * @route GET api/v1/users/common-events/:userId
  * @desc Get the events in common with a user
  * @access Authenticated
  */
-router.get('/:userId/common-events',
+router.get('/common-events/:userId',
     sanitizeInput,
     ensureAuthenticated,
     getCommonEvents
