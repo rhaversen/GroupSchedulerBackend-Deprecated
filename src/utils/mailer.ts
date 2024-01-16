@@ -47,9 +47,9 @@ export const sendEmail = async (to: string, subject: string, text: string, html 
 
 // Function to send confirmation email
 export const sendConfirmationEmail = async (email: string, confirmationLink: string): Promise<void> => {
-    const subject = 'Please confirm your email address'
+    const subject = 'Please confirm your email address within 24 hours'
     const text = `Please confirm your email by pasting this link into your browser: ${confirmationLink} \n (Your email inbox does not support HTML)`
-    const html = `<a href="${confirmationLink}">${confirmationLink}</a> <br> <p>Please confirm your email by clicking the link above.</p>`
+    const html = `<a href="${confirmationLink}">${confirmationLink}</a> <br> <p>Please confirm your email by clicking the link above or pasting it into your browser.</p> <br> <p>Please confirm your email within 24 hours or your user and all corresponding data will be permanently deleted.`
 
     await sendEmail(email, subject, text, html)
 }
@@ -67,7 +67,7 @@ export const sendPasswordResetEmail = async (email: string, passwordResetLink: s
 export const sendEmailNotRegisteredEmail = async (email: string): Promise<void> => {
     const subject = 'Email not signed up'
     const text = 'A password reset has been requested for this email, but it has not been used to sign up for a user on raindate.net. Please sign up instead. \n If you didn\'t request a password reset, it\'s safe to ignore this mail. Someone probably entered your email by mistake.'
-    const html = '<p>A password reset has been requested for this email, but it has not been used to sign up for a user on raindate.net. Please sign up instead.</p> <br> <p>If you didn\'t request a password reset, it\'s safe to ignore this mail. Someone probably entered your email by mistake.</p>'
+    const html = '<p>A password reset has been requested for this email, but it has not been used to sign up for a user on raindate.net. Please <a href="raindate.net/signup">sign up</a> instead.</p> <br> <p>If you didn\'t request a password reset, it\s safe to ignore this mail. Someone probably entered your email by mistake.</p>'
 
     await sendEmail(email, subject, text, html)
 }
