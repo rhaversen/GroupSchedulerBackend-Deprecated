@@ -80,7 +80,7 @@ export const deleteBlockedDate = asyncErrorHandler(async (req, res, next) => {
         user.blockedDates.some(blockedDate =>
             new Date(blockedDate).setHours(0, 0, 0, 0) === new Date(dateRangeItem).setHours(0, 0, 0, 0)
         )
-    )    
+    )
 
     if (updates.length > 0) {
         await UserModel.findByIdAndUpdate(user._id, { $pullAll: { blockedDates: updates } })
