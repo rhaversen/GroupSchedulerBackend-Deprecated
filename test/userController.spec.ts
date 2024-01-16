@@ -20,7 +20,7 @@ const { expect } = chaiHttpObject
 const sessionExpiry = getSessionExpiry()
 const expressPort = getExpressPort()
 
-describe('Get Current User Endpoint GET /v1/users/current-user', function () {
+describe('Get Current User Endpoint GET /v1/users', function () {
     let testUser: IUser
     let testEvent: IEvent
 
@@ -49,7 +49,7 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
     })
 
     it('should fetch current user details successfully', async function () {
-        const res = await agent.get('/v1/users/current-user')
+        const res = await agent.get('/v1/users')
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.a('object')
@@ -69,7 +69,7 @@ describe('Get Current User Endpoint GET /v1/users/current-user', function () {
 
     it('should fail due to lack of authentication', async function () {
         const newAgent = chaiHttpObject.request.agent(server.app)
-        const res = await newAgent.get('/v1/users/current-user')
+        const res = await newAgent.get('/v1/users')
 
         expect(res).to.have.status(401)
         expect(res.body.message).to.be.equal('Unauthorized')
@@ -762,7 +762,7 @@ describe('Follow User Endpoint PUT /v1/users/following/:userId', function () {
     })
 })
 
-describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
+describe('Unfollow User Endpoint PUT /v1/users/following/:userId', function () {
     let userA: IUser, userB: IUser
 
     beforeEach(async function () {
@@ -797,7 +797,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
     })
 
     it('should allow userA to unfollow userB', async function () {
-        const res = await agent.delete(`/v1/users/unfollow/${userB.id}`)
+        const res = await agent.delete(`/v1/users/following/${userB.id}`)
         expect(res).to.have.status(200)
 
         const updatedUserA = await UserModel.findById(userA._id).exec() as IUser
@@ -809,7 +809,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
 
     it('should not allow unfollowing if user is not authenticated', async function () {
         const newAgent = chaiHttpObject.request.agent(server.app)
-        const res = await newAgent.delete(`/v1/users/unfollow/${userB.id}`)
+        const res = await newAgent.delete(`/v1/users/following/${userB.id}`)
 
         expect(res).to.have.status(401)
         expect(res.body.message).to.be.equal('Unauthorized')
@@ -819,7 +819,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
 
     it('should not allow unfollowing a non-existent user', async function () {
         const invalidUserId = '5f5f5f5f5f5f5f5f5f5f5f5f'
-        const res = await agent.delete(`/v1/users/unfollow/${invalidUserId}`)
+        const res = await agent.delete(`/v1/users/following/${invalidUserId}`)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -828,7 +828,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
     })
 
     it('should not allow a user to unfollow themselves', async function () {
-        const res = await agent.delete(`/v1/users/unfollow/${userA.id}`)
+        const res = await agent.delete(`/v1/users/following/${userA.id}`)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -852,7 +852,7 @@ describe('Unfollow User Endpoint PUT /v1/users/unfollow/:userId', function () {
             password: 'passwordC'
         })
 
-        const res = await newAgent.delete(`/v1/users/unfollow/${userB.id}`)
+        const res = await newAgent.delete(`/v1/users/following/${userB.id}`)
 
         expect(res).to.have.status(400) // Error (This status and the message below is a suggestion)
         expect(res.body).to.be.a('object')
@@ -1359,7 +1359,7 @@ describe('Get Following Endpoint GET /v1/users/following', function () {
     })
 })
 
-describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', function () {
+describe('Get Common Events Endpoint GET /v1/users/common-events/:userId', function () {
     let userA: IUser, userB: IUser, userC: IUser
     let event1: IEvent, event2: IEvent, event3: IEvent
 
@@ -1434,7 +1434,7 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
     })
 
     it('should successfully get the common events between userA and userB', async function () {
-        const res = await agent.get(`/v1/users/${userB._id}/common-events`)
+        const res = await agent.get(`/v1/users/common-events/${userB._id}`)
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
@@ -1443,7 +1443,7 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
     })
 
     it('should return an empty array for common events between userA and userC', async function () {
-        const res = await agent.get(`/v1/users/${userC._id}/common-events`)
+        const res = await agent.get(`/v1/users/common-events/${userC._id}`)
 
         expect(res).to.have.status(200)
         expect(res.body).to.be.an('array')
@@ -1453,7 +1453,7 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
     it('should return a 400 error if the candidate user is not found', async function () {
         // const nonExistentUserId = new mongoose.Types.ObjectId()
         const nonExistentUserId = '121212121212121212121212'
-        const res = await agent.get(`/v1/users/${nonExistentUserId}/common-events`)
+        const res = await agent.get(`/v1/users/common-events/${nonExistentUserId}`)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
@@ -1463,7 +1463,7 @@ describe('Get Common Events Endpoint GET /v1/users/:userId/common-events', funct
 
     it('should return a 400 error if the userId is invalid', async function () {
         const invalidUserId = 'invalidId'
-        const res = await agent.get(`/v1/users/${invalidUserId}/common-events`)
+        const res = await agent.get(`/v1/users/common-events/${invalidUserId}`)
 
         expect(res).to.have.status(400)
         expect(res.body).to.be.a('object')
