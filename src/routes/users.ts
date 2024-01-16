@@ -33,6 +33,19 @@ import {
 const router = Router()
 
 /**
+ * @route GET api/v1/users/is-authenticated
+ * @desc Check if user is authenticated
+ * @access Authenticated
+ */
+router.get('/is-authenticated',
+    sanitizeInput,
+    ensureAuthenticated,
+    (req, res) => {
+        res.status(200).send()
+    }
+)
+
+/**
  * @route GET api/v1/users
  * @desc Get user document
  * @access Authenticated

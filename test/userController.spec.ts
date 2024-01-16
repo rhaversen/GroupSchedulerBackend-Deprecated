@@ -20,6 +20,44 @@ const { expect } = chaiHttpObject
 const sessionExpiry = getSessionExpiry()
 const expressPort = getExpressPort()
 
+describe('Check if current user is authenticated GET /v1/users/is-authenticated', function () {
+    let testUser: IUser
+
+    beforeEach(async function () {
+        testUser = new UserModel({
+            username: 'TestUser',
+            email: 'TestUser@gmail.com',
+            password: 'testpassword'
+        })
+        testUser.confirmUser()
+        await testUser.save()
+    })
+
+
+    it('should return 200 when authenticated', async function () {
+        const user = { email: testUser.email, password: 'testpassword', stayLoggedIn: true }
+
+        // Log the user in to get a token
+        await agent.post('/v1/users/login-local').send(user)
+
+        const res = await agent.get('/v1/users')
+
+        expect(res).to.have.status(200)
+    })
+
+    it('should return 401 when not authenticated', async function () {
+        const res = await agent.get('/v1/users')
+
+        expect(res).to.have.status(401)
+    })
+
+    it('should return 401 with invalid connect.sid cookie', async function () {
+        const res = await agent.get('/v1/users').set('Cookie', 'connect.sid=invalidcookievalue')
+
+        expect(res).to.have.status(401)
+    })
+})
+
 describe('Get Current User Endpoint GET /v1/users', function () {
     let testUser: IUser
     let testEvent: IEvent
