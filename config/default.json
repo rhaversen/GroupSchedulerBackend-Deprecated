@@ -49,12 +49,12 @@
     },
     "apiLimiter": {
         "nonSensitive": {
-            "windowMs": 60000,
-            "max": 60
+            "windowMs": 10000,
+            "max": 20
         },
         "sensitive": {
             "windowMs": 60000,
-            "max": 5
+            "max": 10
         }
     }
 }
