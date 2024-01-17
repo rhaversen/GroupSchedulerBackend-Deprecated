@@ -249,13 +249,13 @@ describe('Delete blocked date endpoint PUT api/v1/users/blockedDates/:fromDate/:
         afterAfterTomorrowISO = afterAfterTomorrowUTC.toISOString()
 
         await UserModel.findByIdAndUpdate(
-            testUser._id, 
-            { 
-                $addToSet: { 
-                    blockedDates: { 
-                        $each: [yesterdayUTC, tomorrowUTC, afterTomorrowUTC, afterAfterTomorrowUTC] 
-                    } 
-                } 
+            testUser._id,
+            {
+                $addToSet: {
+                    blockedDates: {
+                        $each: [yesterdayUTC, tomorrowUTC, afterTomorrowUTC, afterAfterTomorrowUTC]
+                    }
+                }
             }
         )
     })

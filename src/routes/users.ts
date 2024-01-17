@@ -33,11 +33,24 @@ import {
 const router = Router()
 
 /**
- * @route GET api/v1/users/current-user
+ * @route GET api/v1/users/is-authenticated
+ * @desc Check if user is authenticated
+ * @access Authenticated
+ */
+router.get('/is-authenticated',
+    sanitizeInput,
+    ensureAuthenticated,
+    (req, res) => {
+        res.status(200).send()
+    }
+)
+
+/**
+ * @route GET api/v1/users
  * @desc Get user document
  * @access Authenticated
  */
-router.get('/current-user',
+router.get('/',
     sanitizeInput,
     ensureAuthenticated,
     getCurrentUser
@@ -149,11 +162,11 @@ router.put('/following/:userId',
 )
 
 /**
- * @route DELETE api/v1/users/unfollow/:userId
+ * @route DELETE api/v1/users/following/:userId
  * @desc Un-follow user. Remove userId from users following array, remove user from userId's followers array
  * @access Authenticated
  */
-router.delete('/unfollow/:userId',
+router.delete('/following/:userId',
     sanitizeInput,
     ensureAuthenticated,
     unfollowUser
@@ -182,11 +195,11 @@ router.get('/following',
 )
 
 /**
- * @route GET api/v1/users/:userId/common-events
+ * @route GET api/v1/users/common-events/:userId
  * @desc Get the events in common with a user
  * @access Authenticated
  */
-router.get('/:userId/common-events',
+router.get('/common-events/:userId',
     sanitizeInput,
     ensureAuthenticated,
     getCommonEvents
