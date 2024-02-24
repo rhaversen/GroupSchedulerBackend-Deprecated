@@ -1,4 +1,4 @@
-name: Backend Docker Image CI
+name: Group Scheduler Backend Docker Image CI
 
 on:
   push:
