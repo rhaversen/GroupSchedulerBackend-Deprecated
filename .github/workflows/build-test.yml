@@ -1,4 +1,4 @@
-name: Backend Test CI
+name: Group Scheduler Backend Test CI
 
 on:
   push:
