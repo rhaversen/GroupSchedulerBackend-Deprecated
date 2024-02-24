@@ -18,7 +18,7 @@ export default async function loadVaultSecrets (): Promise<void> {
 
     try {
         // Reading the keys in backend directory
-        const vaultMetadata = await vault.list('secret/metadata/backend')
+        const vaultMetadata = await vault.list('secret/metadata/group_scheduler/backend')
 
         // KEEP UPDATED:
         // Expected production env keys:
