@@ -15,7 +15,7 @@ RUN apt-get update && apt-get upgrade -y
 WORKDIR /app
 
 # Create a user within the container
-RUN useradd -m backend_user
+RUN useradd -m group_scheduler_backend_user
 
 # Copy the `dist` directory, package.json and Config
 COPY dist/ ./dist/
@@ -23,10 +23,10 @@ COPY package*.json ./
 COPY config/ ./config/
 
 # Change the ownership of the copied files to backend_user
-RUN chown -R backend_user:backend_user /app
+RUN chown -R group_scheduler_backend_user:group_scheduler_backend_user /app
 
 # Switch to user for subsequent commands
-USER backend_user
+USER group_scheduler_backend_user
 
 # Install production dependencies
 RUN npm install --omit=dev
