@@ -8,17 +8,19 @@ import mongoose, { type Document, model, type Model, type Types } from 'mongoose
 // Own modules
 import logger from '../utils/logger.js'
 import EventModel, { type IEvent } from './Event.js'
-import { getNanoidAlphabet, getNanoidLength, getSaltRounds, getUserExpiry } from '../utils/setupConfig.js'
+import config from '../utils/setupConfig.js'
 import { UserNotFoundError } from '../utils/errors.js'
 
 // Destructuring and global variables
 const { Schema } = mongoose
 
 // Config
-const saltRounds = getSaltRounds()
-const nanoidAlphabet = getNanoidAlphabet()
-const nanoidLength = getNanoidLength()
-const userExpiry = getUserExpiry()
+const {
+    bcryptSaltRounds,
+    nanoidAlphabet,
+    nanoidLength,
+    userExpiry
+} = config
 
 // Constants
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
@@ -211,7 +213,7 @@ userSchema.pre('save', async function (next) {
     // Password hashing middleware
     if (this.isModified('password')) {
         try {
-            this.password = await hash(this.password, saltRounds) // Using a custom salt for each user
+            this.password = await hash(this.password, bcryptSaltRounds) // Using a custom salt for each user
             delete this.passwordResetCode
             next()
             return

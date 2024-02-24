@@ -7,6 +7,8 @@ import { type CorsOptions } from 'cors'
 import { type Options as RateLimitOptions } from 'express-rate-limit'
 import { type ConnectOptions } from 'mongoose'
 import { type CookieOptions } from 'express'
+
+// Own modules
 import logger from './logger.js'
 
 // Types
@@ -19,78 +21,30 @@ const configString = JSON.stringify(config.util.toObject(config), null, 4)
 // Log the configs used
 logger.info(`Using configs:\n${configString}`)
 
-export function getSaltRounds (): number {
-    return config.get('bcrypt.saltRounds')
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
+const AppConfig = {
+    appName: config.get('mongoose.options.appName') as string,
+    bcryptSaltRounds: config.get('bcrypt.saltRounds') as number,
+    cookieOptions: config.get('cookieOptions') as CookieOptions,
+    corsOpts: config.get('corsOpts') as CorsOptions,
+    emailFrom: config.get('email.from') as string,
+    emailPort: config.get('email.port') as number,
+    expressPort: config.get('ports.express') as number,
+    frontendDomain: config.get('frontend.domain') as string,
+    helmetCSP: config.get('helmet.CSP') as ContentSecurityPolicyOptions,
+    helmetHSTS: config.get('helmet.HSTS') as HstsOptions,
+    maxRetryAttempts: config.get('mongoose.retrySettings.maxAttempts') as number,
+    mongooseOpts: config.get('mongoose.options') as ConnectOptions,
+    nanoidAlphabet: config.get('nanoid.alphabet') as string,
+    nanoidLength: config.get('nanoid.length') as number,
+    nextJsPort: config.get('ports.nextJs') as number,
+    relaxedApiLimiterConfig: config.get('apiLimiter.nonSensitive') as RateLimitOptions,
+    retryInterval: config.get('mongoose.retrySettings.interval') as number, // in milliseconds
+    retryWrites: config.get('mongoose.options.retryWrites') as string,
+    sensitiveApiLimiterConfig: config.get('apiLimiter.sensitive') as RateLimitOptions,
+    sessionExpiry: config.get('session.expiry') as number,
+    userExpiry: config.get('userSettings.unconfirmedUserExpiry') as number,
+    w: config.get('mongoose.options.w') as string
 }
 
-export function getNanoidAlphabet (): string {
-    return config.get('nanoid.alphabet')
-}
-
-export function getNanoidLength (): number {
-    return config.get('nanoid.length')
-}
-
-export function getUserExpiry (): number {
-    return config.get('userSettings.unconfirmedUserExpiry')
-}
-
-export function getHelmetCSP (): ContentSecurityPolicyOptions {
-    return config.get('helmet.CSP')
-}
-
-export function getHelmetHSTS (): HstsOptions {
-    return config.get('helmet.HSTS')
-}
-
-export function getCorsOptions (): CorsOptions {
-    return config.get('corsOpts')
-}
-
-export function getRelaxedApiLimiterConfig (): RateLimitOptions {
-    return config.get('apiLimiter.nonSensitive')
-}
-
-export function getSensitiveApiLimiterConfig (): RateLimitOptions {
-    return config.get('apiLimiter.sensitive')
-}
-
-export function getExpressPort (): number {
-    return config.get('ports.express')
-}
-
-export function getTransporterPort (): number {
-    return config.get('email.port')
-}
-
-export function getEmailFrom (): string {
-    return config.get('email.from')
-}
-
-export function getMongooseOptions (): ConnectOptions {
-    return config.get('mongoose.options')
-}
-
-export function getMaxRetryAttempts (): number {
-    return config.get('mongoose.retrySettings.maxAttempts')
-}
-
-export function getRetryInterval (): number { // in milliseconds
-    return config.get('mongoose.retrySettings.interval')
-}
-
-export function getSessionExpiry (): number {
-    return config.get('session.expiry')
-}
-
-export function getNextJsPort (): number {
-    return config.get('ports.nextJs')
-}
-
-export function getFrontendDomain (): string {
-    return config.get('frontend.domain')
-}
-
-export function getCookieOptions (): CookieOptions {
-    return config.get('cookieOptions')
-}
+export default AppConfig

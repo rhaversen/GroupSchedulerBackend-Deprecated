@@ -15,13 +15,15 @@ import {
 import EventModel, { type IEvent } from '../models/Event.js'
 import UserModel, { type IUser } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
-import { getNanoidAlphabet, getNanoidLength } from '../utils/setupConfig.js'
+import config from '../utils/setupConfig.js'
 
 // Destructuring and global variables
 
 // Config
-const nanoidAlphabet = getNanoidAlphabet()
-const nanoidLength = getNanoidLength()
+const {
+    nanoidAlphabet,
+    nanoidLength
+} = config
 
 // Interfaces
 export interface IRequestWithEvent extends Request {

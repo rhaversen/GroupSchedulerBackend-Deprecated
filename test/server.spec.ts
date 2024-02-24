@@ -5,15 +5,17 @@ import { parse } from 'cookie'
 import server, { agent, chaiHttpObject } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
-import { getExpressPort, getSessionExpiry } from '../src/utils/setupConfig.js'
+import config from '../src/utils/setupConfig.js'
 import logger from '../src/utils/logger.js'
 
 // Global variables and setup
 const { expect } = chaiHttpObject
 
 // Configs
-const sessionExpiry = getSessionExpiry()
-const expressPort = getExpressPort()
+const {
+    sessionExpiry,
+    expressPort
+} = config
 
 // Helper functions
 async function establishFollowing (followingUser: IUser, followedUser: IUser): Promise<void> {

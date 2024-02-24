@@ -19,7 +19,7 @@ import { sendConfirmationEmail, sendEmailNotRegisteredEmail, sendPasswordResetEm
 import UserModel, { type IUser, type IUserPopulated } from '../models/User.js'
 import asyncErrorHandler from '../utils/asyncErrorHandler.js'
 import logger from '../utils/logger.js'
-import { getFrontendDomain, getNextJsPort, getSessionExpiry } from '../utils/setupConfig.js'
+import config from '../utils/setupConfig.js'
 import { compare } from 'bcrypt'
 
 // Destructuring and global variables
@@ -47,9 +47,11 @@ export interface ParsedSessionData {
 }
 
 // Config
-const sessionExpiry = getSessionExpiry()
-const nextJsPort = getNextJsPort()
-const frontendDomain = getFrontendDomain()
+const {
+    sessionExpiry,
+    nextJsPort,
+    frontendDomain
+} = config
 
 // Helper functions
 function generateConfirmationLink (confirmationCode: string): string {

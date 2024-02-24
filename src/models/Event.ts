@@ -7,15 +7,17 @@ import { customAlphabet } from 'nanoid'
 // Own modules
 import UserModel, { type IUser } from './User.js'
 import logger from '../utils/logger.js'
-import { getNanoidAlphabet, getNanoidLength } from '../utils/setupConfig.js'
+import config from '../utils/setupConfig.js'
 import { UserNotFoundError } from '../utils/errors.js'
 
 // Destructuring and global variables
 const { Schema } = mongoose
 
 // Config
-const nanoidAlphabet = getNanoidAlphabet()
-const nanoidLength = getNanoidLength()
+const {
+    nanoidAlphabet,
+    nanoidLength
+} = config
 
 // Constants
 const nanoid = customAlphabet(nanoidAlphabet, nanoidLength)
