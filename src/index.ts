@@ -11,29 +11,22 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import lusca from 'lusca'
+import MongoStore from 'connect-mongo'
+import mongoose from 'mongoose'
 
 // Own modules
 import logger from './utils/logger.js'
 import globalErrorHandler from './middleware/globalErrorHandler.js'
 import configurePassport from './utils/passportConfig.js'
-import { closeDatabaseConnection, initializeDatabaseConnection, mongoose } from './database/databaseHandler.js'
+import { initializeDatabaseConnection } from './database/databaseHandler.js'
 // import csrfProtection from './utils/csrfProtection.js'
-import {
-    getCorsOptions,
-    getExpressPort,
-    getHelmetCSP,
-    getHelmetHSTS,
-    getRelaxedApiLimiterConfig,
-    getSensitiveApiLimiterConfig,
-    getCookieOptions
-} from './utils/setupConfig.js'
+import config from './utils/setupConfig.js'
 import loadVaultSecrets from './utils/vault.js'
 
 // Import routes
 import userRoutes from './routes/users.js'
 import eventRoutes from './routes/events.js'
 import blockedDatesRoutes from './routes/blockedDates.js'
-import MongoStore from 'connect-mongo'
 
 // Load environment
 await loadVaultSecrets()
@@ -43,13 +36,15 @@ const app = express()
 const index = http.createServer(app)
 
 // Configs
-const helmetCSP = getHelmetCSP()
-const helmetHSTS = getHelmetHSTS()
-const confCorsOptions = getCorsOptions()
-const confRelaxedApiLimiter = getRelaxedApiLimiterConfig()
-const confSensitiveApiLimiter = getSensitiveApiLimiterConfig()
-const expressPort = getExpressPort()
-const cookieOptions = getCookieOptions()
+const {
+    helmetCSP,
+    helmetHSTS,
+    corsOpts,
+    relaxedApiLimiterConfig,
+    sensitiveApiLimiterConfig,
+    expressPort,
+    cookieOptions
+} = config
 
 // Helmet security
 /* if (typeof helmetCSP === 'object' && helmetCSP !== null) {
@@ -85,7 +80,7 @@ app.use(passport.session()) // Passport session handling
 configurePassport(passport) // Use passportConfig
 app.use(mongoSanitize()) // Sanitize MongoDB queries
 app.use(cors({
-    ...confCorsOptions,
+    ...corsOpts,
     credentials: true
 }))
 
@@ -94,8 +89,8 @@ app.use(cors({
 })) */
 
 // Create rate limiters
-const relaxedApiLimiter = RateLimit(confRelaxedApiLimiter)
-const sensitiveApiLimiter = RateLimit(confSensitiveApiLimiter)
+const relaxedApiLimiter = RateLimit(relaxedApiLimiterConfig)
+const sensitiveApiLimiter = RateLimit(sensitiveApiLimiterConfig)
 
 // Endpoint to fetch the csrf token
 /* app.get('/csrf-token', sensitiveApiLimiter, (req, res) => {
@@ -168,7 +163,7 @@ process.on('SIGINT', () => {
 async function shutDown () {
     try {
         logger.info('Starting database disconnection...')
-        await closeDatabaseConnection()
+        await mongoose.disconnect()
         logger.info('Shutdown completed')
         process.exit(0) // Exit with code 0 indicating successful termination
     } catch (error) {

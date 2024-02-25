@@ -9,7 +9,7 @@ import { parse } from 'cookie'
 import server, { agent, chaiHttpObject } from './testSetup.js'
 import UserModel, { type IUser } from '../src/models/User.js'
 import EventModel, { type IEvent } from '../src/models/Event.js'
-import { getExpressPort, getSessionExpiry } from '../src/utils/setupConfig.js'
+import config from '../src/utils/setupConfig.js'
 import { compare } from 'bcrypt'
 import { type InternalSessionType, type ParsedSessionData, Session } from '../src/controllers/userController.js'
 
@@ -17,8 +17,10 @@ import { type InternalSessionType, type ParsedSessionData, Session } from '../sr
 const { expect } = chaiHttpObject
 
 // Configs
-const sessionExpiry = getSessionExpiry()
-const expressPort = getExpressPort()
+const {
+    sessionExpiry,
+    expressPort
+} = config
 
 describe('Check if current user is authenticated GET /v1/users/is-authenticated', function () {
     let testUser: IUser
@@ -32,7 +34,6 @@ describe('Check if current user is authenticated GET /v1/users/is-authenticated'
         testUser.confirmUser()
         await testUser.save()
     })
-
 
     it('should return 200 when authenticated', async function () {
         const user = { email: testUser.email, password: 'testpassword', stayLoggedIn: true }

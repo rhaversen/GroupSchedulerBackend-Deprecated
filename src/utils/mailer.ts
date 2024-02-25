@@ -4,12 +4,14 @@
 import nodemailer from 'nodemailer'
 
 // Own modules
-import { getEmailFrom, getTransporterPort } from './setupConfig.js'
+import config from './setupConfig.js'
 import logger from './logger.js'
 
 // Config
-const transporterPort = getTransporterPort()
-const emailFrom = getEmailFrom()
+const {
+    emailPort,
+    emailFrom
+} = config
 
 // Generic function to send email
 export const sendEmail = async (to: string, subject: string, text: string, html = ''): Promise<void> => {
@@ -19,7 +21,7 @@ export const sendEmail = async (to: string, subject: string, text: string, html 
     logger.debug('Creating email transporter')
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_SERVER,
-        port: transporterPort,
+        port: emailPort,
         secure: false, // true for 465, false for other ports
         auth: {
             user: process.env.SMTP_LOGIN,
